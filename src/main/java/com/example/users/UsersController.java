@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
@@ -23,5 +24,10 @@ public class UsersController {
     @PostMapping("/users")
     public User addModelTest(@RequestBody CreateUserDTO update){
         return service.create(new User(update));
+    }
+
+    @GetMapping("users/{id}")
+    public Optional<User> getUserById(@PathVariable String id){
+        return service.findOneById(id);
     }
 }

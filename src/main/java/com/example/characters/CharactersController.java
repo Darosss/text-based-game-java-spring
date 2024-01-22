@@ -1,67 +1,63 @@
 package com.example.characters;
 
+import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.items.*;
 import com.example.statistics.BaseStatisticObject;
 import com.example.statistics.BaseStatisticsNamesEnum;
-import com.example.statistics.StatisticsNamesEnum;
+import com.example.users.User;
+import com.example.users.UserService;
+import com.example.utils.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 public class CharactersController {
-
-
-    @Autowired()
-    private final CharacterService service = new CharacterService();
+    private CharacterService service;
+    private ItemService itemService;
+    private UserService userService;
 
     @Autowired
-    private final ItemService serv2 = new ItemService();
-
+    public CharactersController(CharacterService characterService, ItemService itemService,
+                                UserService userService) {
+        this.service = characterService;
+        this.itemService = itemService;
+        this.userService = userService;
+    }
     @GetMapping("/characters")
 
-    public Map<StatisticsNamesEnum, List<ItemStatisticsObject>> findAll() {
-        List<ItemStatisticsObject> items = new ArrayList<>();
-//        ItemStatisticsObject minDamageStat = new ItemStatisticsObject(StatisticsNamesEnum.MIN_DAMAGE,
-//                20, ItemStatisticsObject.ValueType.ABSOLUTE);
-//
-//        ItemStatisticsObject maxDamageStat = new ItemStatisticsObject(StatisticsNamesEnum.MAX_DAMAGE,
-//                20, ItemStatisticsObject.ValueType.ABSOLUTE);
-//        items.add(minDamageStat);
-//        items.add(maxDamageStat);
-//        this.serv2.create(new Item("name", "desc",
-//                12, 23000, ItemTypeEnum.GLOVES, ItemRarityEnum.RARE,
-//                items));
-        Optional<Item> item = this.serv2.findOne("65abf3dc53869121ddd3194a");
-
-        if(item.isPresent()) {
-           return item.get().getStatisticsByName();
-        }
-        return null;
-        //        return this.service.findAll();
+    public List<Character> findAll() {
+              return this.service.findAll();
     }
 
-    @PostMapping("/characters")
-    public Character create(){
-        return service.create(new Character());
+    @PostMapping("/characters/{userId}")
+    public Character create(@PathVariable String userId){
+        //userID later from as loggedin
+        Optional<User> user = this.userService.findOneById(userId);
+        return user.map(value -> service.create(value)).orElse(null);
+
     }
 
-    @PostMapping("/characters-debug")
-    public Character createDebug(){
-        return service.create(new Character(50, 20L, 50));
+    @PostMapping("/characters-debug/{userId}")
+    public Character createDebug(@PathVariable String userId){
+        //userID later from as logged in
+        Optional<User> user = this.userService.findOneById(userId);
+        return user.map(value -> service.createDebugCharacter(
+                value,
+                RandomUtils.getRandomValueWithinRange(100,2000),
+                RandomUtils.getRandomValueWithinRange(100,20000),
+                RandomUtils.getRandomValueWithinRange(1,55),
+                RandomUtils.getRandomValueWithinRange(1,6),
+                RandomUtils.getRandomValueWithinRange(1,32),
+                RandomUtils.getRandomValueWithinRange(2333,2555))).orElse(null);
+
     }
-
-
-
     @GetMapping("/characters/statistics/{name}/effective-value")
         public int getEffectiveValueByStatName(@PathVariable BaseStatisticsNamesEnum name) {
             Optional<Character> foundChar = service.findOne();
 
-        return foundChar.map(character -> character.getBaseStatistics().
+        return foundChar.map(character -> character.getStatistics().
                 get(name).getEffectiveValue()).orElse(0);
 
     }
@@ -70,10 +66,26 @@ public class CharactersController {
     public Optional<BaseStatisticObject> getCharacterStats(@PathVariable BaseStatisticsNamesEnum name) {
         Optional<Character> foundChar = service.findOne();
 
-        return foundChar.map(character -> character.getBaseStatistics().get(name));
+        return foundChar.map(character -> character.getStatistics().get(name));
 
 
     }
+    @PostMapping("/characters/equip/{itemId}/{slot}")
+    public boolean equipCharacterItem(
+            @PathVariable String itemId,
+            @PathVariable CharacterEquipmentFieldsEnum slot
+    ) {
+        Optional<Item> itemToEquip = this.itemService.findOne(itemId);
+        return itemToEquip.filter(item -> this.service.equipItem("65aec1d2dc2f3d1083700038",slot, item)).isPresent();
+    }
 
+    @PostMapping("/characters/un-equip/{slot}")
+    public Item unEquipCharacterItem(
+            @PathVariable CharacterEquipmentFieldsEnum slot,
+            @PathVariable ItemTypeEnum itemType
+    ) {
+
+        return this.service.unequipItem("65aec1d2dc2f3d1083700038", slot);
+    }
 
 }

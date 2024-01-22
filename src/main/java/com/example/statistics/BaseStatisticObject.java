@@ -24,7 +24,6 @@ public class BaseStatisticObject extends  StatisticObject<BaseStatisticsNamesEnu
 
     public int getEffectiveValue (){
         int effectiveValue = value + bonus;
-
         return Math.min(effectiveValue, max);
     }
 

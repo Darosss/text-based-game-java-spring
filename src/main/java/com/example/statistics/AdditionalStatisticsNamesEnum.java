@@ -1,6 +1,6 @@
 package com.example.statistics;
 
-public enum StatisticsNamesEnum {
+public enum AdditionalStatisticsNamesEnum {
     MIN_DAMAGE("Min damage"),
     MAX_DAMAGE("Max damage"),
     ARMOR("Armor");
@@ -10,7 +10,7 @@ public enum StatisticsNamesEnum {
     private final String displayName;
 
     public String getDisplayName(){ return displayName; }
-    StatisticsNamesEnum(String displayName) {
+    AdditionalStatisticsNamesEnum(String displayName) {
         this.displayName = displayName;
     }
 }

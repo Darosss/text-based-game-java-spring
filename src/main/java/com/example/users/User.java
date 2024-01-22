@@ -22,6 +22,8 @@ public class User {
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
 
+    public User() {    }
+
     public User(CreateUserDTO data) {
        this.username = data.getUsername();
        this.password = data.getPassword();
