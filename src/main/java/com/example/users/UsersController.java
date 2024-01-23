@@ -1,20 +1,21 @@
 package com.example.users;
 
+import dev.morphia.query.Query;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 public class UsersController {
 
-    private static final String template = "Hello, $s!";
-    private final AtomicLong counter = new AtomicLong();
-
+    private final UserService service;
     @Autowired()
-    private final UserService service = new UserService();
+    UsersController(UserService service) {
+        this.service = service;
+    }
 
     @GetMapping("/users")
     public List<User> findAll() {

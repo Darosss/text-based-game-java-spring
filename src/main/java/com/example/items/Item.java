@@ -5,21 +5,23 @@ import com.example.items.statistics.ItemBaseStatisticsMap;
 import com.example.items.statistics.ItemStatisticsObject;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.Document;
+import com.example.users.User;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Reference;
+import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 
-@Document(collection = "items")
+@Entity("items")
 public class Item {
 
     @Id
-    private String id;
+    private ObjectId id;
 
-    private String userId;
+   @Reference(idOnly = true, lazy = true)
+    private User userId;
     private String name;
 
     private String description;
@@ -39,9 +41,7 @@ public class Item {
     private ItemAdditionalStatisticsMap additionalStatistics = new ItemAdditionalStatisticsMap(new HashMap<>());
 
 
-    @CreatedDate
     private LocalDateTime createdAt;
-    @LastModifiedDate
     private LocalDateTime updatedAt;
 
 
@@ -106,22 +106,22 @@ public class Item {
 
     public float getWeight() { return weight; }
 
-    public String getUserId() {
+    public User getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(User userId) {
         this.userId = userId;
     }
-    public ItemAdditionalStatisticsMap getAdditionalStatistics() {
-        return additionalStatistics;
-    }
+//    public ItemAdditionalStatisticsMap getAdditionalStatistics() {
+//        return additionalStatistics;
+//    }
 
-    public ItemStatisticsObject<BaseStatisticsNamesEnum> getStatisticsByName(BaseStatisticsNamesEnum name) {
+    public ItemStatisticsObject getStatisticsByName(BaseStatisticsNamesEnum name) {
         return statistics.getStatisticsMap().get(name);
     }
 
-    public ItemStatisticsObject<AdditionalStatisticsNamesEnum> getStatisticsByName(AdditionalStatisticsNamesEnum name) {
+    public ItemStatisticsObject getStatisticsByName(AdditionalStatisticsNamesEnum name) {
         return additionalStatistics.getStatisticsMap().get(name);
     }
 

@@ -7,10 +7,7 @@ import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.utils.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -44,12 +41,13 @@ public class ItemDebugDataGeneratorController {
         values = list.toArray(new BaseStatisticsNamesEnum[0]);
 
         for (int i = 0; i < Math.min(count, values.length); i++){
-            ItemStatisticsObject<BaseStatisticsNamesEnum> statToAdd =
-                    new ItemStatisticsObject<BaseStatisticsNamesEnum>
-                            (values[i],
-                                   RandomUtils.getRandomValueWithinRange(1,150), getRandomItemValueType());
+            ItemStatisticsObject statToAdd =
+                    new ItemStatisticsObject(
+                            values[i].getDisplayName(),
+                            RandomUtils.getRandomValueWithinRange(1,150),
+                            getRandomItemValueType());
 
-            baseStats.addStatistic(values[i], statToAdd);
+            baseStats.addStatistic(values[i].getDisplayName(), statToAdd);
         }
 
         return baseStats;
@@ -63,11 +61,10 @@ public class ItemDebugDataGeneratorController {
         values = list.toArray(new AdditionalStatisticsNamesEnum[0]);
 
         for (int i = 0; i < Math.min(count, values.length); i++){
-            ItemStatisticsObject<AdditionalStatisticsNamesEnum> statToAdd =
-                    new ItemStatisticsObject<AdditionalStatisticsNamesEnum>
-                            (values[i],
-                                    RandomUtils.getRandomValueWithinRange(1,150), getRandomItemValueType());
-
+            ItemStatisticsObject statToAdd =new ItemStatisticsObject(
+                    values[i].getDisplayName(),
+                    RandomUtils.getRandomValueWithinRange(1,150),
+                    getRandomItemValueType());
             additionalStats.addStatistic(values[i], statToAdd);
         }
 
@@ -104,6 +101,11 @@ public class ItemDebugDataGeneratorController {
         Random random = new Random();
         ItemRarityEnum[] values =ItemRarityEnum.values();
         return values[random.nextInt(values.length)];
+    }
+
+    @GetMapping("items/")
+    public List<Item> getItems(){
+        return service.findAll();
     }
 
     @PostMapping("items/debug/create-with-random-data/{countOfItems}/{baseStatsCount}/{additionalStatsCount}")

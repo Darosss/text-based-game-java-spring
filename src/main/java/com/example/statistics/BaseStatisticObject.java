@@ -1,5 +1,9 @@
 package com.example.statistics;
 
+
+import dev.morphia.annotations.ExternalEntity;
+
+@ExternalEntity(target = BaseStatisticObject.class)
 public class BaseStatisticObject extends  StatisticObject<BaseStatisticsNamesEnum>{
     private int bonus = 0;
     private int max;

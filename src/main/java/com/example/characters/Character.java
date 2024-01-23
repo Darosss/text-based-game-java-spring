@@ -5,34 +5,34 @@ import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticObject;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+import com.fasterxml.jackson.annotation.*;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Reference;
+import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
 
-@Document(collection= "characters")
+@Entity("characters")
 public class Character {
     @Id
-    private String id;
+    private ObjectId id;
     private Integer level = 0;
     private Map<BaseStatisticsNamesEnum, BaseStatisticObject> statistics;
     private Map<AdditionalStatisticsNamesEnum, AdditionalStatisticObject> additionalStatistics;
 
-    @DBRef
+    @Reference(idOnly = true, lazy=true)
     private User user;
-    @DBRef
+
+    @JsonIgnoreProperties("character")
+    @Reference
     private CharacterEquipment equipment;
     private Long experience = 0L;
 
-    @CreatedDate
     private LocalDateTime createdAt;
-    @LastModifiedDate
     private LocalDateTime updatedAt;
 
     public Character() {}
@@ -91,7 +91,7 @@ public class Character {
                 '}';
     }
 
-    public String getId() {
+    public ObjectId getId() {
         return id;
     }
 

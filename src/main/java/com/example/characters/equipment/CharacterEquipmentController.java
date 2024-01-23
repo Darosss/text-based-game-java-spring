@@ -25,7 +25,10 @@ public class CharacterEquipmentController {
     @GetMapping("/equipment")
     public CharacterEquipment getCharacterEquipment() {
         Optional<CharacterEquipment> equipment = this.service.findOne();
+
         return equipment.orElse(null);
+
+
     }
     @GetMapping("/equip/{slot}")
     public ResponseEntity<Item> getCharacterEquipment(@PathVariable CharacterEquipmentFieldsEnum slot) {

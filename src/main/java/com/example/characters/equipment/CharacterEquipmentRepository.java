@@ -12,7 +12,5 @@ public interface CharacterEquipmentRepository extends MongoRepository<CharacterE
     @Override
     Optional<CharacterEquipment> findById(@NotNull String id);
 
-
-
 }
 

@@ -1,21 +1,34 @@
 package com.example.users;
 
+import com.example.characters.Character;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Reference;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.annotation.Version;
-import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-@Document(collection= "users")
+@Entity("users")
 public class User {
     @Id
-    private String id;
+    private ObjectId id;
     private String username;
     private String password;
-
     private String email;
+    private int maxCharactersPerUser = 4;
 
+    @Reference(ignoreMissing = true, lazy = true)
+    @JsonIgnoreProperties("character")
+    private HashSet<Character> characters;
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
@@ -29,7 +42,11 @@ public class User {
        this.password = data.getPassword();
        this.email = data.getEmail();
        this.lastLogin = LocalDateTime.now();
+       this.characters = new HashSet<>();
     }
+
+    public ObjectId getId() { return id; }
+
     public void setPassword(String password) {
         this.password = password;
     }
@@ -72,6 +89,21 @@ public class User {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public HashSet<Character> getCharacters() {
+        return characters;
+    }
+
+    public void setCharacters(HashSet<Character> characters) {
+        this.characters = characters;
+    }
+
+    public void addCharacter(Character character){
+        if(this.characters == null) this.characters = new HashSet<>();
+        if(characters.size() >= maxCharactersPerUser) return;
+
+        this.characters.add(character);
     }
 
     @Override

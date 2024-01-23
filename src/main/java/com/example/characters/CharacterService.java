@@ -5,32 +5,36 @@ import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.characters.equipment.EquipmentService;
 import com.example.items.Item;
 import com.example.users.User;
+import dev.morphia.Datastore;
+import dev.morphia.query.filters.Filters;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class CharacterService {
-    private CharacterRepository repository;
+    private Datastore datastore;
     private EquipmentService equipmentService;
 
     @Autowired
-    public CharacterService(CharacterRepository repository, EquipmentService equipmentService) {
-        this.repository = repository;
+    public CharacterService(Datastore datastore, EquipmentService equipmentService) {
+        this.datastore = datastore;
         this.equipmentService = equipmentService;
     }
 
     public List<Character> findAll() {
-        return repository.findAll();
+        return datastore.find(Character.class).stream().toList();
     }
 
     public Character create(User user) {
          CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
         Character character = new Character(user, equipment);
-        Character savedCharacter = this.repository.save(character);
+        Character savedCharacter = datastore.save(character);
         equipment.setCharacter(savedCharacter);
         this.equipmentService.update(equipment);
 
@@ -44,8 +48,9 @@ public class CharacterService {
     ) {
         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
-        Character character = new Character(user, equipment,health, exp, attack, defense, agility, maxHealth);
-        Character savedCharacter = this.repository.save(character);
+        Character character = new Character(user, equipment, health, exp, attack, defense, agility, maxHealth);
+        Character savedCharacter = datastore.save(character);
+
         equipment.setCharacter(savedCharacter);
         this.equipmentService.update(equipment);
 
@@ -59,7 +64,6 @@ public class CharacterService {
             boolean equipped = equipment.equipItem(slot, item);
             if(equipped) {
                 this.equipmentService.update(equipment);
-
                 return true;
             }
         }
@@ -78,12 +82,11 @@ public class CharacterService {
 
 
     public Optional<Character> findById(String id) {
-        return repository.findById(id);
+        return Optional.ofNullable(datastore.find(Character.class).filter(Filters.eq("id", new ObjectId(id))).first());
     }
 
-    public Optional<Character> findOne(){
-
-        return Optional.ofNullable(repository.findAll().get(0));
+    public Character findOne(){
+        return datastore.find(Character.class).first();
     }
 
 }

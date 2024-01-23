@@ -1,5 +1,7 @@
 package com.example.statistics;
 
+import dev.morphia.annotations.ExternalEntity;
+
 public abstract class StatisticObject<NameType> {
     protected NameType name;
     protected int value;

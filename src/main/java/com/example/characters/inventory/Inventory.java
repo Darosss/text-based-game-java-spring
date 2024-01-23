@@ -2,22 +2,23 @@ package com.example.characters.inventory;
 
 import com.example.items.Item;
 import com.example.users.User;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.mapping.DBRef;
-import org.springframework.data.mongodb.core.mapping.Document;
+import dev.morphia.annotations.Entity;
+import dev.morphia.annotations.Id;
+import dev.morphia.annotations.Reference;
+import org.bson.types.ObjectId;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Document(collection = "characters_inventories")
+@Entity("characters_inventories")
 public class Inventory {
     @Id
-    private String id;
+    private ObjectId id;
 
-    @DBRef
+    @Reference
     private User user;
 
-    @DBRef
+    @Reference
     private List<Item> items;
     private int maxItems;
     private float maxWeight;
