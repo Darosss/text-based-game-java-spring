@@ -1,5 +1,6 @@
 package com.example.characters;
 
+import com.example.auth.SecuredRestController;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.items.*;
 import com.example.statistics.BaseStatisticObject;
@@ -9,12 +10,11 @@ import com.example.users.UserService;
 import com.example.utils.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.swing.text.html.Option;
 import java.util.*;
 
+
 @RestController
-public class CharactersController {
+public class CharactersController implements SecuredRestController {
     private CharacterService service;
     private ItemService itemService;
     private UserService userService;

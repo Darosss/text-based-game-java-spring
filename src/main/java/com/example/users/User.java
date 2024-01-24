@@ -1,10 +1,8 @@
 package com.example.users;
 
+import com.example.auth.JwtTokenPayload;
 import com.example.characters.Character;
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -15,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @Entity("users")
 public class User {
@@ -24,6 +21,10 @@ public class User {
     private String username;
     private String password;
     private String email;
+    private boolean isActive = true;
+    private List<String> roles = new ArrayList<>();
+
+
     private int maxCharactersPerUser = 4;
 
     @Reference(ignoreMissing = true, lazy = true)
@@ -35,7 +36,7 @@ public class User {
     private LocalDateTime updatedAt;
     private LocalDateTime lastLogin;
 
-    public User() {    }
+    public User() {}
 
     public User(CreateUserDTO data) {
        this.username = data.getUsername();
@@ -43,9 +44,16 @@ public class User {
        this.email = data.getEmail();
        this.lastLogin = LocalDateTime.now();
        this.characters = new HashSet<>();
+       this.roles.add("USER");
+       this.isActive = true;
+
     }
 
     public ObjectId getId() { return id; }
+
+    public String getPassword() {
+        return password;
+    }
 
     public void setPassword(String password) {
         this.password = password;
@@ -106,6 +114,33 @@ public class User {
         this.characters.add(character);
     }
 
+    public boolean isActive() {
+        return isActive;
+    }
+
+    public void setActive(boolean active) {
+        isActive = active;
+    }
+
+    public List<String> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<String> roles) {
+        this.roles = roles;
+    }
+
+    public int getMaxCharactersPerUser() {
+        return maxCharactersPerUser;
+    }
+
+    public void setMaxCharactersPerUser(int maxCharactersPerUser) {
+        this.maxCharactersPerUser = maxCharactersPerUser;
+    }
+
+    public JwtTokenPayload getDetailsForToken(){
+        return new JwtTokenPayload(id.toString(), email, username);
+    }
     @Override
     public String toString() {
         return "User{" +

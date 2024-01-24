@@ -1,5 +1,6 @@
 package com.example.items;
 
+import com.example.auth.SecuredRestController;
 import com.example.items.statistics.ItemAdditionalStatisticsMap;
 import com.example.items.statistics.ItemBaseStatisticsMap;
 import com.example.items.statistics.ItemStatisticsObject;
@@ -18,7 +19,7 @@ import java.util.Random;
 //EASILY ADD RANDOM ITEMS
 //ALL METHODS PUBLIC FOR EASY DEBUG ACCESS
 @RestController
-public class ItemDebugDataGeneratorController {
+public class ItemDebugDataGeneratorController implements SecuredRestController {
     private ItemService service;
 
     @Autowired

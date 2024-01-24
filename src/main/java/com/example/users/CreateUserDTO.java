@@ -5,6 +5,11 @@ public class CreateUserDTO {
     private String password;
     private String email;
 
+    public CreateUserDTO(String email, String password) {
+        this.password = password;
+        this.email = email;
+    }
+
     public String getUsername(){
         return username;
     }

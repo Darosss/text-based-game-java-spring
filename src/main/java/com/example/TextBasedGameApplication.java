@@ -1,6 +1,11 @@
 package com.example;
 
 import io.github.cdimascio.dotenv.Dotenv;
+import io.swagger.v3.oas.annotations.OpenAPIDefinition;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeIn;
+import io.swagger.v3.oas.annotations.enums.SecuritySchemeType;
+import io.swagger.v3.oas.annotations.info.Info;
+import io.swagger.v3.oas.annotations.security.SecurityScheme;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.SpringApplication;
@@ -8,6 +13,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@OpenAPIDefinition(info = @Info(title = "Text based game api", version = "1.0", description = "Java game Kappa"))
+@SecurityScheme(
+		name = "bearerAuth",
+		scheme = "bearer",
+		bearerFormat = "JWT",
+		type = SecuritySchemeType.HTTP,
+		in = SecuritySchemeIn.HEADER)
 @SpringBootApplication
 public class TextBasedGameApplication {
 
@@ -19,5 +31,6 @@ public class TextBasedGameApplication {
 		Dotenv dotenv = Dotenv.configure().load();
 		SpringApplication.run(TextBasedGameApplication.class, args);
 	}
+
 
 }

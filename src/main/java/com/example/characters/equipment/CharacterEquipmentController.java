@@ -1,5 +1,6 @@
 package com.example.characters.equipment;
 
+import com.example.auth.SecuredRestController;
 import com.example.items.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,7 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Optional;
 
 @RestController
-public class CharacterEquipmentController {
+public class CharacterEquipmentController implements SecuredRestController {
     private EquipmentService service;
 
 
