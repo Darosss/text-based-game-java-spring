@@ -13,45 +13,39 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
 
-@RestController
+@RestController("equipment")
 public class CharacterEquipmentController implements SecuredRestController {
     private EquipmentService service;
-
 
     @Autowired
     public CharacterEquipmentController(EquipmentService equipmentService){
         this.service = equipmentService;
     }
 
-    @GetMapping("/equipment")
-    public CharacterEquipment getCharacterEquipment() {
-        Optional<CharacterEquipment> equipment = this.service.findOne();
-
-        return equipment.orElse(null);
-
-
-    }
-    @GetMapping("/equip/{slot}")
-    public ResponseEntity<Item> getCharacterEquipment(@PathVariable CharacterEquipmentFieldsEnum slot) {
-        Optional<CharacterEquipment> equipment = this.service.findOne();
+    @GetMapping("/get-character-equiped-item/debug/{equipmentId}/{slot}")
+    public ResponseEntity<Item> getCharacterEquipmentDebug(
+            @PathVariable String equipmentId,
+            @PathVariable CharacterEquipmentFieldsEnum slot) {
+        Optional<CharacterEquipment> equipment = this.service.findById(equipmentId);
         if(equipment.isPresent()){
             return ResponseEntity.status(200).body(equipment.get().getEquippedItemByField(slot));
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Not found eq");
 
     }
-
-    @PostMapping("/unequip/{equipmentId}/{slot}")
-    public Item unEquipBySlot(
+    @PostMapping("/unequip/debug/{equipmentId}/{slot}")
+    public Item unEquipBySlotDebug(
             @PathVariable String equipmentId,
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) {
-        try {
-            return this.service.unEquipItem(equipmentId, slot);
-        }catch(Exception exc){
-            throw exc;
-
-        }
+        return this.service.unEquipItem(equipmentId, slot);
     }
+    @GetMapping("/debug/get-random-equipment")
+    public CharacterEquipment getCharacterEquipment() {
+        Optional<CharacterEquipment> equipment = this.service.findOne();
+
+        return equipment.orElse(null);
+    }
+
 }
 

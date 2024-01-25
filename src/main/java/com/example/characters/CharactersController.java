@@ -1,5 +1,6 @@
 package com.example.characters;
 
+import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.items.*;
@@ -8,42 +9,61 @@ import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
 import com.example.users.UserService;
 import com.example.utils.RandomUtils;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 
-@RestController
+@RestController("characters")
 public class CharactersController implements SecuredRestController {
     private CharacterService service;
     private ItemService itemService;
+    private final AuthenticationFacade authenticationFacade;
     private UserService userService;
 
     @Autowired
     public CharactersController(CharacterService characterService, ItemService itemService,
-                                UserService userService) {
+                                UserService userService, AuthenticationFacade authenticationFacade) {
         this.service = characterService;
         this.itemService = itemService;
         this.userService = userService;
+        this.authenticationFacade = authenticationFacade;
     }
-    @GetMapping("/characters")
 
+    //Later for admins
+    @GetMapping("/")
     public List<Character> findAll() {
               return this.service.findAll();
     }
 
-    @PostMapping("/characters/{userId}")
-    public Character create(@PathVariable String userId){
-        //userID later from as loggedin
+    @GetMapping("/your-characters")
+    public List<Character> findYourCharacters() throws Exception {
+        return this.service.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
+    }
 
+    @PostMapping("/create")
+    public Character create() throws Exception {
+
+        Optional<User> user = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
+
+        if(user.isPresent()) {
+            User userInst = user.get();
+            Character createdChar = service.create(user.get());
+            userInst.addCharacter(createdChar);
+            this.userService.update(userInst);
+        }
+        return null;
+    }
+    @PostMapping("/debug/create-empty-char/{userId}")
+    public Character create(@PathVariable String userId){
         Optional<User> user = this.userService.findOneById(userId);
         return user.map(value -> service.create(value)).orElse(null);
     }
-
-    @PostMapping("/characters-debug/{userId}")
-    public Character createDebug(@PathVariable String userId){
+    @PostMapping("/debug/create-with-random-stats")
+    public Character createDebug() throws Exception {
         //userID later from as logged in
-        Optional<User> foundUser = this.userService.findOneById(userId);
+        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
         if(foundUser.isPresent()) {
             User userInst = foundUser.get();
             Character createdChar = service.createDebugCharacter(
@@ -61,7 +81,7 @@ public class CharactersController implements SecuredRestController {
         }
         return null;
     }
-    @GetMapping("/characters/statistics/{name}/effective-value")
+    @GetMapping("/statistics/{name}/effective-value")
         public int getEffectiveValueByStatName(@PathVariable BaseStatisticsNamesEnum name) {
             Character foundChar = service.findOne();
 
@@ -69,7 +89,7 @@ public class CharactersController implements SecuredRestController {
 
     }
 
-    @GetMapping("/characters/statistics/{name}")
+    @GetMapping("/statistics/{name}")
     public BaseStatisticObject getCharacterStats(@PathVariable BaseStatisticsNamesEnum name) {
         Character foundChar = service.findOne();
         if(foundChar == null) return null;
@@ -78,24 +98,38 @@ public class CharactersController implements SecuredRestController {
 
 
     }
-    @PostMapping("/characters/equip/{characterId}/{itemId}/{slot}")
+    @PostMapping("/equip/{characterId}/{itemId}/{slot}")
     public boolean equipCharacterItem(
             @PathVariable String characterId,
             @PathVariable String itemId,
             @PathVariable CharacterEquipmentFieldsEnum slot
-    ) {
+    ) throws Exception {
+        String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<Item> itemToEquip = this.itemService.findOne(itemId);
-        return itemToEquip.filter(item -> this.service.equipItem(characterId, slot, item)).isPresent();
+        Optional<Character> foundCharacter = this.service.findById(characterId);
+        if(foundCharacter.isPresent() &&
+                foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId))
+        )
+        {
+            return itemToEquip.filter(item -> this.service.equipItem(characterId, slot, item)).isPresent();
+        }
+
+        return false;
     }
 
-    @PostMapping("/characters/un-equip/{characterId}/{slot}")
+    @PostMapping("/un-equip/{characterId}/{slot}")
     public Item unEquipCharacterItem(
             @PathVariable String characterId,
-            @PathVariable CharacterEquipmentFieldsEnum slot,
-            @PathVariable ItemTypeEnum itemType
-    ) {
-
-        return this.service.unequipItem(characterId, slot);
+            @PathVariable CharacterEquipmentFieldsEnum slot
+    ) throws Exception {
+        String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
+        Optional<Character> foundCharacter = this.service.findById(characterId);
+        if(foundCharacter.isPresent() &&
+                foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
+        {
+            return this.service.unequipItem(characterId, slot);
+        }
+        return null;
     }
 
 }

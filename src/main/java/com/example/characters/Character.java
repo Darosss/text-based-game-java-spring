@@ -122,6 +122,8 @@ public class Character {
     public CharacterEquipment getEquipment() {
         return equipment;
     }
-
+    public User getUser() {
+        return user;
+    }
 
 }

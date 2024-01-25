@@ -11,7 +11,6 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,6 +27,10 @@ public class CharacterService {
 
     public List<Character> findAll() {
         return datastore.find(Character.class).stream().toList();
+    }
+
+    public List<Character> findUserCharacters(String userId) {
+        return datastore.find(Character.class).filter(Filters.eq("user", new ObjectId(userId))).stream().toList();
     }
 
     public Character create(User user) {
@@ -75,7 +78,10 @@ public class CharacterService {
         Optional<Character> character = this.findById(characterId);
         if(character.isPresent()){
             CharacterEquipment equipment = character.get().getEquipment();
-            return equipment.unequipItem(slot);
+            Item unequipedItem = equipment.unequipItem(slot);
+            this.equipmentService.update(equipment);
+            return unequipedItem;
+
         }
         return null;
     }
