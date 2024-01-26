@@ -23,10 +23,24 @@ public class BaseStatisticObject extends  StatisticObject<BaseStatisticsNamesEnu
         this.max = value * 2;
     }
 
+
+
     @Override
     public void setValue(int newValue) {
         super.setValue(newValue);
         this.max=newValue * 2;
+        this.updateEffectiveValue();
+    }
+
+    public void addToValue(int value){
+        this.value += value;
+        this.max = this.value * 2;
+        this.updateEffectiveValue();
+    }
+    public void subtractFromValue(int value){
+        this.value -= value;
+        this.max = this.value * 2;
+        this.updateEffectiveValue();
     }
 
     public int getEffectiveValue (){

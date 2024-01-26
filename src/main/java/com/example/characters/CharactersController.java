@@ -124,12 +124,46 @@ public class CharactersController implements SecuredRestController {
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<Character> foundCharacter = this.service.findById(characterId);
-        if(foundCharacter.isPresent() &&
-                foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
-        {
+            if(foundCharacter.isPresent() &&
+                    foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
+            {
             return this.service.unequipItem(characterId, slot);
         }
         return null;
     }
 
+
+    @PatchMapping("/train-statistic/{statisticName}/{addValue}")
+    public boolean TrainStatistic(@PathVariable BaseStatisticsNamesEnum statisticName,
+                                  @PathVariable int addValue
+                                  ) throws Exception {
+        String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
+        Optional<Character> foundCharacter = this.service.findOneByUserId(loggedUserId);
+        if(foundCharacter.isPresent() &&
+                foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
+        {
+            Character characterInst = foundCharacter.get();
+            characterInst.getStatistics().get(statisticName).addToValue(addValue);
+            this.service.update(characterInst);
+            return true;
+        }
+        return false;
+    }
+
+    @PatchMapping("/debug/subtract-statistic/{statisticName}/{subtractValue}")
+    public boolean DebugSubtractTrainStatistic(@PathVariable BaseStatisticsNamesEnum statisticName,
+                                  @PathVariable int subtractValue
+    ) throws Exception {
+        String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
+        Optional<Character> foundCharacter = this.service.findOneByUserId(loggedUserId);
+        if(foundCharacter.isPresent() &&
+                foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
+        {
+            Character characterInst = foundCharacter.get();
+            characterInst.getStatistics().get(statisticName).subtractFromValue(subtractValue);
+            this.service.update(characterInst);
+            return true;
+        }
+        return false;
+    }
 }

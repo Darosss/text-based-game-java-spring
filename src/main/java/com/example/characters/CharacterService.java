@@ -106,6 +106,9 @@ public class CharacterService {
     public Optional<Character> findById(String id) {
         return Optional.ofNullable(datastore.find(Character.class).filter(Filters.eq("id", new ObjectId(id))).first());
     }
+    public Optional<Character> findOneByUserId(String userId) {
+        return Optional.ofNullable(datastore.find(Character.class).filter(Filters.eq("user", new ObjectId(userId))).first());
+    }
 
     public Character findOne(){
         return datastore.find(Character.class).first();
