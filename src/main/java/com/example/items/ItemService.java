@@ -1,19 +1,15 @@
 package com.example.items;
 
-import com.example.items.statistics.ItemAdditionalStatisticsMap;
-import com.example.items.statistics.ItemBaseStatisticsMap;
-import com.example.users.User;
 import dev.morphia.Datastore;
+import dev.morphia.DeleteOptions;
 import dev.morphia.query.filters.Filters;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
-import static com.mongodb.client.model.Filters.eq;
 @Service
 public class ItemService {
     private final Datastore datastore;
@@ -33,18 +29,12 @@ public class ItemService {
         return datastore.find(Item.class).stream().toList();
     }
 
-    public Item create(
-            String name, String desc, int level, int value, ItemTypeEnum itemType,
-            ItemRarityEnum itemRarity, float weight, ItemBaseStatisticsMap statistics, ItemAdditionalStatisticsMap additionalStats
-    ) {
-        Item newItem = new Item(
-                name, desc, level,
-                value, itemType, itemRarity,
-                weight,
-                statistics, additionalStats
-        );
-        return datastore.save(newItem);
+    public Item create(Item item) {
+        return datastore.save(item);
 
+    };
+    public List<Item> create(List<Item> item) {
+        return datastore.save(item);
     };
 
     public Optional<Item> findItemByItemType(ItemTypeEnum type) {
@@ -52,6 +42,8 @@ public class ItemService {
     }
 
     public void removeAllItems(){
-        datastore.delete(Item.class);
+        datastore
+                .find(Item.class)
+                .delete(new DeleteOptions().multi(true));
     }
 }

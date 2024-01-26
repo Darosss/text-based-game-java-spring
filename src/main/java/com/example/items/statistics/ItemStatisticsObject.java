@@ -9,19 +9,19 @@ import java.util.Map;
 
 @ExternalEntity(target = ItemStatisticsObject.class)
 public class ItemStatisticsObject extends StatisticObject<String> {
-    private ValueType valueType;
+    private float percentageValue = 0f;
     public ItemStatisticsObject(){};
-    public ItemStatisticsObject(String name, Integer value, ValueType valueType) {
+    public ItemStatisticsObject(String name, Integer value, float percentageValue) {
         super(name, value);
-        this.valueType = valueType;
+        this.percentageValue = percentageValue;
     }
 
-    public ValueType getValueType() {
-        return valueType;
+    public float getPercentageValue() {
+        return percentageValue;
     }
 
-    public enum ValueType {
-        ABSOLUTE, PERCENTAGE
+    public void setPercentageValue(float percentageValue) {
+        this.percentageValue = percentageValue;
     }
 }
 

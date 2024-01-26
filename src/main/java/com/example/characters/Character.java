@@ -1,5 +1,6 @@
 package com.example.characters;
 import com.example.characters.equipment.CharacterEquipment;
+import com.example.items.Item;
 import com.example.statistics.AdditionalStatisticObject;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticObject;
@@ -80,6 +81,38 @@ public class Character {
         this.user = user;
     }
 
+    public void calculateStatisticByItem(Item item, boolean isEquip){
+        item.getStatistics().getStatisticsMap().forEach((k, v)->{
+                BaseStatisticsNamesEnum castedKey  = BaseStatisticsNamesEnum.valueOf(k);
+                BaseStatisticObject currentStat = this.statistics.get(castedKey);
+                    if (isEquip) {
+                        currentStat.addToBonusesAndCalculateEffVal(
+                                v.getValue(), v.getPercentageValue()
+                        );
+                    } else {
+                        currentStat.subtractFromBonusesAndCalculateEffVal(
+                                v.getValue(), v.getPercentageValue()
+                        );
+                    }
+                }
+        );
+
+        item.getAdditionalStatistics().getStatisticsMap().forEach((k, v)->{
+            AdditionalStatisticsNamesEnum castedKey  = AdditionalStatisticsNamesEnum.valueOf(k);
+                    AdditionalStatisticObject currentAdditionalStat = this.additionalStatistics.get(castedKey);
+                    if(isEquip){
+                        currentAdditionalStat.addToBonusesAndCalculateEffVal(
+                                v.getValue(), v.getPercentageValue()
+                        );
+                    }else{
+                        currentAdditionalStat.subtractFromBonusesAndCalculateEffVal(
+                                v.getValue(), v.getPercentageValue()
+                        );
+                    }
+                }
+        );
+
+    }
     @Override
     public String toString() {
         return "Character{" +

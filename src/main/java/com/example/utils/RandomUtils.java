@@ -17,4 +17,14 @@ public class RandomUtils {
         Random random = new Random();
         return Math.min(random.nextFloat() * (maxValue - minValue) + minValue, 1000.0f);
     }
+
+    public static <T> T getRandomItemFromArray(T[] array) {
+        Random random = new Random();
+        if (array == null || array.length == 0) {
+            throw new IllegalArgumentException("Array must not be null or empty");
+        }
+
+        int randomIndex = random.nextInt(array.length);
+        return array[randomIndex];
+    }
 }

@@ -8,17 +8,17 @@ import java.util.Map;
 
 @ExternalEntity(target = ItemAdditionalStatisticsMap.class)
 public non-sealed class ItemAdditionalStatisticsMap implements ItemStatisticsMap {
-    private Map<AdditionalStatisticsNamesEnum, ItemStatisticsObject> statisticsMap = new HashMap<>();
+    private Map<String, ItemStatisticsObject> statisticsMap = new HashMap<>();
 
     public ItemAdditionalStatisticsMap() {}
-    public ItemAdditionalStatisticsMap(Map<AdditionalStatisticsNamesEnum, ItemStatisticsObject> statisticsMap) {
+    public ItemAdditionalStatisticsMap(Map<String, ItemStatisticsObject> statisticsMap) {
         this.statisticsMap = statisticsMap;
     }
 
-    public Map<AdditionalStatisticsNamesEnum, ItemStatisticsObject> getStatisticsMap() {
+    public Map<String, ItemStatisticsObject> getStatisticsMap() {
         return statisticsMap;
     }
-    public void addStatistic(AdditionalStatisticsNamesEnum name, ItemStatisticsObject statistic){
+    public void addStatistic(String name, ItemStatisticsObject statistic){
         this.statisticsMap.put(name, statistic);
     }
 

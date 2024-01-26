@@ -25,6 +25,11 @@ public class CharacterService {
         this.equipmentService = equipmentService;
     }
 
+    //TODO: make update better later, for now w/e
+    public Character update(Character character) {
+        return datastore.save(character);
+    }
+
     public List<Character> findAll() {
         return datastore.find(Character.class).stream().toList();
     }
@@ -60,13 +65,18 @@ public class CharacterService {
         return savedCharacter;
     }
 
+
     public boolean equipItem(String characterId, CharacterEquipmentFieldsEnum slot, Item item) {
         Optional<Character> character = this.findById(characterId);
         if(character.isPresent()){
-            CharacterEquipment equipment = character.get().getEquipment();
+            Character characterInst = character.get();
+            CharacterEquipment equipment = characterInst.getEquipment();
             boolean equipped = equipment.equipItem(slot, item);
             if(equipped) {
                 this.equipmentService.update(equipment);
+
+                characterInst.calculateStatisticByItem(item, true);
+                this.update(characterInst);
                 return true;
             }
         }
@@ -77,10 +87,16 @@ public class CharacterService {
     public Item unequipItem(String characterId, CharacterEquipmentFieldsEnum slot) {
         Optional<Character> character = this.findById(characterId);
         if(character.isPresent()){
-            CharacterEquipment equipment = character.get().getEquipment();
+            Character characterInst = character.get();
+            CharacterEquipment equipment = characterInst.getEquipment();
             Item unequipedItem = equipment.unequipItem(slot);
             this.equipmentService.update(equipment);
-            return unequipedItem;
+            if(unequipedItem != null) {
+                characterInst.calculateStatisticByItem(unequipedItem, false);
+
+                this.update(characterInst);
+                return unequipedItem;
+            }
 
         }
         return null;

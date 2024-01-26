@@ -1,17 +1,28 @@
 package com.example.users;
 
+import com.example.users.inventory.Inventory;
+
 public class CreateUserDTO {
     private String username;
     private String password;
     private String email;
 
-    public CreateUserDTO(String email, String password) {
+    private Inventory inventory;
+
+    public CreateUserDTO(String email, String password, String username) {
         this.password = password;
         this.email = email;
+        this.username = username;
+    }
+    public CreateUserDTO(String email, String password, String username, Inventory inventory) {
+        this.password = password;
+        this.email = email;
+        this.inventory = inventory;
+        this.username = username;
     }
 
     public String getUsername(){
-        return username;
+            return username;
     }
     public String getPassword(){
         return password;
@@ -29,4 +40,13 @@ public class CreateUserDTO {
     public void setEmail(String email){
         this.email = email;
     }
+
+    public Inventory getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
+    }
 }
+

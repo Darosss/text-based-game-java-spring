@@ -2,6 +2,7 @@ package com.example.users;
 
 import com.example.auth.JwtTokenPayload;
 import com.example.characters.Character;
+import com.example.users.inventory.Inventory;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
@@ -23,12 +24,14 @@ public class User {
     private String email;
     private boolean isActive = true;
     private List<String> roles = new ArrayList<>();
-
+    @JsonIgnoreProperties("user")
+    @Reference
+    private Inventory inventory;
 
     private int maxCharactersPerUser = 4;
 
+    @JsonIgnoreProperties("user")
     @Reference(ignoreMissing = true, lazy = true)
-    @JsonIgnoreProperties("character")
     private HashSet<Character> characters;
     @CreatedDate
     private LocalDateTime createdAt;
@@ -46,7 +49,7 @@ public class User {
        this.characters = new HashSet<>();
        this.roles.add("USER");
        this.isActive = true;
-
+       this.inventory = data.getInventory();
     }
 
     public ObjectId getId() { return id; }
@@ -113,7 +116,13 @@ public class User {
 
         this.characters.add(character);
     }
+    public void setInventory(Inventory inventory) {
+        this.inventory = inventory;
+    }
 
+    public Inventory getInventory() {
+        return inventory;
+    }
     public boolean isActive() {
         return isActive;
     }
@@ -137,6 +146,8 @@ public class User {
     public void setMaxCharactersPerUser(int maxCharactersPerUser) {
         this.maxCharactersPerUser = maxCharactersPerUser;
     }
+
+
 
     public JwtTokenPayload getDetailsForToken(){
         return new JwtTokenPayload(id.toString(), email, username);

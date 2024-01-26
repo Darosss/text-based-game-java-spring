@@ -1,0 +1,57 @@
+{
+  "Enchanted Essence": {
+    "baseStatistics": {
+        "statisticsMap": {
+          "STRENGTH": {
+            "name": "Strength",
+            "value": 10,
+            "percentageValue": -10
+          },
+          "DEXTERITY": {
+            "name": "Dexterity",
+            "value": 10,
+            "percentageValue": 0
+          },
+          "INTELLIGENCE": {
+            "name": "Intelligence",
+            "value": 10,
+            "percentageValue": 0
+          },
+          "CONSTITUTION": {
+            "name": "Constitution",
+            "value": 10,
+            "percentageValue": 0
+          },
+          "CHARISMA": {
+            "name": "Charisma",
+            "value": -10,
+            "percentageValue": 2
+          },
+          "LUCK": {
+            "name": "Luck",
+            "value": 10,
+            "percentageValue": 0
+          }
+        }
+    },
+    "additionalStatistics": {
+        "statisticsMap": {
+          "MIN_DAMAGE": {
+            "name": "Min Damage",
+            "value": 5,
+            "percentageValue": 5
+          },
+          "MAX_DAMAGE": {
+            "name": "Max Damage",
+            "value": 10,
+            "percentageValue": 15
+          },
+          "ARMOR": {
+            "name": "Armor",
+            "value": -20,
+            "percentageValue": -10
+          }
+        }
+    }
+  }
+}
