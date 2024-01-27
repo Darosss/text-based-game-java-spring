@@ -14,13 +14,15 @@ import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
+
 @Component
 public class JwtUtil {
     Dotenv dotenv = Dotenv.load();
 
     //TODO: move to env
     private final String secretKey = dotenv.get("JWT_SECRET_KEY");
-    private long accessTokenValidity = 60*60*1000;
+    private long accessTokenValidity = Long.parseLong(Objects.requireNonNull(dotenv.get("JWT_TOKEN_VALIDITY_MS")));
     private final String TOKEN_HEADER = "Authorization";
     private final String TOKEN_PREFIX = "Bearer ";
 
