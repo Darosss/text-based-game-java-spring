@@ -1,11 +1,11 @@
 package com.example.statistics;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 public enum AdditionalStatisticsNamesEnum {
     MIN_DAMAGE("Min damage"),
+    MAX_HEALTH("Max health"),
     MAX_DAMAGE("Max damage"),
-    ARMOR("Armor");
+    ARMOR("Armor"),
+    INITIATIVE("Initiative");
 
 
 

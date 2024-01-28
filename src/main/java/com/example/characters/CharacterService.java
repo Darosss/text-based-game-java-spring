@@ -4,6 +4,7 @@ import com.example.characters.equipment.CharacterEquipment;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.characters.equipment.EquipmentService;
 import com.example.items.Item;
+import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
 import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -41,7 +43,7 @@ public class CharacterService {
     public Character create(User user) {
          CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
-        Character character = new Character(user, equipment);
+        Character character = new Character("Default character name",user, equipment);
         Character savedCharacter = datastore.save(character);
         equipment.setCharacter(savedCharacter);
         this.equipmentService.update(equipment);
@@ -50,13 +52,21 @@ public class CharacterService {
 
     }
     public Character createDebugCharacter(
-            User user,
-            int health, long exp, int attack,
-            int defense,int agility, int maxHealth
-    ) {
+            User user, int level,long experience,int basicStats,int armor,int minDmg,int maxDmg,int initiative, int maxHealth) {
+
         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
-        Character character = new Character(user, equipment, health, exp, attack, defense, agility, maxHealth);
+        Character character = new Character("User character debug", user, equipment,
+                level, experience,
+                Map.of(
+                        BaseStatisticsNamesEnum.STRENGTH, 20,
+                        BaseStatisticsNamesEnum.DEXTERITY, 20,
+                        BaseStatisticsNamesEnum.CHARISMA, 20,
+                        BaseStatisticsNamesEnum.CONSTITUTION, 20,
+                        BaseStatisticsNamesEnum.INTELLIGENCE, 20,
+                        BaseStatisticsNamesEnum.LUCK, 20
+                )
+                );
         Character savedCharacter = datastore.save(character);
 
         equipment.setCharacter(savedCharacter);

@@ -11,10 +11,11 @@ public class AdditionalStatisticObject extends StatisticObject<AdditionalStatist
     public AdditionalStatisticObject() {}
     public AdditionalStatisticObject(AdditionalStatisticsNamesEnum name, int value) {
         super(name, value);
+        this.updateEffectiveValue();
     }
     public AdditionalStatisticObject(AdditionalStatisticsNamesEnum name) {
         super(name, 0);
-
+        this.updateEffectiveValue();
     }
 
     public void addToBonusesAndCalculateEffVal (int bonus, float bonusPercentage) {
@@ -56,5 +57,27 @@ public class AdditionalStatisticObject extends StatisticObject<AdditionalStatist
 
     public void setEffectiveValue(int effectiveValue) {
         this.effectiveValue = effectiveValue;
+    }
+
+    public void setBonus(int bonus) {
+        this.bonus = bonus;
+    }
+
+    public void updateStatistic(int value, StatisticsUtils.StatisticUpdateType updateType) {
+        switch (updateType) {
+            case VALUE:
+                this.setValue(value);
+                break;
+            case BONUS:
+                this.setBonus(value);
+                break;
+            case PERCENTAGE_BONUS :
+                this.setBonusPercentage(value);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported update type: " + updateType);
+        }
+        this.updateEffectiveValue();
     }
 }

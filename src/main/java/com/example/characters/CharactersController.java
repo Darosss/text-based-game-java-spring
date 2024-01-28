@@ -68,12 +68,15 @@ public class CharactersController implements SecuredRestController {
             User userInst = foundUser.get();
             Character createdChar = service.createDebugCharacter(
                     userInst,
-                    RandomUtils.getRandomValueWithinRange(100, 2000),
-                    RandomUtils.getRandomValueWithinRange(100, 20000),
                     RandomUtils.getRandomValueWithinRange(1, 55),
-                    RandomUtils.getRandomValueWithinRange(1, 6),
+                    RandomUtils.getRandomValueWithinRange(4, 909),
+                    RandomUtils.getRandomValueWithinRange(4, 55),
+                    RandomUtils.getRandomValueWithinRange(1, 666),
                     RandomUtils.getRandomValueWithinRange(1, 32),
-                    RandomUtils.getRandomValueWithinRange(2333, 2555));
+                    RandomUtils.getRandomValueWithinRange(33, 50),
+                    RandomUtils.getRandomValueWithinRange(20, 50),
+                    RandomUtils.getRandomValueWithinRange(345, 900)
+                    );
 
             userInst.addCharacter(createdChar);
             this.userService.update(userInst);

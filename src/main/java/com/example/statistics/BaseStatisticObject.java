@@ -16,11 +16,13 @@ public class BaseStatisticObject extends  StatisticObject<BaseStatisticsNamesEnu
     public BaseStatisticObject(BaseStatisticsNamesEnum name) {
         super(name, 5);
         this.max = value * 2;
+        this.updateEffectiveValue();
     }
 
     public BaseStatisticObject(BaseStatisticsNamesEnum name, int value) {
         super(name, value);
         this.max = value * 2;
+        this.updateEffectiveValue();
     }
 
 
@@ -74,8 +76,6 @@ public class BaseStatisticObject extends  StatisticObject<BaseStatisticsNamesEnu
         this.updateEffectiveValue();
 
     }
-
-
     private void updateEffectiveValue() {
         int baseAndBonus = value + bonus;
         float percentageAdjust = (bonusPercentage / 100f);
@@ -100,6 +100,26 @@ public class BaseStatisticObject extends  StatisticObject<BaseStatisticsNamesEnu
 
     public void setBonusPercentage(float bonusPercentage) {
         this.bonusPercentage = bonusPercentage;
+    }
+
+
+    public void updateStatistic(int value, StatisticsUtils.StatisticUpdateType updateType) {
+        switch (updateType) {
+            case VALUE:
+                this.setValue(value);
+                break;
+            case BONUS:
+                this.setBonus(value);
+                break;
+            case PERCENTAGE_BONUS :
+                this.setBonusPercentage(value);
+                break;
+
+            default:
+                throw new IllegalArgumentException("Unsupported update type: " + updateType);
+        }
+
+        this.updateEffectiveValue();
     }
 
     @Override
