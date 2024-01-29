@@ -34,7 +34,7 @@ public class BattleManagerService {
         Map<ObjectId, BattleDetails> detailsMap = new HashMap<>();
         characters.values().forEach((charVal) -> {
             detailsMap.compute(charVal.getId(), (v, k) -> {
-                int heroInitiative = charVal.getAdditionalStatistics().get(AdditionalStatisticsNamesEnum.INITIATIVE).getEffectiveValue();
+                int heroInitiative = charVal.getStats().getAdditionalStatistics().get(AdditionalStatisticsNamesEnum.INITIATIVE).getEffectiveValue();
                 float percentAdjust = baseInitiativePerCycle * ((float)heroInitiative / 100);;
                 int initiativeWithPercent =baseInitiativePerCycle + (int)percentAdjust;
                 if(k==null) return new BattleDetails(initiativeWithPercent);
@@ -46,7 +46,7 @@ public class BattleManagerService {
 
         enemies.values().forEach((charVal) -> {
             detailsMap.compute(charVal.getId(), (v, k) -> {
-                int enemyInitiative = charVal.getAdditionalStatistics().get(AdditionalStatisticsNamesEnum.INITIATIVE).getEffectiveValue();
+                int enemyInitiative = charVal.getStats().getAdditionalStatistics().get(AdditionalStatisticsNamesEnum.INITIATIVE).getEffectiveValue();
                 float percentAdjust = baseInitiativePerCycle * ((float)enemyInitiative / 100);
                 int initiativeWithPercent = (baseInitiativePerCycle + (int)percentAdjust);
                 if(k==null) return new BattleDetails(initiativeWithPercent);
@@ -79,7 +79,7 @@ public class BattleManagerService {
             });
 
             if(!participantsTurn.isEmpty()){
-                System.out.println(turnCount+1 + "\u001B[0m" +"************* TURN STARTED *************");
+                System.out.println("\u001B[0m" + turnCount+1  +"************* TURN STARTED *************");
                 turnCount ++;
             }
             participantsTurn.forEach((id)->{
@@ -107,9 +107,7 @@ public class BattleManagerService {
 
 
     public String attackHero(BaseHero attacker, BaseHero defender){
-//        System.out.println("* "+attacker.getName() + " -  ATTACKED - " +  defender.getName());
         attacker.attack(defender);
-//        return "* "+attacker.getName() + " -  ATTACKED - " +  defender.getName();
         return "";
     }
 

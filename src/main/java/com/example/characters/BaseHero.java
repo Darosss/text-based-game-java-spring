@@ -11,20 +11,16 @@ public class BaseHero {
     protected Integer level = 1;
     protected Integer health = 1;
 
-    protected final Map<BaseStatisticsNamesEnum, BaseStatisticObject> statistics =
-            StatisticsUtils.generateDefaultHeroStatistics();
-    protected final Map<AdditionalStatisticsNamesEnum, AdditionalStatisticObject> additionalStatistics =
-            StatisticsUtils.generateDefaultHeroAdditionalStatistics();
-
-
+    protected final HeroStatisticsObject stats = new HeroStatisticsObject();
     protected void updateHealthBasedOnMaxHealth(){
-        this.health = this.additionalStatistics.get(AdditionalStatisticsNamesEnum.MAX_HEALTH).getEffectiveValue();
-        if(this.health <=0) this.health=1;
+        this.health = this.stats.getAdditionalStatistics().get(AdditionalStatisticsNamesEnum.MAX_HEALTH).getEffectiveValue();
     }
     public BaseHero(){};
     public BaseHero(String name) {
         this.name = name;
         this.level = 1;
+        //TODO: for now every hero has basic max 300 hp
+        this.stats.updateAdditionalStatistic(AdditionalStatisticsNamesEnum.MAX_HEALTH, 300, StatisticsUtils.StatisticUpdateType.VALUE);
         this.updateHealthBasedOnMaxHealth();
     }
     public BaseHero(String name, int level) {
@@ -55,14 +51,6 @@ public class BaseHero {
     protected void setHealth(Integer health) {
         this.health = health;
     }
-    public Map<BaseStatisticsNamesEnum, BaseStatisticObject> getStatistics() {
-        return statistics;
-    }
-
-    public Map<AdditionalStatisticsNamesEnum, AdditionalStatisticObject> getAdditionalStatistics() {
-        return additionalStatistics;
-    }
-
     public void setLevel(Integer level) {
         this.level = level;
     }
@@ -75,22 +63,18 @@ public class BaseHero {
         this.name = name;
     }
 
-    public void updateStatistic(BaseStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
-        this.statistics.get(statName).updateStatistic(value, updateType);
-    }
-    public void updateAdditionalStatistic(AdditionalStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
-        this.additionalStatistics.get(statName).updateStatistic(value, updateType);
-    }
-
     protected void setAdditionalStatisticsByNameIntegerMap(Map<AdditionalStatisticsNamesEnum, Integer> additionalStatistics, StatisticsUtils.StatisticUpdateType updateType){
-        additionalStatistics.forEach((k, v)-> this.updateAdditionalStatistic(k, v, updateType));
+        additionalStatistics.forEach((k, v)-> this.stats.updateAdditionalStatistic(k, v, updateType));
     }
     protected void setStatisticsByNameIntegerMap(Map<BaseStatisticsNamesEnum, Integer> statistics, StatisticsUtils.StatisticUpdateType updateType){
-        statistics.forEach((k, v)-> this.updateStatistic(k, v, updateType));
+        statistics.forEach((k, v)-> this.stats.updateStatistic(k, v, updateType));
+    }
+
+    public HeroStatisticsObject getStats() {
+        return stats;
     }
 
     public void attack(BaseHero target){
-
         System.out.println("Im attacking a " + target.getName());
         target.defend(this);
     }

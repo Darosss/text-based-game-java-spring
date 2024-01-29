@@ -4,130 +4,51 @@ package com.example.statistics;
 import dev.morphia.annotations.ExternalEntity;
 
 @ExternalEntity(target = BaseStatisticObject.class)
-public class BaseStatisticObject extends  StatisticObject<BaseStatisticsNamesEnum>{
-    private int bonus = 0;
-    private float bonusPercentage = 0;
-
-    private int effectiveValue;
-    private int max;
+public class BaseStatisticObject extends  CharacterStatisticObject<BaseStatisticsNamesEnum>{
+    private int max = 0;
 
     public BaseStatisticObject() {}
 
     public BaseStatisticObject(BaseStatisticsNamesEnum name) {
-        super(name, 5);
-        this.max = value * 2;
-        this.updateEffectiveValue();
+        super(name, 1);
     }
-
     public BaseStatisticObject(BaseStatisticsNamesEnum name, int value) {
         super(name, value);
-        this.max = value * 2;
-        this.updateEffectiveValue();
     }
 
+    public void setValue(int newValue) {
+        this.updateMaxProportion(newValue);
+        super.setValue(newValue);
+    }
 
+    protected int getCalculatedEffectiveValue() {
+        int calculatedEffective = super.getCalculatedEffectiveValue(
+            this.getValue() + this.getBonus()
+        );
+
+        return Math.min(calculatedEffective, max);
+    }
 
     @Override
-    public void setValue(int newValue) {
-        super.setValue(newValue);
-        this.max=newValue * 2;
-        this.updateEffectiveValue();
+    protected void updateEffectiveValue() {
+        this.setEffectiveValue(this.getCalculatedEffectiveValue());
     }
 
-    public void addToValue(int value){
-        this.value += value;
-        this.max = this.value * 2;
-        this.updateEffectiveValue();
-    }
-    public void subtractFromValue(int value){
-        this.value -= value;
-        this.max = this.value * 2;
-        this.updateEffectiveValue();
-    }
-
-    public int getEffectiveValue (){
-        return effectiveValue;
-    }
-
-
-    public int getBonus() {
-        return bonus;
-    }
-
-    public void setBonus(int bonus) {
-        this.bonus = bonus;
-    }
-
-    public void setEffectiveValue(int effectiveValue) {
-        this.effectiveValue = effectiveValue;
-    }
-
-    public void addToBonusesAndCalculateEffVal (int bonus, float bonusPercentage) {
-        this.bonus += bonus;
-        this.bonusPercentage += bonusPercentage;
-
-        this.updateEffectiveValue();
-
-    }
-    public void subtractFromBonusesAndCalculateEffVal (int bonus, float bonusPercentage) {
-        this.bonus -= bonus;
-        this.bonusPercentage -= bonusPercentage;
-
-        this.updateEffectiveValue();
-
-    }
-    private void updateEffectiveValue() {
-        int baseAndBonus = value + bonus;
-        float percentageAdjust = (bonusPercentage / 100f);
-
-        float calculatedPercentageValue =  ((value + bonus) * percentageAdjust);
-        if(baseAndBonus < 0 && percentageAdjust < 0) calculatedPercentageValue = -calculatedPercentageValue;
-
-        int calculatedEffective = (int) calculatedPercentageValue + baseAndBonus;
-        this.effectiveValue = Math.min(calculatedEffective, max);
-    }
     public int getMax() {
         return max;
     }
 
-    public void setMax(int max) {
-        this.max = max;
+    private void updateMaxProportion() {
+        this.max = value * 2;
     }
-
-    public float getBonusPercentage() {
-        return bonusPercentage;
-    }
-
-    public void setBonusPercentage(float bonusPercentage) {
-        this.bonusPercentage = bonusPercentage;
-    }
-
-
-    public void updateStatistic(int value, StatisticsUtils.StatisticUpdateType updateType) {
-        switch (updateType) {
-            case VALUE:
-                this.setValue(value);
-                break;
-            case BONUS:
-                this.setBonus(value);
-                break;
-            case PERCENTAGE_BONUS :
-                this.setBonusPercentage(value);
-                break;
-
-            default:
-                throw new IllegalArgumentException("Unsupported update type: " + updateType);
-        }
-
-        this.updateEffectiveValue();
+    private void updateMaxProportion(int newValue) {
+        this.max = newValue * 2;
     }
 
     @Override
     public String toString() {
         return "BaseStatisticObject{" +
-                "bonus=" + bonus +
-                ", max=" + max +
-                ", name=" + name +
+                "name=" + name +
                 ", value=" + value +
                 '}';
     }

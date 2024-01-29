@@ -4,9 +4,11 @@ import com.example.characters.equipment.CharacterEquipment;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.characters.equipment.EquipmentService;
 import com.example.items.Item;
+import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
 import dev.morphia.Datastore;
+import dev.morphia.DeleteOptions;
 import dev.morphia.query.filters.Filters;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,21 +54,17 @@ public class CharacterService {
 
     }
     public Character createDebugCharacter(
-            User user, int level,long experience,int basicStats,int armor,int minDmg,int maxDmg,int initiative, int maxHealth) {
+            User user, int level,long experience,
+            Map<BaseStatisticsNamesEnum, Integer> baseStatistic,
+            Map<AdditionalStatisticsNamesEnum, Integer> additionalStats
+            ) {
 
         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
         Character character = new Character("User character debug", user, equipment,
-                level, experience,
-                Map.of(
-                        BaseStatisticsNamesEnum.STRENGTH, 20,
-                        BaseStatisticsNamesEnum.DEXTERITY, 20,
-                        BaseStatisticsNamesEnum.CHARISMA, 20,
-                        BaseStatisticsNamesEnum.CONSTITUTION, 20,
-                        BaseStatisticsNamesEnum.INTELLIGENCE, 20,
-                        BaseStatisticsNamesEnum.LUCK, 20
-                )
+                level, experience, baseStatistic, additionalStats
                 );
+
         Character savedCharacter = datastore.save(character);
 
         equipment.setCharacter(savedCharacter);
@@ -75,16 +73,15 @@ public class CharacterService {
         return savedCharacter;
     }
 
-
     public boolean equipItem(String characterId, CharacterEquipmentFieldsEnum slot, Item item) {
         Optional<Character> character = this.findById(characterId);
+
         if(character.isPresent()){
             Character characterInst = character.get();
             CharacterEquipment equipment = characterInst.getEquipment();
             boolean equipped = equipment.equipItem(slot, item);
             if(equipped) {
                 this.equipmentService.update(equipment);
-
                 characterInst.calculateStatisticByItem(item, true);
                 this.update(characterInst);
                 return true;
@@ -93,7 +90,6 @@ public class CharacterService {
         return false;
 
     }
-
     public Item unequipItem(String characterId, CharacterEquipmentFieldsEnum slot) {
         Optional<Character> character = this.findById(characterId);
         if(character.isPresent()){
@@ -103,15 +99,12 @@ public class CharacterService {
             this.equipmentService.update(equipment);
             if(unequipedItem != null) {
                 characterInst.calculateStatisticByItem(unequipedItem, false);
-
                 this.update(characterInst);
                 return unequipedItem;
             }
-
         }
         return null;
     }
-
 
     public Optional<Character> findById(String id) {
         return Optional.ofNullable(datastore.find(Character.class).filter(Filters.eq("id", new ObjectId(id))).first());
@@ -124,4 +117,14 @@ public class CharacterService {
         return datastore.find(Character.class).first();
     }
 
+
+    public void removeAllCharactersAndEquipments(){
+        datastore
+                .find(Character.class)
+                .delete(new DeleteOptions().multi(true));
+
+        datastore
+                .find(CharacterEquipment.class)
+                .delete(new DeleteOptions().multi(true));
+    }
 }

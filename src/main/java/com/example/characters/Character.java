@@ -71,35 +71,22 @@ public class Character  extends BaseHero {
     }
 
     public void calculateStatisticByItem(Item item, boolean isEquip){
-        item.getStatistics().getStatisticsMap().forEach((k, v)->{
-                BaseStatisticsNamesEnum castedKey  = BaseStatisticsNamesEnum.valueOf(k);
-                BaseStatisticObject currentStat = this.statistics.get(castedKey);
-                    if (isEquip) {
-                        currentStat.addToBonusesAndCalculateEffVal(
-                                v.getValue(), v.getPercentageValue()
-                        );
-                    } else {
-                        currentStat.subtractFromBonusesAndCalculateEffVal(
-                                v.getValue(), v.getPercentageValue()
-                        );
-                    }
-                }
-        );
-
-        item.getAdditionalStatistics().getStatisticsMap().forEach((k, v)->{
+           item.getAdditionalStatistics().getStatisticsMap().forEach((k, v)->{
             AdditionalStatisticsNamesEnum castedKey  = AdditionalStatisticsNamesEnum.valueOf(k);
-                    AdditionalStatisticObject currentAdditionalStat = this.additionalStatistics.get(castedKey);
-                    if(isEquip){
-                        currentAdditionalStat.addToBonusesAndCalculateEffVal(
-                                v.getValue(), v.getPercentageValue()
-                        );
-                    }else{
-                        currentAdditionalStat.subtractFromBonusesAndCalculateEffVal(
-                                v.getValue(), v.getPercentageValue()
-                        );
-                    }
-                }
-        );
+            if(isEquip){
+                this.stats.updateAdditionalStatisticsOnEquip(castedKey, v.getValue(), v.getPercentageValue());
+            } else {
+                this.stats.updateAdditionalStatisticsOnUnEquip(castedKey, v.getValue(), v.getPercentageValue());
+            }
+        });
+        item.getStatistics().getStatisticsMap().forEach((k, v)->{
+            BaseStatisticsNamesEnum castedKey  = BaseStatisticsNamesEnum.valueOf(k);
+            if (isEquip) {
+                this.stats.updateStatisticsOnEquip(castedKey, v.getValue(), v.getPercentageValue());
+            } else {
+                this.stats.updateStatisticsOnUnEquip(castedKey, v.getValue(), v.getPercentageValue());
+            }
+        });
     }
 
     @Override

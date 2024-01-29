@@ -23,4 +23,12 @@ public abstract class StatisticObject<NameType> {
     public void setValue(int value) {
         this.value = value;
     }
+    public void increaseValue(int value) {
+        this.value += value;
+    }
+    public void decreaseValue(int value) {
+        this.value -= value;
+    }
+
+
 }
