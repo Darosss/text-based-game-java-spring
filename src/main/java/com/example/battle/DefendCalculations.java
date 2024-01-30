@@ -3,16 +3,76 @@ package com.example.battle;
 import com.example.battle.data.AttackReturnData;
 import com.example.battle.data.DefendReturnData;
 import com.example.characters.BaseHero;
+import com.example.statistics.AdditionalStatisticsNamesEnum;
+import com.example.utils.RandomUtils;
 
 public class DefendCalculations {
-    public static DefendReturnData defend(BaseHero defender, String attacker, AttackReturnData attackData){
-        defender.decreaseHealth(attackData.baseValues().value());
 
-        String defendLog = "[DEFEND]"+defender.getName() + " attacked by [" +  attacker + "] for dmg "+ attackData.baseValues().value() +
-                " HP left: [" + defender.getHealth()+ "]";
-        System.out.println(defendLog);
-        return new DefendReturnData(defender.getName(), attackData.baseValues().value(), false, defender.getHealth()
-        );
+
+    private static int getCalculatedArmorAbsorption(BaseHero hero, int rawAttackValue) {
+        int armor = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.ARMOR);
+
+        return (int) (rawAttackValue * 0.5);
+    }
+
+    private static boolean isBlocked(BaseHero hero){
+        int blockChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.BLOCK);
+        return RandomUtils.checkPercentageChance(blockChance);
+    }
+    private static boolean isDodged(BaseHero hero){
+        int dodgeChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.DODGE);
+        return RandomUtils.checkPercentageChance(dodgeChance);
+    }
+    private static boolean isPaired(BaseHero hero){
+        int parryChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.PARRYING);
+        return RandomUtils.checkPercentageChance(parryChance);
+    }
+
+    private static DefendReturnData.DefendType getDefendType(BaseHero hero) {
+        if(isDodged(hero)) return DefendReturnData.DefendType.DODGED;
+        else if(isPaired(hero)) return DefendReturnData.DefendType.PAIRED;
+        else if(isBlocked(hero)) return DefendReturnData.DefendType.BLOCKED;
+        else return DefendReturnData.DefendType.NULL;
+    }
+
+    private static CombatReturnData executeParryAttack(BaseHero hero, BaseHero pairedHero) {
+        //TODO: remove those logs later
+        System.out.println("EXECUTE PARRY ATTACK WARNING ");
+        System.out.println("[DEFEND] {"+ hero.getName() + "} PAIRED attack made by {"+ pairedHero.getName() +"} left with ["+ hero.getHealth() + "] hp");
+        AttackReturnData attackData = AttackCalculations.generateAttackValue(hero, false);
+
+        DefendReturnData pairedHeroDefendData = defend(pairedHero, hero, attackData);
+
+        return new CombatReturnData(attackData, pairedHeroDefendData);
+    }
+
+    public static DefendReturnData defend(BaseHero defender, BaseHero attacker, AttackReturnData attackData){
+        DefendReturnData.DefendType defendType = getDefendType(defender);
+
+       int effectiveDamage = switch (defendType){
+            case PAIRED -> {
+                 CombatReturnData data = executeParryAttack(defender, attacker);
+                 yield data.defendData().receivedDamage();
+            }
+           case BLOCKED,DODGED -> 0;
+            case NULL-> {
+                int effDamage = getCalculatedArmorAbsorption(defender, attackData.baseValues().value());
+                defender.decreaseHealth(effDamage);
+                yield effDamage;
+
+            }
+        };
+
+       //TODO: remove those logs later
+        if(defendType.equals(DefendReturnData.DefendType.BLOCKED)) {
+            System.out.println("[DEFEND] {"+ defender.getName() + "} BLOCKED attack made by {"+ attacker.getName() +"} left with ["+ defender.getHealth() + "] hp");
+        }else if(defendType.equals(DefendReturnData.DefendType.DODGED)){
+            System.out.println("[DEFEND] {"+ defender.getName() + "} DODGED attack made by {"+ attacker.getName() +"} left with ["+ defender.getHealth() + "] hp");
+        }else if(defendType.equals(DefendReturnData.DefendType.NULL)){
+            System.out.println("[DEFEND] {"+ defender.getName() + "} RECEIVED |" + effectiveDamage + "| damage from attack made by {"+ attacker.getName() +"} left with [" + defender.getHealth()+ "] hp");
+        }
+
+        return new DefendReturnData(defender.getName(), effectiveDamage, defender.getHealth(), defendType);
     }
 
 

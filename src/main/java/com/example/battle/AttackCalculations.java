@@ -12,8 +12,8 @@ import javax.annotation.Nullable;
 public class AttackCalculations {
 
     private static AttackBase.AttackStrength getCalculatedAttackStrength(BaseHero hero){
-        int lethalChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.LETHAL_CRITIC_CHANCE);
-        int criticChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.CRITIC_CHANCE);
+        int lethalChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.LETHAL_CRITIC);
+        int criticChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.CRITIC);
 
         if(RandomUtils.checkPercentageChance(lethalChance)) return AttackBase.AttackStrength.LETHAL;
         if(RandomUtils.checkPercentageChance(criticChance)) return AttackBase.AttackStrength.CRITIC;
@@ -28,7 +28,7 @@ public class AttackCalculations {
     }
 
     private static boolean isDoubleAttack(BaseHero hero) {
-        int doubleAttackChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.DOUBLE_ATTACK_CHANCE);
+        int doubleAttackChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.DOUBLE_ATTACK);
         return RandomUtils.checkPercentageChance(doubleAttackChance);
     }
 

@@ -174,7 +174,7 @@ public class Fight {
 
     private CombatReturnData attackAndDefend (BaseHero attacker, BaseHero defender, boolean asDoubledAttack){
         AttackReturnData attackData = AttackCalculations.generateAttackValue(attacker, asDoubledAttack);
-        DefendReturnData defendData = DefendCalculations.defend(defender, attacker.getName(), attackData);
+        DefendReturnData defendData = DefendCalculations.defend(defender, attacker, attackData);
 
         if(attackData.baseValues().isDoubleAttack()){
             System.out.println("DOUBLED ATTACK TRIGGERED");

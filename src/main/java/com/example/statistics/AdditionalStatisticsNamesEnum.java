@@ -4,10 +4,14 @@ public enum AdditionalStatisticsNamesEnum {
     MIN_DAMAGE("Min damage"),
     MAX_DAMAGE("Max damage"),
     MAX_HEALTH("Max health"),
-    CRITIC_CHANCE("Critic chance"),
-    LETHAL_CRITIC_CHANCE("Lethal critic chance"),
-    DOUBLE_ATTACK_CHANCE("Double attack chance"),
+    CRITIC("Critic"),
+    LETHAL_CRITIC("Lethal critic"),
+    DOUBLE_ATTACK("Double attack"),
     ARMOR("Armor"),
+    BLOCK("Block"),
+    PARRYING("Parrying"),
+    DODGE("Dodge"),
+    THREAT("Threat"),
     INITIATIVE("Initiative");
 
 
