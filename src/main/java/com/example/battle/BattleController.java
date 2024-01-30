@@ -45,12 +45,7 @@ public class BattleController implements SecuredRestController {
         Optional<Character> foundCharacter = this.characterService.findOneByUserId(this.authenticationFacade.getJwtTokenPayload().id());
         List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy());
         if(foundCharacter.isPresent()){
-            return this.battleManagerService.performNormalFight(
-                    Map.of(foundCharacter.get().getId(), foundCharacter.get()),
-                    enemies.stream()
-                            .collect(Collectors.toMap(Enemy::getId, Function.identity()))
-
-            );
+            return this.battleManagerService.performNormalFight(List.of(foundCharacter.get()), enemies);
         }
        return null;
     }
@@ -60,13 +55,7 @@ public class BattleController implements SecuredRestController {
         List<Character> foundCharacters = this.characterService.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
         List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy());
         if(!foundCharacters.isEmpty()){
-            return this.battleManagerService.performNormalFight(
-                    foundCharacters.stream()
-                            .collect(Collectors.toMap(Character::getId, Function.identity())),
-                    enemies.stream()
-                            .collect(Collectors.toMap(Enemy::getId, Function.identity()))
-
-                    );
+            return this.battleManagerService.performNormalFight(foundCharacters, enemies);
 
         }
         return null;

@@ -11,7 +11,8 @@ public class DefendCalculations {
         String defendLog = "[DEFEND]"+defender.getName() + " attacked by [" +  attacker + "] for dmg "+ attackData.baseValues().value() +
                 " HP left: [" + defender.getHealth()+ "]";
         System.out.println(defendLog);
-        return new DefendReturnData(defender.getName(), attackData.baseValues().value(), false);
+        return new DefendReturnData(defender.getName(), attackData.baseValues().value(), false, defender.getHealth()
+        );
     }
 
 

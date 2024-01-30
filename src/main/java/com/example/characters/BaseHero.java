@@ -1,17 +1,14 @@
 package com.example.characters;
 
-import com.example.battle.data.AttackBase;
-import com.example.battle.data.AttackDebuffs;
-import com.example.battle.data.AttackReturnData;
-import com.example.battle.data.DefendReturnData;
 import com.example.statistics.*;
-import com.example.utils.RandomUtils;
 import dev.morphia.annotations.ExternalEntity;
-import javax.annotation.Nullable;
+import org.bson.types.ObjectId;
+
 import java.util.Map;
 
 @ExternalEntity(target = BaseHero.class)
 public class BaseHero {
+    private ObjectId baseHeroId;
     protected String name;
     protected Integer level = 1;
     protected Integer health = 1;
@@ -59,6 +56,8 @@ public class BaseHero {
 
     public void decreaseHealth(int value) {
         this.setHealth(this.health - value);
+
+        health = Math.max(health, 0);
     }
     public void setLevel(Integer level) {
         this.level = level;
@@ -87,4 +86,10 @@ public class BaseHero {
         return stats;
     }
 
+    public ObjectId getId() {
+        return baseHeroId;
+    }
+    protected void setId(ObjectId id){
+        this.baseHeroId = id;
+    }
 }

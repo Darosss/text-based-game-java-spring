@@ -7,25 +7,32 @@ import java.util.List;
 
 public class FightTurnReport {
 
-    private Integer turnNumber;
-    private List<CombatReturnData> actions = new ArrayList<>();
-
-
+    private final Integer turnNumber;
+    private final List<CombatReturnData> actions = new ArrayList<>();
+    private boolean isEndOfFight;
     public FightTurnReport(Integer turnNumber){
         this.turnNumber = turnNumber;
-
     }
 
     public void addTurnAction(CombatReturnData data) {
-        actions.add(data);
+        this.actions.add(data);
 
     }
 
     public Integer getTurnNumber() {
-        return turnNumber;
+        return this.turnNumber;
     }
 
     public List<CombatReturnData> getActions() {
-        return actions;
+        return this.actions;
+    }
+
+
+    public boolean isEndOfFight() {
+        return isEndOfFight;
+    }
+
+    public void setEndOfFight(boolean endOfFight) {
+        this.isEndOfFight = endOfFight;
     }
 }

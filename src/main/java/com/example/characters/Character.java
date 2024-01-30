@@ -100,9 +100,11 @@ public class Character  extends BaseHero {
                 '}';
     }
 
+    @Override
     public ObjectId getId() {
         return id;
     }
+
     public Long getExperience() {
         return experience;
     }

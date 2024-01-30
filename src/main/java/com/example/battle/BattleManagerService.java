@@ -13,7 +13,7 @@ import java.util.stream.IntStream;
 
 @Service
 public class BattleManagerService {
-    public List<FightTurnReport> performNormalFight(Map<ObjectId, Character> characters, Map<ObjectId, Enemy> enemies) {
+    public List<FightTurnReport> performNormalFight(List<Character> characters, List<Enemy> enemies) {
         Fight fightInstance = new Fight(characters, enemies);
 
         fightInstance.startFight();
