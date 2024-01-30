@@ -22,7 +22,7 @@ public class EnemyService {
                         BaseStatisticsNamesEnum.LUCK, 20
                 ),
                 Map.of(
-                        AdditionalStatisticsNamesEnum.INITIATIVE, 200,
+                        AdditionalStatisticsNamesEnum.INITIATIVE, 300,
                         AdditionalStatisticsNamesEnum.MAX_HEALTH, 100
                 )
         );

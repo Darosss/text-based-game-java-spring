@@ -12,17 +12,15 @@ public class BattleDetails {
     public void increaseCurrentInitiative(int value){
         this.currentInitiative += value;
     }
-    public void onExecuteTurn(int max){
-        if(this.currentInitiative >= max){
-            this.currentInitiative -= max;
+    public void useInitiativePoints(int value){
+        if(this.currentInitiative >= value){
+            this.currentInitiative -= value;
         }
 
     }
-
     public void addCycleValueToCurrentInitiative(){
         this.currentInitiative += initiativePerCycle;
     }
-
 
     public int getCurrentInitiative() {
         return currentInitiative;

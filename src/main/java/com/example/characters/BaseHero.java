@@ -1,8 +1,13 @@
 package com.example.characters;
 
+import com.example.battle.data.AttackBase;
+import com.example.battle.data.AttackDebuffs;
+import com.example.battle.data.AttackReturnData;
+import com.example.battle.data.DefendReturnData;
 import com.example.statistics.*;
+import com.example.utils.RandomUtils;
 import dev.morphia.annotations.ExternalEntity;
-
+import javax.annotation.Nullable;
 import java.util.Map;
 
 @ExternalEntity(target = BaseHero.class)
@@ -51,6 +56,10 @@ public class BaseHero {
     protected void setHealth(Integer health) {
         this.health = health;
     }
+
+    public void decreaseHealth(int value) {
+        this.setHealth(this.health - value);
+    }
     public void setLevel(Integer level) {
         this.level = level;
     }
@@ -70,16 +79,12 @@ public class BaseHero {
         statistics.forEach((k, v)-> this.stats.updateStatistic(k, v, updateType));
     }
 
+    public int getAdditionalStatEffective(AdditionalStatisticsNamesEnum name) {
+        return this.stats.getAdditionalStatistics().get(name).getEffectiveValue();
+    }
+
     public HeroStatisticsObject getStats() {
         return stats;
     }
 
-    public void attack(BaseHero target){
-        System.out.println("Im attacking a " + target.getName());
-        target.defend(this);
-    }
-
-    private void defend(BaseHero attacker){
-        System.out.println("Im attacked by" +  attacker.getName());
-    }
 }

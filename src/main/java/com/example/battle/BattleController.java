@@ -2,6 +2,7 @@ package com.example.battle;
 
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
+import com.example.battle.reports.FightTurnReport;
 import com.example.characters.Character;
 import com.example.characters.CharacterService;
 import com.example.enemies.Enemy;
@@ -40,28 +41,26 @@ public class BattleController implements SecuredRestController {
 
 
     @PostMapping("/debug/attack")
-    public List<String> DebugAttack() throws Exception {
+    public List<FightTurnReport> DebugAttack() throws Exception {
         Optional<Character> foundCharacter = this.characterService.findOneByUserId(this.authenticationFacade.getJwtTokenPayload().id());
         List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy());
         if(foundCharacter.isPresent()){
-            List<String>  battleLog = this.battleManagerService.performNormalFight(
+            return this.battleManagerService.performNormalFight(
                     Map.of(foundCharacter.get().getId(), foundCharacter.get()),
                     enemies.stream()
                             .collect(Collectors.toMap(Enemy::getId, Function.identity()))
 
             );
-
-            return battleLog;
         }
        return null;
     }
 
     @PostMapping("/debug/attack-many-characters")
-    public List<String> DebugAttackMultipleCharacters() throws Exception {
+    public List<FightTurnReport> DebugAttackMultipleCharacters() throws Exception {
         List<Character> foundCharacters = this.characterService.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
         List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy());
         if(!foundCharacters.isEmpty()){
-            List<String> battleLog =  this.battleManagerService.performNormalFight(
+            return this.battleManagerService.performNormalFight(
                     foundCharacters.stream()
                             .collect(Collectors.toMap(Character::getId, Function.identity())),
                     enemies.stream()
@@ -69,7 +68,6 @@ public class BattleController implements SecuredRestController {
 
                     );
 
-            return battleLog;
         }
         return null;
     }
