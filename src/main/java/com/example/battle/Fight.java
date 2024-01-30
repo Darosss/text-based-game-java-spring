@@ -6,12 +6,10 @@ import com.example.characters.BaseHero;
 import com.example.characters.Character;
 import com.example.battle.data.DefendReturnData;
 import com.example.enemies.Enemy;
+import com.example.statistics.AdditionalStatisticsNamesEnum;
 import org.bson.types.ObjectId;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.IntStream;
 
 public class Fight {
@@ -73,9 +71,14 @@ public class Fight {
         return detailsMap;
     }
 
-    private BaseHero getFirstHeroFromFightDetails(boolean userCharacter) {
-        return fightDetails.values().stream().filter((v)-> v.isUserCharacter() == userCharacter
-                ).toList().get(0).getHero();
+    private BaseHero getMostThreateningHero (boolean userCharacter) {
+        return fightDetails.values().stream()
+                .filter(v -> v.isUserCharacter() == userCharacter)
+                .map(BattleDetails::getHero)
+                .reduce((hero1, hero2) ->
+                        hero1.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.THREAT) >
+                        hero2.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.THREAT)? hero1 : hero2)
+                .get();
     }
 
     private boolean enoughParticipantsToFight() {
@@ -136,14 +139,14 @@ public class Fight {
 
                     if(currentHeroDetails.isUserCharacter()){
                         System.out.println("\u001B[34m"+"** User turn "+id+ " **");
-                        BaseHero enemyToAttack = this.getFirstHeroFromFightDetails(false);
+                        BaseHero enemyToAttack = this.getMostThreateningHero(false);
                         CombatReturnData turnData = this.attackAndDefend(currentHeroDetails.getHero(),
                                 enemyToAttack);
                         this.checkAndHandleDeath(enemyToAttack.getId());
                         turnReport.addTurnAction(turnData);
                     }else {
                         System.out.println("\u001B[31m"+"** Enemy turn "+id + " ** ");
-                        BaseHero userToAttack = this.getFirstHeroFromFightDetails(true);
+                        BaseHero userToAttack = this.getMostThreateningHero(true);
                         CombatReturnData turnData = this.attackAndDefend(currentHeroDetails.getHero(),
                                 userToAttack);
                         this.checkAndHandleDeath(userToAttack.getId());
@@ -193,6 +196,8 @@ public class Fight {
         FightTurnReport lastReport =  this.fightReport.get(this.fightReport.size() - 1);
         lastReport.setEndOfFight(true);
     }
+
+
 
 }
 
