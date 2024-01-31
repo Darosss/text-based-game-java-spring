@@ -18,12 +18,20 @@ public class Fight {
     private final int minimumBaseCapInitiative = 50;
     private int baseMinimumInitiativeForTurn = 50;
 
-    private final List<FightTurnReport> fightReport = new ArrayList<>();
+    private FightStatus fightStatus = FightStatus.FIGHT;
+
+    private final List<FightTurnReport> fightTurnsReport = new ArrayList<>();
 
     private final Map<ObjectId, BattleDetails> fightDetails;
 
     private final List<ObjectId> turnParticipants = new ArrayList<>();
 
+    public enum FightStatus {
+        FIGHT, ENEMY_WIN, PLAYER_WIN, DRAW
+    }
+
+    public record FightReport (FightStatus status, List<FightTurnReport> report
+            /*TODO: add here gained exp, gold etc */){}
     Fight(List<Character> characters,List<Enemy> enemies, int maxTurns) {
 
         this.calculateMinimumInitiativeOfLevelsMean(
@@ -81,23 +89,32 @@ public class Fight {
                 .get();
     }
 
-    private boolean enoughParticipantsToFight() {
-        long userCharactersCount = this.fightDetails.values().stream()
-                .filter(BattleDetails::isUserCharacter)
-                .count();
-
+    private FightStatus checkAndSetFightStatus() {
         long enemiesCount = this.fightDetails.values().stream()
                 .filter(details -> !details.isUserCharacter())
                 .count();
+        if(enemiesCount == 0) this.fightStatus = FightStatus.PLAYER_WIN;
 
-        //TODO: Note remove those logs - for debug leave right now
 
-        boolean condition = userCharactersCount > 0 && enemiesCount > 0;
+        long userCharactersCount = this.fightDetails.values().stream()
+                .filter(BattleDetails::isUserCharacter)
+                .count();
+        if(userCharactersCount == 0) this.fightStatus = FightStatus.ENEMY_WIN;
 
-        if(!condition) {
-            System.out.println("Fight ended because no enemies or players alive");
-        }
-        return condition;
+
+        return this.fightStatus;
+        //TODO: condition for draw?
+    }
+
+    private boolean isFightOngoing() {
+        return this.checkAndSetFightStatus().equals(FightStatus.FIGHT);
+    }
+
+    private boolean hasFightAvailableLeftTurns(int currentTurn) {
+        if(currentTurn< this.maxTurns) return true;
+
+        this.fightStatus = FightStatus.DRAW;
+        return false;
     }
 
 
@@ -107,7 +124,7 @@ public class Fight {
         int turnCount = 0;
         int cycleCounter = 0;
         //while health enemy and player > 0 && turnCount < 100 - exclude infinite
-        while (turnCount < this.maxTurns){
+        while (this.isFightOngoing() && this.hasFightAvailableLeftTurns(turnCount)){
             fightDetails.forEach((k, v)->{
                 v.addCycleValueToCurrentInitiative();
 
@@ -124,53 +141,47 @@ public class Fight {
                 turnCount ++;
                 cycleCounter = 0;
                 for(ObjectId id: this.turnParticipants){
-                    if(!this.enoughParticipantsToFight()){
-                        System.out.println("END OF FIGHT");
-                        fightReport.add(turnReport);
-                        this.setLastTurnToEndOfFight();
-                        return;
-                    }
                     //Just for now. It ensures that dead enemy will not move - continue
                     if(!this.fightDetails.containsKey(id)) continue;
 
-
                     BattleDetails currentHeroDetails = fightDetails.get(id);
+                    this.handleHeroTurn(currentHeroDetails, turnReport);
 
+                    if(!this.isFightOngoing()){
+                        //true == end of fight
+                        this.setLastTurnToEndOfFight();
+                        System.out.println("END OF FIGHT");
 
-                    if(currentHeroDetails.isUserCharacter()){
-                        System.out.println("\u001B[34m"+"** User turn "+id+ " **");
-                        BaseHero enemyToAttack = this.getMostThreateningHero(false);
-                        CombatReturnData turnData = this.attackAndDefend(currentHeroDetails.getHero(),
-                                enemyToAttack);
-                        this.checkAndHandleDeath(enemyToAttack.getId());
-                        turnReport.addTurnAction(turnData);
-                    }else {
-                        System.out.println("\u001B[31m"+"** Enemy turn "+id + " ** ");
-                        BaseHero userToAttack = this.getMostThreateningHero(true);
-                        CombatReturnData turnData = this.attackAndDefend(currentHeroDetails.getHero(),
-                                userToAttack);
-                        this.checkAndHandleDeath(userToAttack.getId());
-                        turnReport.addTurnAction(turnData);
-
+                        break;
                     }
-
                 };
                 turnParticipants.clear();
-                fightReport.add(turnReport);
+                fightTurnsReport.add(turnReport);
             }else{
                 cycleCounter++;
             }
         }
     }
 
+    private void handleHeroTurn(BattleDetails heroDetails, FightTurnReport currentTurnReport) {
+        //TODO: logs to remove
+        if(heroDetails.isUserCharacter()) System.out.println("\u001B[34m"+"** User turn "+heroDetails.getHero().getId()+ " **");
+        else  System.out.println("\u001B[31m"+"** Enemy turn "+heroDetails.getHero().getId() + " ** ");
+
+        BaseHero heroToAttack = this.getMostThreateningHero(!heroDetails.isUserCharacter());
+        CombatReturnData turnData = this.attackAndDefend(heroDetails.getHero(),
+                heroToAttack);
+        this.checkAndHandleDeath(heroToAttack.getId());
+        currentTurnReport.addTurnAction(turnData);
+    }
+
     private void checkAndHandleDeath(ObjectId heroId) {
         if(this.fightDetails.get(heroId).getHero().getHealth() <= 0) {
-            System.out.println(heroId + " is dead :O");
+            System.out.println(this.fightDetails.get(heroId).getHero().getName()+  " is dead :O");
             this.fightDetails.remove(heroId);
         }
 
     }
-
 
     private CombatReturnData attackAndDefend (BaseHero attacker, BaseHero defender){
         AttackReturnData attackData = AttackCalculations.generateAttackValue(attacker, true);
@@ -187,12 +198,20 @@ public class Fight {
 
     }
 
-    public List<FightTurnReport> getFightReport() {
-        return fightReport;
+    public List<FightTurnReport> getFightTurnsReport() {
+        return fightTurnsReport;
+    }
+
+    public FightStatus getFightStatus() {
+        return fightStatus;
+    }
+
+    public FightReport getFightReport() {
+        return new FightReport(this.fightStatus, this.fightTurnsReport);
     }
 
     private void setLastTurnToEndOfFight() {
-        FightTurnReport lastReport =  this.fightReport.get(this.fightReport.size() - 1);
+        FightTurnReport lastReport =  this.fightTurnsReport.get(this.fightTurnsReport.size() - 1);
         lastReport.setEndOfFight(true);
     }
 

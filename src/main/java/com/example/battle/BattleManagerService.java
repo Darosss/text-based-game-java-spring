@@ -1,21 +1,20 @@
 package com.example.battle;
 
-import com.example.battle.reports.FightTurnReport;
-import com.example.characters.BaseHero;
 import com.example.characters.Character;
 import com.example.enemies.Enemy;
-import com.example.statistics.AdditionalStatisticsNamesEnum;
-import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
-import java.util.stream.IntStream;
 
 @Service
 public class BattleManagerService {
-    public List<FightTurnReport> performNormalFight(List<Character> characters, List<Enemy> enemies) {
+    public Fight.FightReport performNormalFight(List<Character> characters, List<Enemy> enemies) {
         Fight fightInstance = new Fight(characters, enemies);
 
+
+        //TODO: here we will need to checks whether fight is win - give xp, gold etc
+        // lose = do nothing?
+        // draw = do nothing
+        //TODO: later - achievements / statistics  for user add
         fightInstance.startFight();
         return fightInstance.getFightReport();
     }
