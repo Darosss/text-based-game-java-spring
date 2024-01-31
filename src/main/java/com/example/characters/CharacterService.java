@@ -42,10 +42,10 @@ public class CharacterService {
         return datastore.find(Character.class).filter(Filters.eq("user", new ObjectId(userId))).stream().toList();
     }
 
-    public Character create(User user) {
+    public Character create(User user, boolean asMainCharacter) {
          CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
-        Character character = new Character("Default character name",user, equipment);
+        Character character = new Character("Default character name", user, equipment, asMainCharacter);
         Character savedCharacter = datastore.save(character);
         equipment.setCharacter(savedCharacter);
         this.equipmentService.update(equipment);
@@ -54,7 +54,7 @@ public class CharacterService {
 
     }
     public Character createDebugCharacter(
-            User user, int level,long experience,
+            User user, int level,long experience, boolean asMainCharacter,
             Map<BaseStatisticsNamesEnum, Integer> baseStatistic,
             Map<AdditionalStatisticsNamesEnum, Integer> additionalStats
             ) {
@@ -62,7 +62,7 @@ public class CharacterService {
         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
         Character character = new Character("User character debug", user, equipment,
-                level, experience, baseStatistic, additionalStats
+                level, experience, asMainCharacter, baseStatistic, additionalStats
                 );
 
         Character savedCharacter = datastore.save(character);
@@ -111,6 +111,12 @@ public class CharacterService {
     }
     public Optional<Character> findOneByUserId(String userId) {
         return Optional.ofNullable(datastore.find(Character.class).filter(Filters.eq("user", new ObjectId(userId))).first());
+    }
+    public Optional<Character> findOneMainCharacterByUserId(String userId) {
+        return Optional.ofNullable(datastore.find(Character.class).filter(
+                Filters.eq("user", new ObjectId(userId)),
+                Filters.eq("isMainCharacter", true)
+        ).first());
     }
 
     public Character findOne(){

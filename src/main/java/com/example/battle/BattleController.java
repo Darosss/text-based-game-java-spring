@@ -42,7 +42,7 @@ public class BattleController implements SecuredRestController {
 
     @PostMapping("/debug/attack")
     public List<FightTurnReport> DebugAttack() throws Exception {
-        Optional<Character> foundCharacter = this.characterService.findOneByUserId(this.authenticationFacade.getJwtTokenPayload().id());
+        Optional<Character> foundCharacter = this.characterService.findOneMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
         List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy());
         if(foundCharacter.isPresent()){
             return this.battleManagerService.performNormalFight(List.of(foundCharacter.get()), enemies);

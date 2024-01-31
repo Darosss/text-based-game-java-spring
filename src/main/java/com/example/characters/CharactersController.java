@@ -25,7 +25,8 @@ public class CharactersController implements SecuredRestController {
 
     @Autowired
     public CharactersController(CharacterService characterService, ItemService itemService,
-                                UserService userService, AuthenticationFacade authenticationFacade) {
+                                UserService userService,
+                                AuthenticationFacade authenticationFacade) {
         this.service = characterService;
         this.itemService = itemService;
         this.userService = userService;
@@ -50,19 +51,27 @@ public class CharactersController implements SecuredRestController {
 
         if(user.isPresent()) {
             User userInst = user.get();
-            Character createdChar = service.create(user.get());
+            if(this.service.findOneMainCharacterByUserId(userInst.getId().toString()).isPresent()){
+                throw new Exception("User already have main character");
+            }
+
+            Character createdChar = service.create(user.get(), true);
             userInst.addCharacter(createdChar);
             this.userService.update(userInst);
         }
         return null;
     }
-    @PostMapping("/debug/create-empty-char/{userId}")
-    public Character create(@PathVariable String userId){
+    @PostMapping("/debug/create-empty-char/{userId}/{asMainCharacter}")
+    public Character create(@PathVariable String userId,
+                            @PathVariable boolean asMainCharacter
+    ){
         Optional<User> user = this.userService.findOneById(userId);
-        return user.map(value -> service.create(value)).orElse(null);
+        return user.map(value -> service.create(value, true)).orElse(null);
     }
-    @PostMapping("/debug/create-with-random-stats")
-    public Character createDebug() throws Exception {
+    @PostMapping("/debug/create-with-random-stats/{asMainCharacter}")
+    public Character createDebug(
+            @PathVariable boolean asMainCharacter
+    ) throws Exception {
         Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
         if(foundUser.isPresent()) {
             User userInst = foundUser.get();
@@ -70,6 +79,7 @@ public class CharactersController implements SecuredRestController {
                     userInst,
                     RandomUtils.getRandomValueWithinRange(1, 55),
                     RandomUtils.getRandomValueWithinRange(4, 909),
+                    asMainCharacter,
                     Map.of(
                             BaseStatisticsNamesEnum.STRENGTH, RandomUtils.getRandomValueWithinRange(1, 55),
                             BaseStatisticsNamesEnum.DEXTERITY, RandomUtils.getRandomValueWithinRange(1, 55),

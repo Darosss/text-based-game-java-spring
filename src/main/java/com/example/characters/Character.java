@@ -25,6 +25,8 @@ public class Character  extends BaseHero {
     private CharacterEquipment equipment;
     private Long experience = 0L;
 
+    private boolean isMainCharacter;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -32,15 +34,16 @@ public class Character  extends BaseHero {
         super();
     }
 
-    public Character(String name, User user, CharacterEquipment equipment) {
+    public Character(String name, User user, CharacterEquipment equipment, boolean isMainCharacter) {
         super(name);
         //TODO: make parameter and depend on class change basics
         //For set equipment here and character in equipment
         this.equipment = equipment;
         this.user = user;
+        this.isMainCharacter = true;
     }
-    public Character(String name, User user, CharacterEquipment equipment, int level, long experience) {
-        this(name, user, equipment);
+    public Character(String name, User user, CharacterEquipment equipment, boolean isMainCharacter, int level, long experience) {
+        this(name, user, equipment, isMainCharacter);
         this.level = level;
         this.experience = experience;
     }
@@ -59,6 +62,7 @@ public class Character  extends BaseHero {
     }
 
     public Character(String name, User user, CharacterEquipment equipment, int level, long experience,
+                     boolean isMainCharacter,
                      Map<BaseStatisticsNamesEnum, Integer> baseStatistics,
                      Map<AdditionalStatisticsNamesEnum, Integer> additionalStatistics
     ) {
@@ -68,6 +72,7 @@ public class Character  extends BaseHero {
         //For set equipment here and character in equipment
         this.equipment = equipment;
         this.user = user;
+        this.isMainCharacter = isMainCharacter;
     }
 
     public void calculateStatisticByItem(Item item, boolean isEquip){
