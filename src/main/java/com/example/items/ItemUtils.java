@@ -94,7 +94,7 @@ public class ItemUtils {
                             RandomUtils.getRandomValueWithinRange(1,100),
                             RandomUtils.getRandomValueWithinRange(1,40000),
                             getRandomRarityItem(),
-                            RandomUtils.getRandomFloatValueWithinRange(0.1f,100f),
+                            RandomUtils.getRandomValueWithinRange(0.1f,100f),
                             getRandomItemPrefix(), getRandomItemSuffix()
                             )
             );

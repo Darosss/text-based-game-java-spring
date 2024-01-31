@@ -10,21 +10,52 @@ import com.example.utils.RandomUtils;
 import javax.annotation.Nullable;
 
 public class AttackCalculations {
+    private static final double CRITIC_SCALING_FACTOR = 0.05;
+    private static final double LETHAL_CRITIC_SCALING_FACTOR = 1.1;
 
-    private static AttackBase.AttackStrength getCalculatedAttackStrength(BaseHero hero){
-        int lethalChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.LETHAL_CRITIC);
-        int criticChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.CRITIC);
 
-        if(RandomUtils.checkPercentageChance(lethalChance)) return AttackBase.AttackStrength.LETHAL;
-        if(RandomUtils.checkPercentageChance(criticChance)) return AttackBase.AttackStrength.CRITIC;
-        else return AttackBase.AttackStrength.NORMAL;
 
+    private static AttackBase.AttackStrengthWithBonusDamage getCalculatedAttackStrength(BaseHero hero){
+        //TODO: add additional statistics (Critic damage, lethal critic damage - with base like 15%, 30%)
+        if(isLethalCritic(hero)) return new AttackBase.AttackStrengthWithBonusDamage(AttackBase.AttackStrength.LETHAL, 30);
+        if(isCritic(hero)) return new AttackBase.AttackStrengthWithBonusDamage(AttackBase.AttackStrength.CRITIC, 15);
+        else return new AttackBase.AttackStrengthWithBonusDamage(AttackBase.AttackStrength.NORMAL, 0);
     }
 
-    private static int getCalculatedAttackValue(BaseHero hero) {
+    private static double calculateCriticChance(BaseHero hero){
+        int criticValue = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.CRITIC);
+        int bonusCriticPerLevel = Math.max(1, hero.getLevel() - 20);
+        double criticChance =(criticValue + ((double) hero.getLevel() / bonusCriticPerLevel)) / (1 + CRITIC_SCALING_FACTOR * hero.getLevel());
+        return Math.min(criticChance, 50);
+    }
+    private static boolean isCritic(BaseHero hero) {
+        double criticChance = calculateCriticChance(hero);
+        //TODO: remove those logs
+        System.out.println("CRITIC CHANCE: " + criticChance);
+        return RandomUtils.checkPercentageChance(criticChance);
+    }
+
+    private static double calculateLethalCriticChance(BaseHero hero){
+        int criticValue = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.LETHAL_CRITIC);
+        int bonusCriticPerLevel = Math.max(1, hero.getLevel() - 20);
+
+        double lethalChance = (criticValue + ((double) hero.getLevel() / bonusCriticPerLevel)) / (1 + LETHAL_CRITIC_SCALING_FACTOR * hero.getLevel());
+        return Math.min(lethalChance, 25);
+    }
+    private static boolean isLethalCritic(BaseHero hero) {
+        double lethalCriticChance = calculateLethalCriticChance(hero);
+        //TODO: remove those logs
+        System.out.println("LETHAL CRITIC CHANCE: " + lethalCriticChance);
+        return RandomUtils.checkPercentageChance(lethalCriticChance);
+    }
+
+    private static int getCalculatedAttackValue(BaseHero hero, double criticBonus ) {
         int minDmg = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.MIN_DAMAGE);
         int maxDmg = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.MIN_DAMAGE);
-        return  RandomUtils.getRandomValueWithinRange(minDmg, maxDmg);
+
+        double minDmgWithBonus = (minDmg + (minDmg * (criticBonus / 100)));
+        double maxDmgWithBonus = (maxDmg + (maxDmg * (criticBonus / 100)));
+        return (int) RandomUtils.getRandomValueWithinRange(minDmgWithBonus, maxDmgWithBonus);
     }
 
     private static boolean isDoubleAttack(BaseHero hero) {
@@ -33,8 +64,8 @@ public class AttackCalculations {
     }
 
     private static AttackBase getAttackBaseValues(BaseHero hero, boolean asDoubledAttack) {
-        int attackValue = getCalculatedAttackValue(hero);
-        AttackBase.AttackStrength attackStrength = getCalculatedAttackStrength(hero);
+        AttackBase.AttackStrengthWithBonusDamage attackStrength = getCalculatedAttackStrength(hero);
+        int attackValue = getCalculatedAttackValue(hero, attackStrength.percentBonusDamage());
         boolean isDoubleAttack = !asDoubledAttack && isDoubleAttack(hero);
         return new AttackBase(attackValue, attackStrength, isDoubleAttack);
     }

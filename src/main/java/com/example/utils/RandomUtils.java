@@ -9,13 +9,14 @@ public class RandomUtils {
     }
 
     public static int getRandomValueWithinRange(int minValue, int maxValue) {
-        return Math.min(random.nextInt(maxValue - minValue + 1) + minValue, 1000);
+        return random.nextInt(maxValue - minValue + 1) + minValue;
     }
-
-    public static float getRandomFloatValueWithinRange(float minValue, float maxValue) {
-        return Math.min(random.nextFloat() * (maxValue - minValue) + minValue, 1000.0f);
+    public static double getRandomValueWithinRange(double minValue, double maxValue) {
+        return random.nextDouble() * (maxValue - minValue) + minValue;
     }
-
+    public static float getRandomValueWithinRange(float minValue, float maxValue) {
+        return random.nextFloat() * (maxValue - minValue) + minValue;
+    }
     public static <T> T getRandomItemFromArray(T[] array) {
         if (array == null || array.length == 0) {
             throw new IllegalArgumentException("Array must not be null or empty");
