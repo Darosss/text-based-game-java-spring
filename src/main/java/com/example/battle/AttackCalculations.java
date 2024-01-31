@@ -58,16 +58,16 @@ public class AttackCalculations {
         return (int) RandomUtils.getRandomValueWithinRange(minDmgWithBonus, maxDmgWithBonus);
     }
 
-    private static boolean isDoubleAttack(BaseHero hero) {
+    private static boolean isDoubledAttack(BaseHero hero) {
         int doubleAttackChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.DOUBLE_ATTACK);
         return RandomUtils.checkPercentageChance(doubleAttackChance);
     }
 
-    private static AttackBase getAttackBaseValues(BaseHero hero, boolean asDoubledAttack) {
+    private static AttackBase getAttackBaseValues(BaseHero hero) {
         AttackBase.AttackStrengthWithBonusDamage attackStrength = getCalculatedAttackStrength(hero);
         int attackValue = getCalculatedAttackValue(hero, attackStrength.percentBonusDamage());
-        boolean isDoubleAttack = !asDoubledAttack && isDoubleAttack(hero);
-        return new AttackBase(attackValue, attackStrength, isDoubleAttack);
+
+        return new AttackBase(attackValue, attackStrength);
     }
 
     //TODO: add debuffs
@@ -80,10 +80,13 @@ public class AttackCalculations {
         return 0;
     }
 
-    public static AttackReturnData generateAttackValue(BaseHero hero, boolean asDoubledAttack/*TODO: add some optionals from fight?*/){
-        AttackBase attackBase = getAttackBaseValues(hero, asDoubledAttack);
+    public static AttackReturnData generateAttackValue(BaseHero hero, boolean doubleAttackPossible/*TODO: add some optionals from fight?*/){
+        AttackBase attackBase = getAttackBaseValues(hero);
+        boolean doubledAttack = doubleAttackPossible && isDoubledAttack(hero);
+        //TODO : remove logs
+        if(doubledAttack) System.out.println("DOUBLED ATTACK TRIGGERED!!");
         AttackDebuffs attackDebuffs = getAttackDebuffs();
-        return new AttackReturnData(hero.getName(), attackBase, attackDebuffs);
+        return new AttackReturnData(hero.getName(), attackBase, doubledAttack, attackDebuffs);
     }
 
 

@@ -1,6 +1,6 @@
 package com.example.battle.data;
 
-public record AttackBase(int value, AttackStrengthWithBonusDamage attackStrength, boolean isDoubleAttack ) {
+public record AttackBase(int value, AttackStrengthWithBonusDamage attackStrength) {
 
 
     public enum AttackStrength {

@@ -43,7 +43,7 @@ public class DefendCalculations {
 
         DefendReturnData pairedHeroDefendData = defend(pairedHero, hero, attackData);
 
-        return new CombatReturnData(attackData, pairedHeroDefendData);
+        return new CombatReturnData(new CombatReturnData.AttackDefendData(attackData, pairedHeroDefendData), null);
     }
 
     public static DefendReturnData defend(BaseHero defender, BaseHero attacker, AttackReturnData attackData){
@@ -52,7 +52,7 @@ public class DefendCalculations {
        int effectiveDamage = switch (defendType){
             case PAIRED -> {
                  CombatReturnData data = executeParryAttack(defender, attacker);
-                 yield data.defendData().receivedDamage();
+                 yield data.basicAttack().defend().receivedDamage();
             }
            case BLOCKED,DODGED -> 0;
             case NULL-> {

@@ -171,20 +171,19 @@ public class Fight {
 
     }
 
-    private CombatReturnData attackAndDefend(BaseHero attacker, BaseHero defender) {
-        return this.attackAndDefend(attacker,defender, false);
-    }
 
-    private CombatReturnData attackAndDefend (BaseHero attacker, BaseHero defender, boolean asDoubledAttack){
-        AttackReturnData attackData = AttackCalculations.generateAttackValue(attacker, asDoubledAttack);
+    private CombatReturnData attackAndDefend (BaseHero attacker, BaseHero defender){
+        AttackReturnData attackData = AttackCalculations.generateAttackValue(attacker, true);
         DefendReturnData defendData = DefendCalculations.defend(defender, attacker, attackData);
 
-        if(attackData.baseValues().isDoubleAttack()){
-            System.out.println("DOUBLED ATTACK TRIGGERED");
-            this.attackAndDefend(attacker, defender, true);
-        }
+        CombatReturnData.AttackDefendData doubledAttackData = attackData.withDoubledAttack() ?
+                new CombatReturnData.AttackDefendData(
+                        AttackCalculations.generateAttackValue(attacker, false),
+                        DefendCalculations.defend(defender, attacker, attackData)
+                ) : null;
 
-        return new CombatReturnData(attackData, defendData);
+        return new CombatReturnData(new CombatReturnData.AttackDefendData(attackData, defendData),
+                Optional.ofNullable(doubledAttackData));
 
     }
 
