@@ -55,5 +55,14 @@ public class BattleController implements SecuredRestController {
         }
         return null;
     }
+    @PostMapping("/debug/many-vs-many")
+    public Fight.FightReport DebugManyVsMany() throws Exception {
+        List<Character> foundCharacters = this.characterService.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
+        List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy(), this.enemyService.createRandomEnemy(), this.enemyService.createRandomEnemy());
+        if(!foundCharacters.isEmpty()){
+            return this.battleManagerService.performNormalFight(foundCharacters, enemies);
+        }
+        return null;
+    }
 
 }
