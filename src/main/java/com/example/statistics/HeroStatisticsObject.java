@@ -70,6 +70,8 @@ public class HeroStatisticsObject {
         int strengthEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.STRENGTH);
         int constitutionEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.CONSTITUTION);
         int dexterityEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.DEXTERITY);
+        int luckEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.LUCK);
+        int charismaEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.CHARISMA);
 
         this.setBaseStatBonus(AdditionalStatisticsNamesEnum.ARMOR,
                 StatisticsFactors.get_ARMOR_Factors(strengthEff, constitutionEff)
@@ -83,6 +85,16 @@ public class HeroStatisticsObject {
         this.setBaseStatBonus(AdditionalStatisticsNamesEnum.MAX_DAMAGE,
                 StatisticsFactors.get_MAX_DAMAGE_Factors(strengthEff)
         );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.BLOCK,
+                StatisticsFactors.get_BLOCK_Factors(strengthEff, dexterityEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.PARRYING,
+                StatisticsFactors.get_PARRYING_Factors(strengthEff, dexterityEff, luckEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.THREAT,
+                StatisticsFactors.get_THREAT_Factors(strengthEff, charismaEff)
+        );
+
     }
 
     private void updateConstitutionStatisticsBasedOnBasicStat() {
@@ -99,22 +111,77 @@ public class HeroStatisticsObject {
     private void updateDexterityStatisticsBasedOnBasicStat() {
         int strengthEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.STRENGTH);
         int dexterityEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.DEXTERITY);
+        int luckEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.LUCK);
+        int intelligenceEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.INTELLIGENCE);
+        int charismaEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.CHARISMA);
 
         this.setBaseStatBonus(AdditionalStatisticsNamesEnum.MIN_DAMAGE,
                 StatisticsFactors.get_MIN_DAMAGE_Factors(strengthEff, dexterityEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.DOUBLE_ATTACK,
+                StatisticsFactors.get_DOUBLE_ATTACK_Factors(dexterityEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.DODGE,
+                StatisticsFactors.get_DODGE_Factors(dexterityEff, luckEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.PARRYING,
+                StatisticsFactors.get_PARRYING_Factors(dexterityEff, strengthEff, luckEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.CRITIC,
+                StatisticsFactors.get_CRITIC_Factors(dexterityEff, luckEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.LETHAL_CRITIC,
+                StatisticsFactors.get_LETHAL_CRITIC_Factors(dexterityEff, luckEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.BLOCK,
+                StatisticsFactors.get_BLOCK_Factors(strengthEff, dexterityEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.INITIATIVE,
+                StatisticsFactors.get_INITIATIVE_Factors(dexterityEff, charismaEff, intelligenceEff)
         );
     }
 
     private void updateIntelligenceStatisticsBasedOnBasicStat() {
         int intelligenceEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.INTELLIGENCE);
+        int charismaEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.CHARISMA);
+        int dexterityEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.DEXTERITY);
+
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.INITIATIVE,
+                StatisticsFactors.get_INITIATIVE_Factors(dexterityEff, charismaEff, intelligenceEff)
+        );
 
     }
     private void updateLuckStatisticsBasedOnBasicStat() {
-        int intelligenceEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.INTELLIGENCE);
+        int strengthEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.STRENGTH);
+        int dexterityEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.DEXTERITY);
+        int luckEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.LUCK);
+
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.PARRYING,
+                StatisticsFactors.get_PARRYING_Factors(dexterityEff, strengthEff, luckEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.CRITIC,
+                StatisticsFactors.get_CRITIC_Factors(dexterityEff, luckEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.LETHAL_CRITIC,
+                StatisticsFactors.get_LETHAL_CRITIC_Factors(dexterityEff, luckEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.DODGE,
+                StatisticsFactors.get_DODGE_Factors(dexterityEff, luckEff)
+        );
 
     }
     protected void updateCharismaStatisticsBasedOnBasicStat() {
+        int strengthEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.STRENGTH);
+        int charismaEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.CHARISMA);
+        int dexterityEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.DEXTERITY);
         int intelligenceEff = getEffectiveValueByStatName(BaseStatisticsNamesEnum.INTELLIGENCE);
+
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.THREAT,
+                StatisticsFactors.get_THREAT_Factors(strengthEff, charismaEff)
+        );
+        this.setBaseStatBonus(AdditionalStatisticsNamesEnum.INITIATIVE,
+                StatisticsFactors.get_INITIATIVE_Factors(dexterityEff, charismaEff, intelligenceEff)
+        );
 
     }
     private void updateAdditionalStatisticsBasedOnBasic(BaseStatisticsNamesEnum statName){
