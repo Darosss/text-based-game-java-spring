@@ -10,6 +10,7 @@ import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
 import com.example.users.UserService;
 import com.example.utils.RandomUtils;
+import org.apache.coyote.BadRequestException;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -52,7 +53,7 @@ public class CharactersController implements SecuredRestController {
         if(user.isPresent()) {
             User userInst = user.get();
             if(this.service.findOneMainCharacterByUserId(userInst.getId().toString()).isPresent()){
-                throw new Exception("User already have main character");
+                throw new BadRequestException("User already have main character");
             }
 
             Character createdChar = service.create(user.get(), true);
