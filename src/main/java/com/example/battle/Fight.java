@@ -1,10 +1,12 @@
 package com.example.battle;
 
+import com.example.battle.reports.FightReport;
 import com.example.battle.reports.FightTurnReport;
 import com.example.battle.data.AttackReturnData;
 import com.example.characters.BaseHero;
 import com.example.characters.Character;
 import com.example.battle.data.DefendReturnData;
+import com.example.characters.ExperienceUtils;
 import com.example.enemies.Enemy;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import org.bson.types.ObjectId;
@@ -17,21 +19,12 @@ public class Fight {
     private final int baseInitiativePerCycle = 20;
     private final int minimumBaseCapInitiative = 50;
     private int baseMinimumInitiativeForTurn = 50;
-
-    private FightStatus fightStatus = FightStatus.FIGHT;
-
-    private final List<FightTurnReport> fightTurnsReport = new ArrayList<>();
-
-    private final Map<ObjectId, BattleDetails> fightDetails;
+    private final FightReport fightReport = new FightReport();
+    private final Map<ObjectId, BattleDetails<Character>> userHeroesDetails;
+    private final Map<ObjectId, BattleDetails<Enemy>> enemyHeroesDetails;
 
     private final List<ObjectId> turnParticipants = new ArrayList<>();
 
-    public enum FightStatus {
-        FIGHT, ENEMY_WIN, PLAYER_WIN, DRAW
-    }
-
-    public record FightReport (FightStatus status, List<FightTurnReport> report
-            /*TODO: add here gained exp, gold etc */){}
     Fight(List<Character> characters,List<Enemy> enemies, int maxTurns) {
 
         this.calculateMinimumInitiativeOfLevelsMean(
@@ -40,8 +33,9 @@ public class Fight {
                         enemies.stream().mapToInt(Enemy::getLevel)
                 ).toArray()
         );
-       this.fightDetails = this.prepareFightDetails(characters, enemies);
-       this.maxTurns = maxTurns;
+        this.userHeroesDetails = this.prepareUserHeroesDetails(characters);
+        this.enemyHeroesDetails = this.prepareEnemiesHeroesDetails(enemies);
+        this.maxTurns = maxTurns;
 
     }
 
@@ -60,126 +54,176 @@ public class Fight {
         this.baseMinimumInitiativeForTurn = Math.max(value, minimumBaseCapInitiative);
     }
 
-
-    //TODO: make it DRY later
-    private Map<ObjectId, BattleDetails> prepareFightDetails(
-            List<Character> characters, List<Enemy> enemies
-    ) {
-        Map<ObjectId, BattleDetails> detailsMap = new HashMap<>();
+    private Map<ObjectId, BattleDetails<Character>>  prepareUserHeroesDetails(List<Character> characters){
+        Map<ObjectId, BattleDetails<Character>> heroesDetailsMap = new HashMap<>();
         characters.forEach((charVal) -> {
-            detailsMap.put(charVal.getId(),
-                    new BattleDetails(charVal, baseInitiativePerCycle, true));
+            heroesDetailsMap.put(charVal.getId(),
+                    new BattleDetails<>(charVal, baseInitiativePerCycle, true));
         });
-
-        enemies.forEach((charVal) -> {
-            detailsMap.put(charVal.getId(),
-                    new BattleDetails(charVal, baseInitiativePerCycle, false));
-        });
-
-        return detailsMap;
+        return heroesDetailsMap;
     }
 
-    private BaseHero getMostThreateningHero (boolean userCharacter) {
-        return fightDetails.values().stream()
-                .filter(v -> v.isUserCharacter() == userCharacter)
+    private Map<ObjectId, BattleDetails<Enemy>>  prepareEnemiesHeroesDetails(List<Enemy> enemies){
+        Map<ObjectId, BattleDetails<Enemy>> heroesDetailsMap = new HashMap<>();
+        enemies.forEach((charVal) -> {
+            heroesDetailsMap.put(charVal.getId(),
+                    new BattleDetails<>(charVal, baseInitiativePerCycle, true));
+        });
+        return heroesDetailsMap;
+    }
+
+    //TODO: make it DRY later
+    private BaseHero getMostThreateningUserHero () {
+        return this.userHeroesDetails.values().stream()
                 .map(BattleDetails::getHero)
                 .reduce((hero1, hero2) ->
                         hero1.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.THREAT) >
-                        hero2.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.THREAT)? hero1 : hero2)
+                                hero2.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.THREAT)? hero1 : hero2)
+                .get();
+    }
+    //TODO: make it DRY later
+    private BaseHero getMostThreateningEnemyHero () {
+        return this.enemyHeroesDetails.values().stream()
+                .map(BattleDetails::getHero)
+                .reduce((hero1, hero2) ->
+                        hero1.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.THREAT) >
+                                hero2.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.THREAT)? hero1 : hero2)
                 .get();
     }
 
-    private FightStatus checkAndSetFightStatus() {
-        long enemiesCount = this.fightDetails.values().stream()
-                .filter(details -> !details.isUserCharacter())
-                .count();
-        if(enemiesCount == 0) this.fightStatus = FightStatus.PLAYER_WIN;
+    private FightReport.FightStatus checkAndSetFightStatus() {
+        long enemiesCount = this.enemyHeroesDetails.size();
+        if(enemiesCount == 0) this.fightReport.setStatus(FightReport.FightStatus.PLAYER_WIN);
 
 
-        long userCharactersCount = this.fightDetails.values().stream()
-                .filter(BattleDetails::isUserCharacter)
-                .count();
-        if(userCharactersCount == 0) this.fightStatus = FightStatus.ENEMY_WIN;
+        long userCharactersCount =  this.userHeroesDetails.size();
+        if(userCharactersCount == 0) this.fightReport.setStatus(FightReport.FightStatus.ENEMY_WIN);
 
 
-        return this.fightStatus;
+        return this.fightReport.getStatus();
         //TODO: condition for draw?
     }
 
     private boolean isFightOngoing() {
-        return this.checkAndSetFightStatus().equals(FightStatus.FIGHT);
+        return this.checkAndSetFightStatus().equals(FightReport.FightStatus.FIGHT);
     }
 
     private boolean hasFightAvailableLeftTurns(int currentTurn) {
         if(currentTurn< this.maxTurns) return true;
 
-        this.fightStatus = FightStatus.DRAW;
+        this.fightReport.setStatus(FightReport.FightStatus.DRAW);
         return false;
     }
 
+    private void handleEndOfFight() {
+        this.fightReport.setLastTurnToEndOfFight();
+        System.out.println("END OF FIGHT");
+
+    }
+
+    private  <DetailsType extends BaseHero> void handleCycleInitiatives(Map<ObjectId, BattleDetails<DetailsType>> detailsMap) {
+        detailsMap.forEach((k, v)->{
+            v.addCycleValueToCurrentInitiative();
+            while(v.getCurrentInitiative() > this.baseMinimumInitiativeForTurn){
+                this.turnParticipants.add(k);
+                v.useInitiativePoints(this.baseMinimumInitiativeForTurn);
+            }
+        });
+    }
+
+
+    private int findLowestInitiativePerCycle(){
+        int lowestInitiativeUserCharacters = this.userHeroesDetails.values().stream().map(BattleDetails::getInitiativePerCycle).sorted((a, b)->a - b).toList().get(0);
+        int lowestInitiativeEnemiesCharacters = this.enemyHeroesDetails.values().stream().map(BattleDetails::getInitiativePerCycle).sorted((a, b)->a - b).toList().get(0);
+        return Math.min(lowestInitiativeUserCharacters, lowestInitiativeEnemiesCharacters);
+
+    }
+
+
 
     public void startFight(){
-        int lowestInitiativePerCycle = fightDetails.values().stream().map(BattleDetails::getInitiativePerCycle).sorted((a, b)->a - b).toList().get(0);
-        int cyclesForTurn = (int) Math.ceil((double) this.baseMinimumInitiativeForTurn / lowestInitiativePerCycle);
+        int cyclesForTurn = (int) Math.ceil((double) this.baseMinimumInitiativeForTurn / this.findLowestInitiativePerCycle());
         int turnCount = 0;
         int cycleCounter = 0;
         //while health enemy and player > 0 && turnCount < 100 - exclude infinite
         while (this.isFightOngoing() && this.hasFightAvailableLeftTurns(turnCount)){
-            fightDetails.forEach((k, v)->{
-                v.addCycleValueToCurrentInitiative();
-
-                while(v.getCurrentInitiative() > this.baseMinimumInitiativeForTurn){
-                    this.turnParticipants.add(k);
-                    v.useInitiativePoints(this.baseMinimumInitiativeForTurn);
-                }
-            });
+            this.handleCycleInitiatives(this.userHeroesDetails);
+            this.handleCycleInitiatives(this.enemyHeroesDetails);
 
             if(!this.turnParticipants.isEmpty() && cycleCounter >= cyclesForTurn - 1){
                 FightTurnReport turnReport = new FightTurnReport(turnCount);
-
+                //TODO: known bug where hero health =1/0
+                // when dies so fast its throwing an error
                 System.out.println("\u001B[0m"  +"************* "+ (turnCount+1) + " TURN STARTED *************");
                 turnCount ++;
                 cycleCounter = 0;
                 for(ObjectId id: this.turnParticipants){
-                    //Just for now. It ensures that dead enemy will not move - continue
-                    if(!this.fightDetails.containsKey(id)) continue;
+                    if(this.userHeroesDetails.containsKey(id)){
+                        //TODO: improve here, make DRY
+                        BattleDetails<Character> currentHeroDetails = this.userHeroesDetails.get(id);
+                        this.handleHeroTurn(currentHeroDetails, turnReport, true);
 
-                    BattleDetails currentHeroDetails = fightDetails.get(id);
-                    this.handleHeroTurn(currentHeroDetails, turnReport);
+                    }else if(this.enemyHeroesDetails.containsKey(id)){
+                        //TODO: improve here, make DRY
+                        BattleDetails<Enemy> currentHeroDetails = this.enemyHeroesDetails.get(id);
+                        this.handleHeroTurn(currentHeroDetails, turnReport, false);
+                    }else{
+                        //Just for now. It ensures that dead enemy will not move - continue
+                        continue;
+                    }
 
                     if(!this.isFightOngoing()){
                         //true == end of fight
-                        this.setLastTurnToEndOfFight();
-                        System.out.println("END OF FIGHT");
-
+                        this.handleEndOfFight();
                         break;
                     }
                 };
                 turnParticipants.clear();
-                fightTurnsReport.add(turnReport);
+                this.fightReport.addTurnReport(turnReport);
             }else{
                 cycleCounter++;
             }
         }
     }
 
-    private void handleHeroTurn(BattleDetails heroDetails, FightTurnReport currentTurnReport) {
+
+
+    private <DetailsType extends BaseHero> void handleHeroTurn(BattleDetails<DetailsType> heroDetails, FightTurnReport currentTurnReport, boolean isUserTurn) {
         //TODO: logs to remove
         if(heroDetails.isUserCharacter()) System.out.println("\u001B[34m"+"** User turn "+heroDetails.getHero().getId()+ " **");
         else  System.out.println("\u001B[31m"+"** Enemy turn "+heroDetails.getHero().getId() + " ** ");
 
-        BaseHero heroToAttack = this.getMostThreateningHero(!heroDetails.isUserCharacter());
+        BaseHero heroToAttack = isUserTurn ? getMostThreateningEnemyHero() : getMostThreateningUserHero();
         CombatReturnData turnData = this.attackAndDefend(heroDetails.getHero(),
                 heroToAttack);
-        this.checkAndHandleDeath(heroToAttack.getId());
+        this.checkAndHandleDeaths(heroDetails.getHero().getId());
         currentTurnReport.addTurnAction(turnData);
     }
 
-    private void checkAndHandleDeath(ObjectId heroId) {
-        if(this.fightDetails.get(heroId).getHero().getHealth() <= 0) {
-            System.out.println(this.fightDetails.get(heroId).getHero().getName()+  " is dead :O");
-            this.fightDetails.remove(heroId);
+    private void checkAndHandleUserCharacterDeath(ObjectId heroId) {
+        if(this.userHeroesDetails.get(heroId).getHero().getHealth() <= 0){
+            this.userHeroesDetails.remove(heroId);
+
         }
+    }
+    private void checkAndHandleEnemyDeath(ObjectId heroId) {
+        Enemy enemy = (Enemy) this.enemyHeroesDetails.get(heroId).getHero();
+        if(enemy.getHealth() <= 0){
+            this.fightReport.increaseGainedExperience(
+                    ExperienceUtils.calculateExperienceFromEnemy(
+                        this.findUserMainCharacter().getLevel(),
+                        enemy.getLevel(),
+                        enemy.getType()
+                    ));
+            this.enemyHeroesDetails.remove(heroId);
+
+        }
+    }
+
+    private void checkAndHandleDeaths(ObjectId heroId) {
+        if(this.userHeroesDetails.containsKey(heroId)) this.checkAndHandleUserCharacterDeath(heroId);
+        if(this.enemyHeroesDetails.containsKey(heroId))this.checkAndHandleEnemyDeath(heroId);
+
 
     }
 
@@ -198,25 +242,20 @@ public class Fight {
 
     }
 
-    public List<FightTurnReport> getFightTurnsReport() {
-        return fightTurnsReport;
+    //TODO: maybe this will not be needed - when other heroes will be in separate collection (as items)?
+    private Character findUserMainCharacter() {
+        return (Character) this.userHeroesDetails.values().stream().filter((v)->{
+            Character character = (Character)v.getHero();
+            return character.isMainCharacter();
+        }).toList().get(0).getHero();
+
+
     }
 
-    public FightStatus getFightStatus() {
-        return fightStatus;
-    }
 
     public FightReport getFightReport() {
-        return new FightReport(this.fightStatus, this.fightTurnsReport);
+        return this.fightReport;
     }
-
-    private void setLastTurnToEndOfFight() {
-        FightTurnReport lastReport =  this.fightTurnsReport.get(this.fightTurnsReport.size() - 1);
-        lastReport.setEndOfFight(true);
-    }
-
-
-
 }
 
 

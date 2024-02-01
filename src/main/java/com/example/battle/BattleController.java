@@ -2,11 +2,13 @@ package com.example.battle;
 
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
+import com.example.battle.reports.FightReport;
 import com.example.characters.Character;
 import com.example.characters.CharacterService;
 import com.example.enemies.Enemy;
 import com.example.enemies.EnemyService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,20 +37,27 @@ public class BattleController implements SecuredRestController {
     }
 
 
-    @PostMapping("/debug/attack")
-    public Fight.FightReport DebugAttack() throws Exception {
+    @PostMapping("/debug/attack/{enemyType}")
+    public FightReport DebugAttack(
+            @PathVariable Enemy.EnemyType enemyType
+            ) throws Exception {
         Optional<Character> foundCharacter = this.characterService.findOneMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
-        List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy());
+        List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy(enemyType));
         if(foundCharacter.isPresent()){
-            return this.battleManagerService.performNormalFight(List.of(foundCharacter.get()), enemies);
+            Character characterInst = foundCharacter.get();
+            FightReport report =  this.battleManagerService.performNormalFight(List.of(characterInst), enemies);
+
+            characterInst.gainExperience(report.getGainedExperience());
+            this.characterService.update(characterInst);
+            return report;
         }
        return null;
     }
 
     @PostMapping("/debug/attack-many-characters")
-    public Fight.FightReport DebugAttackMultipleCharacters() throws Exception {
+    public FightReport DebugAttackMultipleCharacters() throws Exception {
         List<Character> foundCharacters = this.characterService.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
-        List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy());
+        List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy(Enemy.EnemyType.NORMAL));
         if(!foundCharacters.isEmpty()){
             return this.battleManagerService.performNormalFight(foundCharacters, enemies);
 
@@ -56,9 +65,9 @@ public class BattleController implements SecuredRestController {
         return null;
     }
     @PostMapping("/debug/many-vs-many")
-    public Fight.FightReport DebugManyVsMany() throws Exception {
+    public FightReport DebugManyVsMany() throws Exception {
         List<Character> foundCharacters = this.characterService.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
-        List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy(), this.enemyService.createRandomEnemy(), this.enemyService.createRandomEnemy());
+        List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemy(Enemy.EnemyType.NORMAL), this.enemyService.createRandomEnemy(Enemy.EnemyType.NORMAL), this.enemyService.createRandomEnemy(Enemy.EnemyType.NORMAL));
         if(!foundCharacters.isEmpty()){
             return this.battleManagerService.performNormalFight(foundCharacters, enemies);
         }

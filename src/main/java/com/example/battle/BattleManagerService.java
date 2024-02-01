@@ -1,13 +1,15 @@
 package com.example.battle;
 
+import com.example.battle.reports.FightReport;
 import com.example.characters.Character;
 import com.example.enemies.Enemy;
+import org.bson.types.ObjectId;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
 public class BattleManagerService {
-    public Fight.FightReport performNormalFight(List<Character> characters, List<Enemy> enemies) {
+    public FightReport performNormalFight(List<Character> characters, List<Enemy> enemies) {
         Fight fightInstance = new Fight(characters, enemies);
 
 

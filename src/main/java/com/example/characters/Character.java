@@ -12,7 +12,6 @@ import org.bson.types.ObjectId;
 import java.time.LocalDateTime;
 import java.util.Map;
 
-
 @Entity("characters")
 public class Character  extends BaseHero {
     @Id
@@ -92,6 +91,30 @@ public class Character  extends BaseHero {
                 this.stats.updateStatisticsOnUnEquip(castedKey, v.getValue(), v.getPercentageValue());
             }
         });
+    }
+
+    public void gainExperience(long experiencePoints) {
+        if (experiencePoints > 0) {
+            this.experience += experiencePoints;
+            this.checkLevelUp();
+        }
+    }
+
+    private void checkLevelUp() {
+        long expToLevelUp = ExperienceUtils.calculateExpToNextLevel(this.level);
+        while (this.experience >= expToLevelUp) {
+            this.experience -= expToLevelUp;
+            this.levelUp();
+            expToLevelUp = ExperienceUtils.calculateExpToNextLevel(this.level);
+        }
+    }
+
+    private void levelUp() {
+        level++;
+        System.out.println("Level up! New level: " + level);
+    }
+    public boolean isMainCharacter() {
+        return isMainCharacter;
     }
 
     @Override

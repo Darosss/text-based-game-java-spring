@@ -3,17 +3,17 @@ package com.example.battle;
 import com.example.characters.BaseHero;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 
-public class BattleDetails {
+public class BattleDetails<HeroType extends BaseHero> {
 
     private int currentInitiative = 0;
     private int initiativePerCycle = 20;
 
-    private final BaseHero hero;
+    private final HeroType hero;
     private final boolean isUserCharacter;
 
 
     public BattleDetails(
-            BaseHero hero,
+            HeroType hero,
             int baseInitiativePerCycle,
             boolean isUserCharacter) {
         this.hero = hero;
