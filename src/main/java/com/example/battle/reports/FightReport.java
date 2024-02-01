@@ -7,11 +7,9 @@ public class FightReport {
     public enum FightStatus {
         FIGHT, ENEMY_WIN, PLAYER_WIN, DRAW
     }
-    private final List<FightTurnReport> turnsReports = new ArrayList<>();
     private FightStatus status = FightStatus.FIGHT;
     private long gainedExperience = 0L;
-
-
+    private final List<FightTurnReport> turnsReports = new ArrayList<>();
     public FightReport(){}
 
     public List<FightTurnReport> getTurnsReports() {
