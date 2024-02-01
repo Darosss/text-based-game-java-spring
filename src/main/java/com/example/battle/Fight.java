@@ -67,7 +67,7 @@ public class Fight {
         Map<ObjectId, BattleDetails<Enemy>> heroesDetailsMap = new HashMap<>();
         enemies.forEach((charVal) -> {
             heroesDetailsMap.put(charVal.getId(),
-                    new BattleDetails<>(charVal, baseInitiativePerCycle, true));
+                    new BattleDetails<>(charVal, baseInitiativePerCycle, false));
         });
         return heroesDetailsMap;
     }
