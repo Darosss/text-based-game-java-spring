@@ -117,6 +117,10 @@ public class Fight {
 
     private void handleEndOfFight() {
         this.fightReport.setLastTurnToEndOfFight();
+
+        //At end of fight add lastly living heroes
+        this.userHeroesDetails.values().forEach((v)->this.fightReport.addToCharacters((Character) v.getHero()));
+        this.enemyHeroesDetails.values().forEach((v)->this.fightReport.addToEnemies((Enemy) v.getHero()));
         System.out.println("END OF FIGHT");
 
     }
@@ -199,7 +203,9 @@ public class Fight {
     }
 
     private void checkAndHandleUserCharacterDeath(ObjectId heroId) {
-        if(this.userHeroesDetails.get(heroId).getHero().getHealth() <= 0){
+        Character character = (Character) this.userHeroesDetails.get(heroId).getHero();
+        if(character.getHealth() <= 0){
+            this.fightReport.addToCharacters(character);
             this.userHeroesDetails.remove(heroId);
 
         }
@@ -213,6 +219,7 @@ public class Fight {
                         enemy.getLevel(),
                         enemy.getType()
                     ));
+            this.fightReport.addToEnemies(enemy);
             this.enemyHeroesDetails.remove(heroId);
 
         }
@@ -252,8 +259,6 @@ public class Fight {
 
 
     }
-
-
     public FightReport getFightReport() {
         return this.fightReport;
     }

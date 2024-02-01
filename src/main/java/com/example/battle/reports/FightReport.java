@@ -1,5 +1,8 @@
 package com.example.battle.reports;
 
+import com.example.enemies.Enemy;
+import com.example.characters.Character;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +13,9 @@ public class FightReport {
     private FightStatus status = FightStatus.FIGHT;
     private long gainedExperience = 0L;
     private final List<FightTurnReport> turnsReports = new ArrayList<>();
+
+    private final List<Character> characters = new ArrayList<>();
+    private final List<Enemy> enemies = new ArrayList<>();
     public FightReport(){}
 
     public List<FightTurnReport> getTurnsReports() {
@@ -43,5 +49,20 @@ public class FightReport {
     public void setLastTurnToEndOfFight() {
         FightTurnReport lastReport =  this.turnsReports.get(this.turnsReports.size() - 1);
         lastReport.setEndOfFight(true);
+    }
+
+    public List<Character> getCharacters() {
+        return characters;
+    }
+
+    public List<Enemy> getEnemies() {
+        return enemies;
+    }
+
+    public void addToCharacters(Character character) {
+        this.characters.add(character);
+    }
+    public void addToEnemies(Enemy enemy) {
+        this.enemies.add(enemy);
     }
 }

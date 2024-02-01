@@ -16,6 +16,8 @@ import java.util.Map;
 public class Character  extends BaseHero {
     @Id
     private ObjectId id;
+
+    @JsonIgnore
     @Reference(idOnly = true, lazy=true)
     private User user;
 
@@ -127,6 +129,7 @@ public class Character  extends BaseHero {
                 ", updatedAt=" + updatedAt +
                 '}';
     }
+
 
     @Override
     public ObjectId getId() {
