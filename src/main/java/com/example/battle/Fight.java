@@ -171,6 +171,7 @@ public class Fight {
 
                     if(!this.isFightOngoing()){
                         //true == end of fight
+                        this.fightReport.addTurnReport(turnReport);
                         this.handleEndOfFight();
                         break;
                     }
