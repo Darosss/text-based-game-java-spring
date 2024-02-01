@@ -8,6 +8,7 @@ import com.example.characters.CharacterService;
 import com.example.enemies.Enemy;
 import com.example.enemies.EnemyService;
 import com.example.utils.RandomUtils;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,8 @@ public class BattleController implements SecuredRestController {
     private final AuthenticationFacade authenticationFacade;
     private CharacterService characterService;
     private EnemyService enemyService;
+
+    private final int MIN_HEALTH_FOR_FIGHT = 20;
 
 
     public enum EnemyLevelChoice {
@@ -45,12 +48,12 @@ public class BattleController implements SecuredRestController {
 
     private IntRange getEnemyLevelsRange(EnemyLevelChoice strength, int characterLevel){
         return switch (strength){
-            case NOOB -> new IntRange(Math.max(1,characterLevel-40), characterLevel-10 );
+            case NOOB -> new IntRange(1, characterLevel/2);
             case WEAKER -> new IntRange(Math.max(1, characterLevel-10), Math.max(1, characterLevel-2) );
             case EQUAL -> new IntRange(characterLevel, characterLevel);
             case FAIR -> new IntRange(Math.max(1, characterLevel-1),Math.max(1, characterLevel+1) );
             case STRONGER -> new IntRange(characterLevel+5, characterLevel+10);
-            case HARDEST -> new IntRange(characterLevel+10, characterLevel+50);
+            case HARDEST -> new IntRange(characterLevel+10, characterLevel*2);
         };
     }
 
@@ -91,6 +94,7 @@ public class BattleController implements SecuredRestController {
 
         if(foundCharacter.isPresent()){
             Character characterInst = foundCharacter.get();
+            if(characterInst.getHealth() <= MIN_HEALTH_FOR_FIGHT) throw new BadRequestException("You cannot attack with low health points. Need at least: " + this.MIN_HEALTH_FOR_FIGHT);
             IntRange enemyRange = getEnemyLevelsRange(enemyLevel, characterInst.getLevel());
             List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemyBasedOnLevel(
                     RandomUtils.getRandomValueWithinRange(enemyRange.min(), enemyRange.max()), enemyType, this.getEnemyStatsMultipler(enemyType)
