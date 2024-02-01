@@ -167,9 +167,6 @@ public class Fight {
                         //TODO: improve here, make DRY
                         BattleDetails<Enemy> currentHeroDetails = this.enemyHeroesDetails.get(id);
                         this.handleHeroTurn(currentHeroDetails, turnReport, false);
-                    }else{
-                        //Just for now. It ensures that dead enemy will not move - continue
-                        continue;
                     }
 
                     if(!this.isFightOngoing()){
@@ -191,12 +188,12 @@ public class Fight {
     private <DetailsType extends BaseHero> void handleHeroTurn(BattleDetails<DetailsType> heroDetails, FightTurnReport currentTurnReport, boolean isUserTurn) {
         //TODO: logs to remove
         if(heroDetails.isUserCharacter()) System.out.println("\u001B[34m"+"** User turn "+heroDetails.getHero().getId()+ " **");
-        else  System.out.println("\u001B[31m"+"** Enemy turn "+heroDetails.getHero().getId() + " ** ");
+        else System.out.println("\u001B[31m"+"** Enemy turn "+heroDetails.getHero().getId() + " ** ");
 
         BaseHero heroToAttack = isUserTurn ? getMostThreateningEnemyHero() : getMostThreateningUserHero();
         CombatReturnData turnData = this.attackAndDefend(heroDetails.getHero(),
                 heroToAttack);
-        this.checkAndHandleDeaths(heroDetails.getHero().getId());
+        this.checkAndHandleDeaths(isUserTurn, heroDetails.getHero().getId(), heroToAttack.getId());
         currentTurnReport.addTurnAction(turnData);
     }
 
@@ -220,11 +217,14 @@ public class Fight {
         }
     }
 
-    private void checkAndHandleDeaths(ObjectId heroId) {
-        if(this.userHeroesDetails.containsKey(heroId)) this.checkAndHandleUserCharacterDeath(heroId);
-        if(this.enemyHeroesDetails.containsKey(heroId))this.checkAndHandleEnemyDeath(heroId);
-
-
+    public void checkAndHandleDeaths(boolean isUserTurn, ObjectId attackerId, ObjectId defenderId) {
+        if (isUserTurn) {
+            checkAndHandleUserCharacterDeath(attackerId);
+            checkAndHandleEnemyDeath(defenderId);
+        } else {
+            checkAndHandleUserCharacterDeath(defenderId);
+            checkAndHandleEnemyDeath(attackerId);
+        }
     }
 
     private CombatReturnData attackAndDefend (BaseHero attacker, BaseHero defender){
