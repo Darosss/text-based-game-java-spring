@@ -6,7 +6,9 @@ import com.example.battle.reports.FightReport;
 import com.example.characters.Character;
 import com.example.characters.CharacterService;
 import com.example.enemies.Enemy;
-import com.example.enemies.EnemyService;
+import com.example.enemies.EnemyType;
+import com.example.enemies.EnemyUtils;
+import com.example.skirmishes.EnemySkirmishDifficulty;
 import com.example.utils.RandomUtils;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,65 +21,38 @@ import java.util.Optional;
 
 @RestController("battle")
 public class BattleController implements SecuredRestController {
-    private BattleManagerService battleManagerService;
+    private final BattleManagerService battleManagerService;
     private final AuthenticationFacade authenticationFacade;
-    private CharacterService characterService;
-    private EnemyService enemyService;
-
+    private final CharacterService characterService;
     private final int MIN_HEALTH_FOR_FIGHT = 20;
-
-
-    public enum EnemyLevelChoice {
-        NOOB, WEAKER, EQUAL, FAIR, STRONGER, HARDEST
-    }
 
     private record IntRange(int min, int max){}
 
     @Autowired
     BattleController(BattleManagerService battleManagerService,
                      CharacterService characterService,
-                     EnemyService enemyService,
                      AuthenticationFacade authenticationFacade
-
                      ){
         this.battleManagerService = battleManagerService;
         this.characterService = characterService;
-        this.enemyService = enemyService;
         this.authenticationFacade = authenticationFacade;
     }
 
-    private IntRange getEnemyLevelsRange(EnemyLevelChoice strength, int characterLevel){
-        return switch (strength){
-            case NOOB -> new IntRange(1, characterLevel/2);
-            case WEAKER -> new IntRange(Math.max(1, characterLevel-10), Math.max(1, characterLevel-2) );
-            case EQUAL -> new IntRange(characterLevel, characterLevel);
-            case FAIR -> new IntRange(Math.max(1, characterLevel-1),Math.max(1, characterLevel+1) );
-            case STRONGER -> new IntRange(characterLevel+5, characterLevel+10);
-            case HARDEST -> new IntRange(characterLevel+10, characterLevel*2);
-        };
-    }
-
-    private double getEnemyStatsMultipler(Enemy.EnemyType type){
-        return switch (type){
-            case EASY -> 0.5;
-            case NORMAL -> 1;
-            case MEDIUM -> 1.2;
-            case HARD -> 2;
-            case IMPOSSIBLE -> 3;
-        };
-    }
     @PostMapping("/debug/attack/{enemyType}")
     public FightReport DebugAttack(
-            @PathVariable Enemy.EnemyType enemyType
+            @PathVariable EnemyType enemyType
     ) throws Exception {
         Optional<Character> foundCharacter = this.characterService.findOneMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
         int randomLevel = RandomUtils.getRandomValueWithinRange(1,100);
-        List<Enemy> enemies =  List.of(
-                this.enemyService.createRandomEnemyBasedOnLevel(randomLevel,enemyType,2
-                ));
+
+
         if(foundCharacter.isPresent()){
+            Enemy enemy = EnemyUtils.createRandomEnemyBasedOnLevel(enemyType+" enemy",
+                    randomLevel, enemyType, EnemyUtils.getEnemyStatsMultiplier(enemyType)
+                    );
+
             Character characterInst = foundCharacter.get();
-            FightReport report =  this.battleManagerService.performNormalFight(List.of(characterInst), enemies);
+            FightReport report =  this.battleManagerService.performFight(characterInst, enemy);
 
             characterInst.gainExperience(report.getGainedExperience());
             this.characterService.update(characterInst);
@@ -87,20 +62,23 @@ public class BattleController implements SecuredRestController {
     }
     @PostMapping("/debug/attack/{enemyLevel}/{enemyType}")
     public FightReport DebugAttackWithEnemyStrength(
-            @PathVariable EnemyLevelChoice enemyLevel,
-            @PathVariable Enemy.EnemyType enemyType
+            @PathVariable EnemySkirmishDifficulty difficulty,
+            @PathVariable EnemyType enemyType
     ) throws Exception {
         Optional<Character> foundCharacter = this.characterService.findOneMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
 
         if(foundCharacter.isPresent()){
             Character characterInst = foundCharacter.get();
             if(characterInst.getHealth() <= MIN_HEALTH_FOR_FIGHT) throw new BadRequestException("You cannot attack with low health points. Need at least: " + this.MIN_HEALTH_FOR_FIGHT);
-            IntRange enemyRange = getEnemyLevelsRange(enemyLevel, characterInst.getLevel());
-            List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemyBasedOnLevel(
-                    RandomUtils.getRandomValueWithinRange(enemyRange.min(), enemyRange.max()), enemyType, this.getEnemyStatsMultipler(enemyType)
-            ));
+            EnemyUtils.LevelRange enemyRange = EnemyUtils.getEnemyLevelRanges(difficulty, characterInst.getLevel());
 
-            FightReport report =  this.battleManagerService.performNormalFight(List.of(characterInst), enemies);
+            Enemy enemy = EnemyUtils.createRandomEnemyBasedOnLevel(
+             enemyType + " enemy",
+                    RandomUtils.getRandomValueWithinRange(enemyRange.min(), enemyRange.max()),
+                    enemyType, EnemyUtils.getEnemyStatsMultiplier(enemyType)
+                );
+
+            FightReport report =  this.battleManagerService.performFight(characterInst, enemy);
 
             characterInst.gainExperience(report.getGainedExperience());
             this.characterService.update(characterInst);
@@ -113,10 +91,11 @@ public class BattleController implements SecuredRestController {
     public FightReport DebugAttackMultipleCharacters() throws Exception {
         List<Character> foundCharacters = this.characterService.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
         int randomLevel = RandomUtils.getRandomValueWithinRange(1,100);
-        List<Enemy> enemies =  List.of(this.enemyService.createRandomEnemyBasedOnLevel(
-                randomLevel,Enemy.EnemyType.NORMAL, 2));
-
-        if(!foundCharacters.isEmpty()){
+        EnemyType randomEnemyType = EnemyUtils.getEnemyTypeDependsOnProbability();
+        double statsMultiplier = EnemyUtils.getEnemyStatsMultiplier(randomEnemyType);
+        List<Enemy> enemies =  List.of(
+                EnemyUtils.createRandomEnemyBasedOnLevel("Enemy", randomLevel, randomEnemyType, statsMultiplier));
+            if(!foundCharacters.isEmpty()){
             return this.battleManagerService.performNormalFight(foundCharacters, enemies);
         }
         return null;
@@ -125,9 +104,9 @@ public class BattleController implements SecuredRestController {
     public FightReport DebugManyVsMany() throws Exception {
         List<Character> foundCharacters = this.characterService.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
         List<Enemy> enemies =  List.of(
-            this.enemyService.createRandomEnemyBasedOnLevel(20,Enemy.EnemyType.IMPOSSIBLE,2),
-            this.enemyService.createRandomEnemyBasedOnLevel(25,Enemy.EnemyType.NORMAL, 1.2),
-            this.enemyService.createRandomEnemyBasedOnLevel(25,Enemy.EnemyType.EASY, 0.8)
+            EnemyUtils.createRandomEnemyBasedOnLevel("Enemy number prob 5.0, stats 2", 20, EnemyUtils.getEnemyTypeDependsOnProbability(5.0),2),
+            EnemyUtils.createRandomEnemyBasedOnLevel("Enemy number prob 2.0, stats 1.2",25, EnemyUtils.getEnemyTypeDependsOnProbability(2.0) , 1.2),
+            EnemyUtils.createRandomEnemyBasedOnLevel("Enemy number stats prob 1 0.8", 25,EnemyUtils.getEnemyTypeDependsOnProbability(), 0.8)
         );
         if(!foundCharacters.isEmpty()){
             return this.battleManagerService.performNormalFight(foundCharacters, enemies);

@@ -9,8 +9,7 @@ import java.util.Map;
 
 public class Enemy extends BaseHero {
 
-    private EnemyType type = EnemyType.EASY;
-    public enum EnemyType { EASY, NORMAL, MEDIUM, HARD, IMPOSSIBLE}
+    private EnemyType type = EnemyType.COMMON;
 
     public Enemy(){
         super("Default name enemy"); this.setId(new ObjectId());

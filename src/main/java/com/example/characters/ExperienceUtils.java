@@ -1,6 +1,6 @@
 package com.example.characters;
 
-import com.example.enemies.Enemy;
+import com.example.enemies.EnemyType;
 
 public class ExperienceUtils {
     public static long BASE_EXPERIENCE_FOR_LEVEL = 100L;
@@ -12,7 +12,7 @@ public class ExperienceUtils {
     public static final double ENEMY_DEFEAT_LEVEL_FACTOR_BASE = 1.2;
     public static final double ENEMY_DEFEAT_LEVEL_FACTOR_EXPONENT = 0.3;
 
-    public static long calculateExperienceFromEnemy(int playerLevel, int enemyLevel, Enemy.EnemyType enemyType) {
+    public static long calculateExperienceFromEnemy(int playerLevel, int enemyLevel, EnemyType enemyType) {
         int baseExperience = ENEMY_DEFEAT_BASE_EXPERIENCE;
         double levelDifference = enemyLevel - playerLevel;
         double enemyDifferenceFactor = levelDifference >= 0 ? Math.max(1, levelDifference + (0.2 * levelDifference) ) :
@@ -45,13 +45,14 @@ public class ExperienceUtils {
 
         return neededExp;
     }
-    private static double getEnemyTypeBonus(Enemy.EnemyType enemyType) {
+    private static double getEnemyTypeBonus(EnemyType enemyType) {
         return switch (enemyType) {
-            case EASY -> 0.5;
-            case NORMAL -> 1.0;
-            case MEDIUM -> 1.2;
-            case HARD -> 1.5;
-            case IMPOSSIBLE -> 2.0;
+            case COMMON -> 0.5;
+            case UNCOMMON -> 1.0;
+            case RARE -> 1.2;
+            case EPIC -> 1.7;
+            case BOSS -> 2.5;
+            case ANCESTOR -> 5.0;
         };
     }
 }
