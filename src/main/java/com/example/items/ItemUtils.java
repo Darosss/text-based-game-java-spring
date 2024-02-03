@@ -36,11 +36,20 @@ public class ItemUtils {
         return type.getDisplayName();
     }
 
-    public static ItemRarityEnum getRandomRarityItem() {
-        //TODO: make it more balanced - some factors
-        Random random = new Random();
+
+    public static ItemRarityEnum getRandomRarityItem(){
+        return getRandomRarityItem(1);
+    }
+    public static ItemRarityEnum getRandomRarityItem(double additionalBonusMultiplier) {
+        double randomDouble = RandomUtils.getRandomValueWithinRange(0, 1.0);
         ItemRarityEnum[] values =ItemRarityEnum.values();
-        return values[random.nextInt(values.length)];
+        for(int i = values.length - 1; i >= 0; i--){
+            ItemRarityEnum currentRarity = values[i];
+            double probabilityWithBonus = Math.min(1.0, currentRarity.getProbability() * Math.max(0.1, additionalBonusMultiplier));
+            if(randomDouble <= probabilityWithBonus) return currentRarity;
+        }
+
+        return ItemRarityEnum.COMMON;
     }
 
 
