@@ -3,6 +3,7 @@ package com.example.skirmishes;
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
 import com.example.battle.reports.FightReport;
+import com.example.items.ItemService;
 import com.example.users.User;
 import com.example.users.UserService;
 import org.apache.coyote.BadRequestException;
@@ -22,16 +23,19 @@ public class SkirmishesController implements SecuredRestController {
     private final UserService userService;
     private final SkirmishesService service;
     private final ChallengesService challengesService;
+    private final ItemService itemService;
 
 
     @Autowired
     public SkirmishesController(AuthenticationFacade authenticationFacade,
                                 SkirmishesService skirmishesService,
-                                UserService userService, ChallengesService challengesService) {
+                                UserService userService, ChallengesService challengesService,
+                                ItemService itemService) {
         this.authenticationFacade = authenticationFacade;
         this.userService = userService;
         this.service = skirmishesService;
         this.challengesService = challengesService;
+        this.itemService = itemService;
 
     }
 
@@ -63,6 +67,11 @@ public class SkirmishesController implements SecuredRestController {
         //TODO: iterateCount - should be get from user collection(for example some users can have more than 2)
         returnDataInst.skirmish().generateChallenges(2);
         this.service.update(returnDataInst.skirmish());
+
+        returnDataInst.report().getLoot().forEach((item)->{
+            item.setUser(foundUser.get());
+            this.itemService.create(item);
+        });
         return returnDataInst.report();
     }
     @PostMapping("/start-challenge/{challengeId}")
