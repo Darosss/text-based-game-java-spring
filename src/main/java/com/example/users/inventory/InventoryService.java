@@ -1,12 +1,14 @@
 package com.example.users.inventory;
 
 import dev.morphia.Datastore;
+import dev.morphia.query.filters.Filters;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
 public class InventoryService {
-    private Datastore datastore;
+    private final Datastore datastore;
 
     @Autowired
     public InventoryService(Datastore datastore) {
@@ -21,6 +23,11 @@ public class InventoryService {
         return this.datastore.save(inventory);
     }
 
-
+    public Inventory getUserInventory(ObjectId userId) {
+        return this.datastore.find(Inventory.class).filter(Filters.eq("user", userId)).first();
+    }
+    public Inventory getUserInventory(String userId) {
+        return this.getUserInventory(new ObjectId(userId));
+    }
 
 }

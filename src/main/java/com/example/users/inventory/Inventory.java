@@ -7,20 +7,20 @@ import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
 import org.bson.types.ObjectId;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 
 @Entity("users_inventories")
 public class Inventory {
     @Id
     private ObjectId id;
 
-    @Reference(idOnly = true, lazy = true, ignoreMissing = true)
+    @JsonIgnoreProperties("inventory")
+    @Reference(idOnly = true, lazy = true)
     private User user;
 
+    @JsonIgnoreProperties("user")
     @Reference
-    private List<Item> items;
+    private HashSet<Item> items;
     private int maxItems=100;
     private float maxWeight=100;
     private float currentWeight = 0;
@@ -28,7 +28,7 @@ public class Inventory {
 
     public Inventory(){}
     public Inventory(int maxWeight) {
-        this.items = new ArrayList<>();
+        this.items = new HashSet<>();
         this.maxItems = 1000;
         this.maxWeight = maxWeight;
         this.currentWeight = 0;
@@ -36,7 +36,7 @@ public class Inventory {
 
 
 
-    public List<Item> getItems() {
+    public HashSet<Item> getItems() {
         return items;
     }
 
@@ -53,7 +53,8 @@ public class Inventory {
     }
 
     public boolean addItem(Item item) {
-        if (items.size() >= maxItems || currentWeight + item.getWeight() > maxWeight) {
+        if(this.items == null) this.items = new HashSet<>();
+        if (this.items.size() >= this.maxItems || this.currentWeight + item.getWeight() > this.maxWeight) {
             return false;
         }
 
@@ -86,7 +87,7 @@ public class Inventory {
         this.user = user;
     }
 
-    public void setItems(List<Item> items) {
+    public void setItems(HashSet<Item> items) {
         this.items = items;
     }
 

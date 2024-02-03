@@ -3,7 +3,7 @@ package com.example.skirmishes;
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
 import com.example.battle.reports.FightReport;
-import com.example.items.ItemService;
+import com.example.items.ItemsInventoryService;
 import com.example.users.User;
 import com.example.users.UserService;
 import org.apache.coyote.BadRequestException;
@@ -23,19 +23,19 @@ public class SkirmishesController implements SecuredRestController {
     private final UserService userService;
     private final SkirmishesService service;
     private final ChallengesService challengesService;
-    private final ItemService itemService;
+    private final ItemsInventoryService itemsInventoryService;
 
 
     @Autowired
     public SkirmishesController(AuthenticationFacade authenticationFacade,
                                 SkirmishesService skirmishesService,
                                 UserService userService, ChallengesService challengesService,
-                                ItemService itemService) {
+                                ItemsInventoryService itemsInventoryService) {
         this.authenticationFacade = authenticationFacade;
         this.userService = userService;
         this.service = skirmishesService;
         this.challengesService = challengesService;
-        this.itemService = itemService;
+        this.itemsInventoryService = itemsInventoryService;
 
     }
 
@@ -68,10 +68,7 @@ public class SkirmishesController implements SecuredRestController {
         returnDataInst.skirmish().generateChallenges(2);
         this.service.update(returnDataInst.skirmish());
 
-        returnDataInst.report().getLoot().forEach((item)->{
-            item.setUser(foundUser.get());
-            this.itemService.create(item);
-        });
+        returnDataInst.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(foundUser.get(), item));
         return returnDataInst.report();
     }
     @PostMapping("/start-challenge/{challengeId}")
@@ -80,6 +77,7 @@ public class SkirmishesController implements SecuredRestController {
     ) throws Exception {
         Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
         if(foundUser.isEmpty()) return null;
+        //TODO: make it from configs plusMinutes - remember(Changed for debug)
         LocalDateTime challengeFinishTimestamp = LocalDateTime.now().plusSeconds(this.CHALLENGE_WAIT_TIME_MINUTES);
         User userInstance = foundUser.get();
 
