@@ -2,6 +2,7 @@ package com.example.items;
 
 import com.example.items.statistics.*;
 import com.example.users.User;
+import com.fasterxml.jackson.annotation.JsonIncludeProperties;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -18,7 +19,9 @@ public class Item {
     private ObjectId id;
 
     @Reference(idOnly = true, lazy = true)
-    private User userId;
+    @JsonIncludeProperties("id")
+    private User user;
+
     private String name;
 
     private String description;
@@ -130,12 +133,12 @@ public class Item {
 
     public float getWeight() { return weight; }
 
-    public User getUserId() {
-        return userId;
+    public User getUser() {
+        return user;
     }
 
-    public void setUserId(User userId) {
-        this.userId = userId;
+    public void setUser(User user) {
+        this.user = user;
     }
     public ItemStatisticsObject getStatisticsByName(String name) {
         return this.statistics.getBaseStatistics().get(name);
@@ -153,7 +156,7 @@ public class Item {
     public String toString() {
         return "Item{" +
                 "id=" + id +
-                ", userId=" + userId +
+                ", user=" + user +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", level=" + level +
