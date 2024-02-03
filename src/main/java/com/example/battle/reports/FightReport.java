@@ -2,6 +2,7 @@ package com.example.battle.reports;
 
 import com.example.enemies.Enemy;
 import com.example.characters.Character;
+import com.example.items.Item;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ public class FightReport {
     }
     private FightStatus status = FightStatus.FIGHT;
     private long gainedExperience = 0L;
+    private final List<Item> loot = new ArrayList<>();
     private final List<FightTurnReport> turnsReports = new ArrayList<>();
 
     private final List<Character> characters = new ArrayList<>();
@@ -64,5 +66,16 @@ public class FightReport {
     }
     public void addToEnemies(Enemy enemy) {
         this.enemies.add(enemy);
+    }
+
+    public List<Item> getLoot() {
+        return loot;
+    }
+
+    public void addLootItem(Item item){
+        this.loot.add(item);
+    }
+    public void addLootItems(List<Item> item){
+        this.loot.addAll(item);
     }
 }

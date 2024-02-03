@@ -1,29 +1,35 @@
 package com.example.items;
 
 public enum ItemRarityEnum {
-    COMMON("Common", 0),
-    UNCOMMON("Uncommon", 10),
-    RARE("Rare", 25),
-    VERY_RARE("Very Rare", 33),
-    EPIC("Epic", 50),
-    LEGENDARY("Legendary", 75),
-    MYTHIC("Mythic", 100);
+    COMMON("Common", 0, 0),
+    UNCOMMON("Uncommon", 10, 2),
+    RARE("Rare", 15, 4),
+    VERY_RARE("Very Rare", 15, 8),
+    EPIC("Epic", 20, 12),
+    LEGENDARY("Legendary", 20, 16),
+    MYTHIC("Mythic", 30, 20);
 
 
     private final String displayName;
-    private final int bonusPercentage;
+    private final double bonusValue;
+    private final double bonusPercentageValue;
 
-    ItemRarityEnum(String displayName, int bonusPercentage) {
+    ItemRarityEnum(String displayName, int bonusValue, int bonusPercentageValue) {
 
         this.displayName = displayName;
-        this.bonusPercentage = bonusPercentage;
+        this.bonusValue = bonusValue;
+        this.bonusPercentageValue = bonusPercentageValue;
     }
 
     public String getDisplayName() {
         return displayName;
     }
 
-    public int getBonusPercentage() {
-        return bonusPercentage;
+    public double getBonusValue() {
+        return bonusValue;
+    }
+
+    public double getBonusPercentageValue() {
+        return bonusPercentageValue;
     }
 }

@@ -7,44 +7,16 @@ import java.util.*;
 
 public class ItemUtils {
     private ItemUtils() {}
-//    public static ItemBaseStatisticsMap generateRandomBaseStats(int count) {
-//        ItemBaseStatisticsMap baseStats = new ItemBaseStatisticsMap();
-//        BaseStatisticsNamesEnum[] values = BaseStatisticsNamesEnum.values();
-//        List<BaseStatisticsNamesEnum> list = Arrays.asList(values);
-//        Collections.shuffle(list);
-//        values = list.toArray(new BaseStatisticsNamesEnum[0]);
-//
-//        for (int i = 0; i < Math.min(count, values.length); i++){
-//            ItemStatisticsObject statToAdd =
-//                    new ItemStatisticsObject(
-//                            values[i].getDisplayName(),
-//                            RandomUtils.getRandomValueWithinRange(1,150),
-//                            RandomUtils.getRandomValueWithinRange(1,150)
-//                            );
-//
-//            baseStats.addStatistic(values[i].getDisplayName(), statToAdd);
-//        }
-//
-//        return baseStats;
-//    }
-//    public static ItemAdditionalStatisticsMap generateRandomAdditionalBaseStats(int count) {
-//        ItemAdditionalStatisticsMap additionalStats = new ItemAdditionalStatisticsMap();
-//        AdditionalStatisticsNamesEnum[] values = AdditionalStatisticsNamesEnum.values();
-//        List<AdditionalStatisticsNamesEnum> list = Arrays.asList(values);
-//        Collections.shuffle(list);
-//        values = list.toArray(new AdditionalStatisticsNamesEnum[0]);
-//
-//        for (int i = 0; i < Math.min(count, values.length); i++){
-//            ItemStatisticsObject statToAdd =new ItemStatisticsObject(
-//                    values[i].getDisplayName(),
-//                    RandomUtils.getRandomValueWithinRange(1,150),
-//                    getRandomItemValueType());
-//            additionalStats.addStatistic(values[i], statToAdd);
-//        }
-//
-//        return additionalStats;
-//    }
 
+
+    public static double getItemLevelFactorValueStatistics(int itemLevel) {
+        double ITEM_STATISTIC_FACTOR_PER_LEVEL = 1.5;
+        return (ITEM_STATISTIC_FACTOR_PER_LEVEL * itemLevel);
+    }
+    public static double getItemLeveFactorPercentStatistics(int itemLevel) {
+        double ITEM_STATISTIC_PERCENT_FACTOR_PER_LEVEL = 0.25;
+        return (ITEM_STATISTIC_PERCENT_FACTOR_PER_LEVEL * itemLevel);
+    }
     public static ItemTypeEnum getRandomItemType() {
 
         Random random = new Random();
@@ -53,12 +25,10 @@ public class ItemUtils {
     }
 
     public static ItemPrefixesEnum getRandomItemPrefix(){
-        //TODO: Later from some file or db
         return RandomUtils.getRandomItemFromArray( ItemPrefixesEnum.values());
 
     }
     public static ItemSuffixesEnum getRandomItemSuffix() {
-        //TODO: Later from some file or db
         return RandomUtils.getRandomItemFromArray( ItemSuffixesEnum.values());
     }
 
@@ -67,42 +37,75 @@ public class ItemUtils {
     }
 
     public static ItemRarityEnum getRandomRarityItem() {
+        //TODO: make it more balanced - some factors
         Random random = new Random();
         ItemRarityEnum[] values =ItemRarityEnum.values();
         return values[random.nextInt(values.length)];
     }
-    private static Item generateItem(
+
+
+
+    public static Item generateItemWithoutBaseStats(
             String itemName, ItemTypeEnum type, int level, int value, ItemRarityEnum rarity,
             float weight, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
-//            ItemBaseStatisticsMap statistics, ItemAdditionalStatisticsMap additionalStatistics
+    ) {
+        return new Item(itemName, "Description of "+itemName, level, value, type, rarity, weight,prefix, suffix);
+    }
+
+
+    //NOTE: That's for debug right now;
+    private static Item generateItem(
+            String itemName, ItemTypeEnum type, int level, int value, ItemRarityEnum rarity,
+            float weight, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
+            Map<String, ItemStatisticsObject> baseStatistics,
+            Map<String, ItemStatisticsObject> baseAdditionalStatistics
     ){
 
         return new Item(itemName, "Description of "+itemName,
-                level, value, type, rarity, weight,
-                prefix, suffix);
+                level, value, type, rarity, weight,prefix, suffix,
+                baseStatistics, baseAdditionalStatistics
+        );
 
     }
 
+    public static Item generateRandomItemWithoutBaseStats(String name, int itemLevel, ItemTypeEnum itemType){
+        return  generateItemWithoutBaseStats(name, itemType, itemLevel,
+                RandomUtils.getRandomValueWithinRange(1,40000),
+                getRandomRarityItem(),
+                RandomUtils.getRandomValueWithinRange(0.1f,100f),
+                getRandomItemPrefix(), getRandomItemSuffix()
+        );
+    };
+
+    //NOTE: That's for debug right now;
+    public static Item generateRandomItem(String name, int itemLevel, ItemTypeEnum itemType,
+                                          Map<String, ItemStatisticsObject> baseStatistics,
+                                          Map<String, ItemStatisticsObject> baseAdditionalStatistics
+    ){
+        return generateItem(name, itemType, itemLevel,
+                RandomUtils.getRandomValueWithinRange(1,40000),
+                getRandomRarityItem(),
+                RandomUtils.getRandomValueWithinRange(0.1f,100f),
+                getRandomItemPrefix(), getRandomItemSuffix(), baseStatistics, baseAdditionalStatistics
+        );
+    };
+
+
+    public static Item generateRandomItem(){
+        ItemTypeEnum randomItemType = getRandomItemType();
+        String randomItemName = getItemName(randomItemType);
+        return generateRandomItemWithoutBaseStats(randomItemName, RandomUtils.getRandomValueWithinRange(1,100), randomItemType);
+    }
     public static List<Item> generateRandomItems(int count) {
         List<Item> generatedItems = new ArrayList<>();
 
         for (int i = 0; i<= count; i ++){
-            ItemTypeEnum randomItemType = getRandomItemType();
-            String randomItemName = getItemName(randomItemType);
-            generatedItems.add(
-                    generateItem(randomItemName, randomItemType,
-                            RandomUtils.getRandomValueWithinRange(1,100),
-                            RandomUtils.getRandomValueWithinRange(1,40000),
-                            getRandomRarityItem(),
-                            RandomUtils.getRandomValueWithinRange(0.1f,100f),
-                            getRandomItemPrefix(), getRandomItemSuffix()
-                            )
-            );
+            generatedItems.add(generateRandomItem());
         }
     return generatedItems;
     }
 
-    public static <MapType extends Map<String, ItemStatisticsObject>> void mergeItemStatisticsObjectMaps(MapType destination, MapType source) {
+    public static <MapType extends Map<String, ItemStatisticsObject>> MapType mergeItemStatisticsObjectMaps(MapType destination, MapType source) {
         source.forEach((k, v)-> {
             destination.merge(k, v, (v1, v2) -> {
                 int summedValue = v1.getValue() + v2.getValue();
@@ -112,5 +115,9 @@ public class ItemUtils {
                 );
             });
         });
+
+        return destination;
     }
+
+
 }

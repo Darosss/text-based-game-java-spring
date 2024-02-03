@@ -1,8 +1,6 @@
 package com.example.items;
 
 import com.example.items.statistics.*;
-import com.example.statistics.AdditionalStatisticsNamesEnum;
-import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
@@ -11,6 +9,7 @@ import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.Map;
 
 @Entity("items")
 public class Item {
@@ -28,72 +27,59 @@ public class Item {
 
     private Integer value;
 
+    private ItemPrefixesEnum prefix;
+    private ItemSuffixesEnum suffix;
+
     private Integer upgradePoints;
 
     private ItemTypeEnum type;
 
     private ItemRarityEnum rarity;
 
-    private ItemPrefixesEnum prefix;
-    private ItemSuffixesEnum suffix;
-
     private float weight;
-    private ItemBaseStatisticsMap statistics = new ItemBaseStatisticsMap(new HashMap<>());
-    private ItemAdditionalStatisticsMap additionalStatistics = new ItemAdditionalStatisticsMap(new HashMap<>());
-
+    private final ItemStatistics statistics;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
+    /**
+     Constructor for adding item without basing only on prefix + suffix
+     */
+    public Item (
+            String name, String description, Integer level,
+            Integer value, ItemTypeEnum type,
+            ItemRarityEnum rarity, float weight,
+            ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
+    ){
+        this(
+                name, description, level, value, type, rarity, weight, prefix, suffix,
+                new HashMap<>(), new HashMap<>());
 
+    }
+
+    /**
+     Constructor for adding item with additional base and additional stats + prefix + suffix
+     */
     public Item(String name, String description, Integer level,
                 Integer value, ItemTypeEnum type,
                 ItemRarityEnum rarity, float weight,
-                ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
-//                ItemBaseStatisticsMap statistics,
-//                ItemAdditionalStatisticsMap additionalStatistics
+                ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
+                Map<String, ItemStatisticsObject> baseStatistics,
+                Map<String, ItemStatisticsObject> baseAdditionalStatistics
 
     ) {
         this.name = name;
         this.description = description;
         this.level = level;
         this.value = value;
+        this.prefix = prefix;
+        this.suffix = suffix;
         this.type = type;
         this.rarity = rarity;
-        this.prefix = prefix; this.suffix = suffix;
-        this.statistics = createStatisticsFromPrefixAndSuffix(prefix, suffix);
-        this.additionalStatistics = createAdditionalStatisticsFromPrefixAndSuffix(prefix, suffix);
+        this.statistics = new ItemStatistics(baseStatistics, baseAdditionalStatistics, prefix, suffix, level, rarity);
         this.upgradePoints = 0;
         this.weight = weight;
     }
-
-    private ItemBaseStatisticsMap createStatisticsFromPrefixAndSuffix(ItemPrefixesEnum prefix, ItemSuffixesEnum suffix) {
-        ItemBaseStatisticsMap baseStatistics = new ItemBaseStatisticsMap(new HashMap<>());
-        ItemUtils.mergeItemStatisticsObjectMaps(
-                baseStatistics.getStatisticsMap(),
-                prefix.getStatistics().getStatisticsMap()
-        );
-
-        ItemUtils.mergeItemStatisticsObjectMaps(
-                baseStatistics.getStatisticsMap(),
-                suffix.getStatistics().getStatisticsMap()
-        );
-        return baseStatistics;
-    }
-    private ItemAdditionalStatisticsMap createAdditionalStatisticsFromPrefixAndSuffix(ItemPrefixesEnum prefix, ItemSuffixesEnum suffix) {
-        ItemAdditionalStatisticsMap additionalStatistics = new ItemAdditionalStatisticsMap(new HashMap<>());
-        ItemUtils.mergeItemStatisticsObjectMaps(
-                additionalStatistics.getStatisticsMap(),
-                prefix.getAdditionalStatistics().getStatisticsMap()
-        );
-        ItemUtils.mergeItemStatisticsObjectMaps(
-                additionalStatistics.getStatisticsMap(),
-                suffix.getAdditionalStatistics().getStatisticsMap()
-        );
-        return additionalStatistics;
-    }
-
-
     public void setUpgradePoints(Integer upgradePoints) {
         this.upgradePoints = upgradePoints;
     }
@@ -134,10 +120,6 @@ public class Item {
         return rarity;
     }
 
-    public ItemBaseStatisticsMap getStatistics() {
-        return statistics;
-    }
-
     public ItemPrefixesEnum getPrefix() {
         return prefix;
     }
@@ -145,11 +127,6 @@ public class Item {
     public ItemSuffixesEnum getSuffix() {
         return suffix;
     }
-
-    public ItemAdditionalStatisticsMap getAdditionalStatistics() {
-        return additionalStatistics;
-    }
-
 
     public float getWeight() { return weight; }
 
@@ -160,34 +137,34 @@ public class Item {
     public void setUserId(User userId) {
         this.userId = userId;
     }
-//    public ItemAdditionalStatisticsMap getAdditionalStatistics() {
-//        return additionalStatistics;
-//    }
-
-    public ItemStatisticsObject getStatisticsByName(BaseStatisticsNamesEnum name) {
-        return statistics.getStatisticsMap().get(name);
+    public ItemStatisticsObject getStatisticsByName(String name) {
+        return this.statistics.getBaseStatistics().get(name);
     }
 
-    public ItemStatisticsObject getStatisticsByName(AdditionalStatisticsNamesEnum name) {
-        return additionalStatistics.getStatisticsMap().get(name);
+    public ItemStatisticsObject getAdditionalStatisticsByName(String name) {
+        return this.statistics.getAdditionalStatistics().get(name);
     }
 
-
+    public ItemStatistics getStatistics() {
+        return statistics;
+    }
 
     @Override
     public String toString() {
         return "Item{" +
-                "id='" + id + '\'' +
+                "id=" + id +
+                ", userId=" + userId +
                 ", name='" + name + '\'' +
                 ", description='" + description + '\'' +
                 ", level=" + level +
                 ", value=" + value +
+                ", prefix=" + prefix +
+                ", suffix=" + suffix +
                 ", upgradePoints=" + upgradePoints +
                 ", type=" + type +
                 ", rarity=" + rarity +
                 ", weight=" + weight +
                 ", statistics=" + statistics +
-                ", additionalStatistics=" + additionalStatistics +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';

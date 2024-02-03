@@ -1,3 +1,5 @@
 package com.example.items.statistics;
 
-public record PrefixSufixItemStatisticsJsonRecord(ItemBaseStatisticsMap baseStatistics, ItemAdditionalStatisticsMap additionalStatistics) {}
+import java.util.Map;
+
+public record PrefixSufixItemStatisticsJsonRecord(Map<String, ItemStatisticsObject> baseStatistics, Map<String, ItemStatisticsObject> additionalStatistics) {}

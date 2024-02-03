@@ -8,6 +8,8 @@ import com.example.characters.Character;
 import com.example.battle.data.DefendReturnData;
 import com.example.characters.ExperienceUtils;
 import com.example.enemies.Enemy;
+import com.example.enemies.EnemyUtils;
+import com.example.items.Item;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import org.bson.types.ObjectId;
 
@@ -15,6 +17,7 @@ import java.util.*;
 import java.util.stream.IntStream;
 
 public class Fight {
+    //TODO: later add fight options(bonuses) - for example: loot multiplier from fight, exp multiplier etc. etc;
     private final int maxTurns;
     private final int baseInitiativePerCycle = 20;
     private final int minimumBaseCapInitiative = 50;
@@ -214,11 +217,12 @@ public class Fight {
         Enemy enemy = (Enemy) this.enemyHeroesDetails.get(heroId).getHero();
         if(enemy.getHealth() <= 0){
             this.fightReport.increaseGainedExperience(
-                    ExperienceUtils.calculateExperienceFromEnemy(
-                        this.findUserMainCharacter().getLevel(),
-                        enemy.getLevel(),
-                        enemy.getType()
-                    ));
+                    ExperienceUtils.calculateExperienceFromEnemy(this.findUserMainCharacter().getLevel(),enemy.getLevel(),enemy.getType())
+            );
+
+            List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel());
+            this.fightReport.addLootItems(loot);
+
             this.fightReport.addToEnemies(enemy);
             this.enemyHeroesDetails.remove(heroId);
 

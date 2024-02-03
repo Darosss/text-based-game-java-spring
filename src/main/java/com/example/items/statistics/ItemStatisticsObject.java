@@ -21,7 +21,22 @@ public class ItemStatisticsObject extends StatisticObject<String> {
     }
 
     public void setPercentageValue(float percentageValue) {
-        this.percentageValue = percentageValue;
+        this.percentageValue = percentageValue < 0 ? Math.max(-50, percentageValue) : Math.min(percentageValue, 50);
+    }
+
+    public void increasePercentageValue(int value) {
+        this.setPercentageValue(this.percentageValue + value);
+    }
+
+    public void increaseValueByPercent(double percentValue) {
+        this.setValue((int)(this.getValue() + (this.getValue() * percentValue)));
+    }
+
+    public void increasePercentageValueByPercent(double percentValue) {
+        this.setPercentageValue((int)(this.getPercentageValue() + (this.getPercentageValue() * percentValue)));
+    }
+    public void decreasePercentageValue(int value) {
+        this.percentageValue -= value;
     }
 }
 

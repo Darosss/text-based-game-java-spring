@@ -16,8 +16,8 @@ public enum ItemSuffixesEnum  {
 
 
     private final String displayName;
-    private ItemBaseStatisticsMap statistics ;
-    private final ItemAdditionalStatisticsMap additionalStatistics;
+    private Map<String, ItemStatisticsObject> statistics ;
+    private final Map<String, ItemStatisticsObject> additionalStatistics;
 
 
     //TODO: do not repeat - move this into utils or something
@@ -44,11 +44,11 @@ public enum ItemSuffixesEnum  {
     public String getDisplayName() {
         return displayName;
     }
-    public ItemBaseStatisticsMap getStatistics() {
+    public Map<String, ItemStatisticsObject> getStatistics() {
         return statistics;
     }
 
-    public ItemAdditionalStatisticsMap getAdditionalStatistics() {
+    public Map<String, ItemStatisticsObject> getAdditionalStatistics() {
         return additionalStatistics;
     }
 }

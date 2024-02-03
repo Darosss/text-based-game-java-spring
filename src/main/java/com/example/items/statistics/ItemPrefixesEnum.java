@@ -12,8 +12,8 @@ public enum ItemPrefixesEnum {
 
 
     private final String displayName;
-    private final ItemBaseStatisticsMap statistics ;
-    private final ItemAdditionalStatisticsMap additionalStatistics;
+    private final Map<String, ItemStatisticsObject> statistics ;
+    private final Map<String, ItemStatisticsObject> additionalStatistics;
 
     //TODO: do not repeat - move this into utils or something
     private Map<String, PrefixSufixItemStatisticsJsonRecord> initializePrefixMap() {
@@ -39,11 +39,11 @@ public enum ItemPrefixesEnum {
     public String getDisplayName() {
         return displayName;
     }
-    public ItemBaseStatisticsMap getStatistics() {
+    public Map<String, ItemStatisticsObject> getStatistics() {
         return statistics;
     }
 
-    public ItemAdditionalStatisticsMap getAdditionalStatistics() {
+    public Map<String, ItemStatisticsObject> getAdditionalStatistics() {
         return additionalStatistics;
     }
 }

@@ -1,19 +1,9 @@
 package com.example.items;
 
 import com.example.auth.SecuredRestController;
-import com.example.items.statistics.ItemAdditionalStatisticsMap;
-import com.example.items.statistics.ItemBaseStatisticsMap;
-import com.example.items.statistics.ItemStatisticsObject;
-import com.example.statistics.AdditionalStatisticsNamesEnum;
-import com.example.statistics.BaseStatisticsNamesEnum;
-import com.example.utils.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
 
 //CONTROLLER FOR DEBUGGING
 //EASILY ADD RANDOM ITEMS

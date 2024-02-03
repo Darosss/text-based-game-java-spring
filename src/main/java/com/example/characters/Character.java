@@ -77,7 +77,7 @@ public class Character  extends BaseHero {
     }
 
     public void calculateStatisticByItem(Item item, boolean isEquip){
-           item.getAdditionalStatistics().getStatisticsMap().forEach((k, v)->{
+           item.getStatistics().getAdditionalStatistics().forEach((k, v)->{
             AdditionalStatisticsNamesEnum castedKey  = AdditionalStatisticsNamesEnum.valueOf(k);
             if(isEquip){
                 this.stats.updateAdditionalStatisticsOnEquip(castedKey, v.getValue(), v.getPercentageValue());
@@ -85,7 +85,7 @@ public class Character  extends BaseHero {
                 this.stats.updateAdditionalStatisticsOnUnEquip(castedKey, v.getValue(), v.getPercentageValue());
             }
         });
-        item.getStatistics().getStatisticsMap().forEach((k, v)->{
+        item.getStatistics().getBaseStatistics().forEach((k, v)->{
             BaseStatisticsNamesEnum castedKey  = BaseStatisticsNamesEnum.valueOf(k);
             if (isEquip) {
                 this.stats.updateStatisticsOnEquip(castedKey, v.getValue(), v.getPercentageValue());

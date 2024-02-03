@@ -1,26 +1,22 @@
 {
   "of Crimson Eclipse": {
       "baseStatistics": {
-        "statisticsMap": {
-          "DEXTERITY": {
-            "name": "Dexterity",
-            "value": 110,
-            "percentageValue": 20
-          },
-          "CHARISMA": {
-            "name": "Charisma",
-            "value": 90,
-            "percentageValue": 15
-          }
-        }
+        "DEXTERITY": {
+          "name": "Dexterity",
+          "value": 110,
+          "percentageValue": 20
+        },
+        "CHARISMA": {
+          "name": "Charisma",
+          "value": 90,
+          "percentageValue": 15
+      }
       },
       "additionalStatistics": {
-        "statisticsMap": {
-          "MAX_DAMAGE": {
-            "name": "Max Damage",
-            "value": 35,
-            "percentageValue": 5
-          }
+        "MAX_DAMAGE": {
+          "name": "Max Damage",
+          "value": 35,
+          "percentageValue": 5
         }
       }
     }
