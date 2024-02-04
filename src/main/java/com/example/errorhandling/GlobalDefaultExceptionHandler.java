@@ -37,7 +37,7 @@ public class GlobalDefaultExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
         //TODO: make it better. - that's just for now
-        return ResponseEntity.badRequest().body("Invalid ObjectId provided");
+        return ResponseEntity.badRequest().body(e.getMessage());
     }
 
     private String generateReferenceId() {
