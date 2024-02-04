@@ -58,7 +58,7 @@ public class ItemUtils {
             String itemName, ItemTypeEnum type, int level, int value, ItemRarityEnum rarity,
             float weight, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
     ) {
-        return new Item(itemName, "Description of "+itemName, level, value, type, rarity, weight,prefix, suffix);
+        return new Item(itemName, "Description of "+itemName, level, value, type, rarity, weight,prefix, suffix, new HashMap<>(), new HashMap<>());
     }
 
 
@@ -69,7 +69,6 @@ public class ItemUtils {
             Map<String, ItemStatisticsObject> baseStatistics,
             Map<String, ItemStatisticsObject> baseAdditionalStatistics
     ){
-
         return new Item(itemName, "Description of "+itemName,
                 level, value, type, rarity, weight,prefix, suffix,
                 baseStatistics, baseAdditionalStatistics
@@ -113,20 +112,31 @@ public class ItemUtils {
         }
     return generatedItems;
     }
-
-    public static <MapType extends Map<String, ItemStatisticsObject>> MapType mergeItemStatisticsObjectMaps(MapType destination, MapType source) {
-        source.forEach((k, v)-> {
-            destination.merge(k, v, (v1, v2) -> {
-                int summedValue = v1.getValue() + v2.getValue();
-                float summedPercentageValue = v1.getPercentageValue() + v2.getPercentageValue();
-                return new ItemStatisticsObject(
-                        v1.getName(), summedValue, summedPercentageValue
-                );
-            });
+    public static <KeyType extends String> Map<KeyType, ItemStatisticsObject> getMergedItemStatisticsObjectMaps(Map<KeyType, ItemStatisticsObject> destination, Map<KeyType, ItemStatisticsObject> source) {
+        Map<KeyType, ItemStatisticsObject> newMap = new HashMap<>();
+        source.forEach((sourceKey, sourceValue) -> {
+            mergeHelper(newMap, sourceKey, sourceValue);
+        });
+        destination.forEach((sourceKey, destinationValue) -> {
+            mergeHelper( newMap, sourceKey, destinationValue);
         });
 
-        return destination;
+        return newMap;
     }
 
+    private static <KeyType extends String> void mergeHelper(Map<KeyType, ItemStatisticsObject> mapToMerge, KeyType currentKey, ItemStatisticsObject currentValue) {
+        if (mapToMerge.containsKey(currentKey)) {
+            ItemStatisticsObject mapToMergeVal = mapToMerge.get(currentKey);
+            int summedValue = currentValue.getValue() + mapToMergeVal.getValue();
+            float summedPercentageValue = currentValue.getPercentageValue() + mapToMergeVal.getPercentageValue();
 
+            mapToMerge.put(currentKey,
+                    new ItemStatisticsObject(currentKey, summedValue, summedPercentageValue)
+            );
+        } else {
+            mapToMerge.put(currentKey, new ItemStatisticsObject(
+                    currentValue.getName(), currentValue.getValue(), currentValue.getPercentageValue()
+            ));
+        }
+    }
 }
