@@ -2,14 +2,14 @@ package com.example.items;
 
 import com.example.items.statistics.*;
 import com.example.users.User;
-import com.fasterxml.jackson.annotation.JsonIncludeProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
 import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
 import java.util.Map;
 
 @Entity("items")
@@ -19,7 +19,7 @@ public class Item {
     private ObjectId id;
 
     @Reference(idOnly = true, lazy = true)
-    @JsonIncludeProperties("id")
+    @JsonIgnore
     private User user;
 
     private String name;
@@ -40,7 +40,7 @@ public class Item {
     private ItemRarityEnum rarity;
 
     private float weight;
-    private final ItemStatistics statistics;
+    private ItemStatistics statistics;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -48,21 +48,7 @@ public class Item {
     /**
      Constructor for adding item without basing only on prefix + suffix
      */
-    public Item (
-            String name, String description, Integer level,
-            Integer value, ItemTypeEnum type,
-            ItemRarityEnum rarity, float weight,
-            ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
-    ){
-        this(
-                name, description, level, value, type, rarity, weight, prefix, suffix,
-                new HashMap<>(), new HashMap<>());
-
-    }
-
-    /**
-     Constructor for adding item with additional base and additional stats + prefix + suffix
-     */
+    public Item() {}
     public Item(String name, String description, Integer level,
                 Integer value, ItemTypeEnum type,
                 ItemRarityEnum rarity, float weight,
@@ -83,6 +69,11 @@ public class Item {
         this.upgradePoints = 0;
         this.weight = weight;
     }
+
+    public ObjectId getId() {
+        return id;
+    }
+
     public void setUpgradePoints(Integer upgradePoints) {
         this.upgradePoints = upgradePoints;
     }

@@ -34,7 +34,7 @@ public class CharacterEquipmentController implements SecuredRestController {
 
     }
     @PostMapping("/unequip/debug/{equipmentId}/{slot}")
-    public Item unEquipBySlotDebug(
+    public Optional<Item> unEquipBySlotDebug(
             @PathVariable String equipmentId,
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) {

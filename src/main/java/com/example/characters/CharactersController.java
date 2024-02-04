@@ -2,6 +2,7 @@ package com.example.characters;
 
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
+import com.example.characters.equipment.CharacterEquipment;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.items.*;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
@@ -24,14 +25,18 @@ public class CharactersController implements SecuredRestController {
     private final AuthenticationFacade authenticationFacade;
     private UserService userService;
 
+    private final CharacterInventoryService characterInventoryService;
+
     @Autowired
     public CharactersController(CharacterService characterService, ItemService itemService,
                                 UserService userService,
-                                AuthenticationFacade authenticationFacade) {
+                                AuthenticationFacade authenticationFacade,
+                                CharacterInventoryService characterInventoryService) {
         this.service = characterService;
         this.itemService = itemService;
         this.userService = userService;
         this.authenticationFacade = authenticationFacade;
+        this.characterInventoryService = characterInventoryService;
     }
 
     //Later for admins
@@ -119,6 +124,7 @@ public class CharactersController implements SecuredRestController {
 
 
     }
+
     @PostMapping("/equip/{characterId}/{itemId}/{slot}")
     public boolean equipCharacterItem(
             @PathVariable String characterId,
@@ -128,17 +134,17 @@ public class CharactersController implements SecuredRestController {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<Item> itemToEquip = this.itemService.findOne(itemId);
         Optional<Character> foundCharacter = this.service.findById(characterId);
-        if(foundCharacter.isPresent() &&
-                foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId))
+        if(     itemToEquip.isPresent() &&
+                foundCharacter.isPresent() && foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId))
         ){
-            return itemToEquip.filter(item -> this.service.equipItem(characterId, slot, item)).isPresent();
+            return this.characterInventoryService.equipItem(new ObjectId(loggedUserId), itemToEquip.get(), slot);
         }
 
         return false;
     }
 
     @PostMapping("/un-equip/{characterId}/{slot}")
-    public Item unEquipCharacterItem(
+    public boolean unEquipCharacterItem(
             @PathVariable String characterId,
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) throws Exception {
@@ -147,9 +153,9 @@ public class CharactersController implements SecuredRestController {
             if(foundCharacter.isPresent() &&
                     foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
             {
-            return this.service.unequipItem(characterId, slot);
-        }
-        return null;
+                return this.characterInventoryService.unEquipItem(new ObjectId(loggedUserId), slot);
+            }
+        return false;
     }
 
 

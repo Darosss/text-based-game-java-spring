@@ -12,6 +12,7 @@ import org.bson.types.ObjectId;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Entity("equipments")
     public class CharacterEquipment {
@@ -55,11 +56,11 @@ import java.util.Map;
         EnumSet<ItemTypeEnum> requiredTypes = EnumSet.of(ItemTypeEnum.WEAPON_MELEE, ItemTypeEnum.WEAPON_RANGED);
         return isCorrectItemToWear(requiredTypes, item.getType());
     }
-    public Item unequipItem(CharacterEquipmentFieldsEnum slot){
+    public Optional<Item> unEquipItem(CharacterEquipmentFieldsEnum slot){
         if (this.slots.get(slot) != null) {
-            return this.slots.remove(slot);
+            return Optional.ofNullable(this.slots.remove(slot));
         }
-        return null;
+        return Optional.empty();
     }
     public Item getEquippedItemByField(CharacterEquipmentFieldsEnum slot) {
         return this.slots.get(slot);

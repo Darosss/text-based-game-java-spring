@@ -1,6 +1,5 @@
 package com.example.characters.equipment;
 
-import com.example.characters.Character;
 import com.example.items.Item;
 import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
@@ -38,13 +37,13 @@ public class EquipmentService {
         return Optional.ofNullable(datastore.find(CharacterEquipment.class).filter(Filters.eq("id", new ObjectId(id))).first());
     }
 
-    public Item unEquipItem(String equipmentId, CharacterEquipmentFieldsEnum slot){
+    public Optional<Item> unEquipItem(String equipmentId, CharacterEquipmentFieldsEnum slot){
         Optional<CharacterEquipment> equipment = this.findById(equipmentId);
         if(equipment.isPresent()){
             CharacterEquipment equipmentRef = equipment.get();
-            Item unEquipedItem = equipmentRef.unequipItem(slot);
+            Optional<Item> unEquippedItem = equipmentRef.unEquipItem(slot);
              this.update(equipment.get());
-             return unEquipedItem;
+             return unEquippedItem;
 
         }
         return null;

@@ -73,39 +73,6 @@ public class CharacterService {
         return savedCharacter;
     }
 
-    public boolean equipItem(String characterId, CharacterEquipmentFieldsEnum slot, Item item) {
-        Optional<Character> character = this.findById(characterId);
-
-        if(character.isPresent()){
-            Character characterInst = character.get();
-            CharacterEquipment equipment = characterInst.getEquipment();
-            boolean equipped = equipment.equipItem(slot, item);
-            if(equipped) {
-                this.equipmentService.update(equipment);
-                characterInst.calculateStatisticByItem(item, true);
-                this.update(characterInst);
-                return true;
-            }
-        }
-        return false;
-
-    }
-    public Item unequipItem(String characterId, CharacterEquipmentFieldsEnum slot) {
-        Optional<Character> character = this.findById(characterId);
-        if(character.isPresent()){
-            Character characterInst = character.get();
-            CharacterEquipment equipment = characterInst.getEquipment();
-            Item unequipedItem = equipment.unequipItem(slot);
-            this.equipmentService.update(equipment);
-            if(unequipedItem != null) {
-                characterInst.calculateStatisticByItem(unequipedItem, false);
-                this.update(characterInst);
-                return unequipedItem;
-            }
-        }
-        return null;
-    }
-
     public Optional<Character> findById(String id) {
         return Optional.ofNullable(datastore.find(Character.class).filter(Filters.eq("id", new ObjectId(id))).first());
     }

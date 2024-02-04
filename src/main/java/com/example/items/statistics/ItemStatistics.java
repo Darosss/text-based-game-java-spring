@@ -23,28 +23,35 @@ public class ItemStatistics {
         this.baseStatistics.putAll(baseStatistics);
         this.additionalStatistics.putAll(baseAdditionalStatistics);
 
-        this.mergeStatisticsFromPrefixAndSuffixAndAddThem(prefix, suffix);
+        this.baseStatistics.putAll(this.getMergedStatsWithPrefixSuffix(baseStatistics, prefix, suffix));
+        this.additionalStatistics.putAll(this.getMergedAdditionalStatsWithPrefixSuffix(baseStatistics, prefix, suffix));
+
         this.handleStatisticsUpdateBasedOnLevel(itemLevel);
         this.handleStatisticsUpdateBasedOnRarity(itemRarity);
     }
-    private Map<String, ItemStatisticsObject> createStatisticsMapFromPrefixAndSuffix(ItemPrefixesEnum prefix, ItemSuffixesEnum suffix) {
-        Map<String, ItemStatisticsObject> statisticsMap = prefix.getStatistics();
-
-        ItemUtils.mergeItemStatisticsObjectMaps(statisticsMap, suffix.getStatistics());
-        return statisticsMap;
+    private Map<String, ItemStatisticsObject> mergeStatsFromPrefixSuffix(ItemPrefixesEnum prefix, ItemSuffixesEnum suffix) {
+        return ItemUtils.getMergedItemStatisticsObjectMaps(prefix.getStatistics(), suffix.getStatistics());
     }
 
-    private Map<String, ItemStatisticsObject> createAdditionalStatisticsMapFromPrefixAndSuffix(ItemPrefixesEnum prefix, ItemSuffixesEnum suffix) {
-        Map<String, ItemStatisticsObject> additionalStatistics = prefix.getAdditionalStatistics();
+    private Map<String, ItemStatisticsObject> mergeAdditionalStatsFromPrefixSuffix(ItemPrefixesEnum prefix, ItemSuffixesEnum suffix) {
+       return ItemUtils.getMergedItemStatisticsObjectMaps(prefix.getAdditionalStatistics(), suffix.getAdditionalStatistics());
 
-        ItemUtils.mergeItemStatisticsObjectMaps(additionalStatistics, suffix.getAdditionalStatistics());
-        return additionalStatistics;
+    }
+    private Map<String, ItemStatisticsObject> getMergedStatsWithPrefixSuffix(
+            Map<String, ItemStatisticsObject> baseStatistics, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
+    ) {
+        Map<String, ItemStatisticsObject> prefixSuffixBaseStats = this.mergeStatsFromPrefixSuffix(prefix, suffix);
+        return ItemUtils.getMergedItemStatisticsObjectMaps(baseStatistics, prefixSuffixBaseStats);
     }
 
-    private void mergeStatisticsFromPrefixAndSuffixAndAddThem(ItemPrefixesEnum prefix, ItemSuffixesEnum suffix){
-        ItemUtils.mergeItemStatisticsObjectMaps(this.baseStatistics, this.createStatisticsMapFromPrefixAndSuffix(prefix, suffix));
-        ItemUtils.mergeItemStatisticsObjectMaps(this.additionalStatistics, this.createAdditionalStatisticsMapFromPrefixAndSuffix(prefix, suffix));
+    private Map<String, ItemStatisticsObject> getMergedAdditionalStatsWithPrefixSuffix(
+            Map<String, ItemStatisticsObject> additionalStatistics,
+            ItemPrefixesEnum prefix, ItemSuffixesEnum suffix) {
+        Map<String, ItemStatisticsObject> prefixSuffixAdditionalStats = this.mergeAdditionalStatsFromPrefixSuffix(prefix, suffix);
+        return ItemUtils.getMergedItemStatisticsObjectMaps(additionalStatistics, prefixSuffixAdditionalStats);
+
     }
+
     private List<Pair<Double, Double>> prepareStatsAdjustmentBasedOnItemType(ItemRarityEnum type) {
         List<Pair<Double, Double>> values = new ArrayList<>();
         for(ItemRarityEnum value: ItemRarityEnum.values()){

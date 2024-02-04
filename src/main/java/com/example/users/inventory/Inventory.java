@@ -7,7 +7,10 @@ import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
 import org.bson.types.ObjectId;
-import java.util.HashSet;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
 @Entity("users_inventories")
 public class Inventory {
@@ -20,23 +23,20 @@ public class Inventory {
 
     @JsonIgnoreProperties("user")
     @Reference
-    private HashSet<Item> items;
+    private Map<String, Item> items;
     private int maxItems=100;
     private float maxWeight=100;
     private float currentWeight = 0;
 
-
     public Inventory(){}
     public Inventory(int maxWeight) {
-        this.items = new HashSet<>();
+        this.items = new HashMap<>();
         this.maxItems = 1000;
         this.maxWeight = maxWeight;
         this.currentWeight = 0;
     }
 
-
-
-    public HashSet<Item> getItems() {
+    public Map<String, Item> getItems() {
         return items;
     }
 
@@ -53,22 +53,24 @@ public class Inventory {
     }
 
     public boolean addItem(Item item) {
-        if(this.items == null) this.items = new HashSet<>();
+        if(this.items == null) this.items = new HashMap<>();
         if (this.items.size() >= this.maxItems || this.currentWeight + item.getWeight() > this.maxWeight) {
             return false;
         }
-
-        items.add(item);
+        items.put(item.getId().toString(), item);
         currentWeight += item.getWeight();
         return true;
     }
 
-    public boolean removeItem(Item item) {
-        if (items.remove(item)) {
+
+    public Optional<Item> removeItemById(ObjectId id) {
+        String idToFind = id.toString();
+        if (this.items.containsKey(idToFind)) {
+            Item item = this.items.remove(idToFind);
             currentWeight -= item.getWeight();
-            return true; // Item removed successfully
+            return Optional.of(item);
         }
-        return false; // Item not found in the inventory
+        return Optional.empty();
     }
 
     public ObjectId getId() {
@@ -87,7 +89,7 @@ public class Inventory {
         this.user = user;
     }
 
-    public void setItems(HashSet<Item> items) {
+    public void setItems(Map<String, Item> items) {
         this.items = items;
     }
 
