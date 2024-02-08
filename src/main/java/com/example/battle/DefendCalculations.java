@@ -6,6 +6,8 @@ import com.example.characters.BaseHero;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.utils.RandomUtils;
 
+import java.util.Optional;
+
 public class DefendCalculations {
 
 
@@ -49,10 +51,12 @@ public class DefendCalculations {
     public static DefendReturnData defend(BaseHero defender, BaseHero attacker, AttackReturnData attackData){
         DefendReturnData.DefendType defendType = getDefendType(defender);
 
+        Optional<CombatReturnData> parriedData = Optional.empty();
        int effectiveDamage = switch (defendType){
             case PAIRED -> {
                  CombatReturnData data = executeParryAttack(defender, attacker);
-                 yield data.basicAttack().defend().receivedDamage();
+                 parriedData = Optional.of(data);
+                 yield 0;
             }
            case BLOCKED,DODGED -> 0;
             case NULL-> {
@@ -72,7 +76,7 @@ public class DefendCalculations {
             System.out.println("[DEFEND] {"+ defender.getName() + "} RECEIVED |" + effectiveDamage + "| damage from attack made by {"+ attacker.getName() +"} left with [" + defender.getHealth()+ "] hp");
         }
 
-        return new DefendReturnData(defender.getName(), effectiveDamage, defender.getHealth(), defendType);
+        return new DefendReturnData(defender.getName(), effectiveDamage, defender.getHealth(), defendType, parriedData);
     }
 
 
