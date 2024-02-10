@@ -2,7 +2,6 @@ package com.example.characters;
 
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
-import com.example.characters.equipment.CharacterEquipment;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.items.*;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
@@ -48,6 +47,10 @@ public class CharactersController implements SecuredRestController {
     @GetMapping("/your-characters")
     public List<Character> findYourCharacters() throws Exception {
         return this.service.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
+    }
+    @GetMapping("/your-main-character")
+    public Optional<Character> findYourMainCharacter() throws Exception {
+        return this.service.findOneMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
     }
 
     @PostMapping("/create")
