@@ -3,6 +3,8 @@ package com.example.skirmishes;
 import com.example.users.User;
 import com.example.utils.RandomUtils;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -15,6 +17,7 @@ import java.util.*;
 
 @Entity("skirmishes")
 public class Skirmish {
+    @JsonSerialize(using = ToStringSerializer.class)
     @Id
     private ObjectId id;
     @JsonIgnore

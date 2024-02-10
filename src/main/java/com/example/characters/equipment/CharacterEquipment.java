@@ -4,6 +4,8 @@ import com.example.characters.Character;
 import com.example.items.Item;
 import com.example.items.ItemTypeEnum;
 import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -16,6 +18,7 @@ import java.util.Optional;
 
 @Entity("equipments")
     public class CharacterEquipment {
+    @JsonSerialize(using = ToStringSerializer.class)
     @Id
     private ObjectId id;
 

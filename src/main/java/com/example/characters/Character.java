@@ -4,6 +4,8 @@ import com.example.items.Item;
 import com.example.statistics.*;
 import com.example.users.User;
 import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -14,6 +16,7 @@ import java.util.Map;
 
 @Entity("characters")
 public class Character  extends BaseHero {
+    @JsonSerialize(using = ToStringSerializer.class)
     @Id
     private ObjectId id;
 

@@ -3,6 +3,8 @@ package com.example.users.inventory;
 import com.example.items.Item;
 import com.example.users.User;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -14,6 +16,7 @@ import java.util.Optional;
 
 @Entity("users_inventories")
 public class Inventory {
+    @JsonSerialize(using = ToStringSerializer.class)
     @Id
     private ObjectId id;
 

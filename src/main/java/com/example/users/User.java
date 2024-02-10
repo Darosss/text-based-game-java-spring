@@ -4,6 +4,8 @@ import com.example.auth.JwtTokenPayload;
 import com.example.characters.Character;
 import com.example.users.inventory.Inventory;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import dev.morphia.annotations.Entity;
 import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
@@ -17,6 +19,7 @@ import java.util.List;
 
 @Entity("users")
 public class User {
+    @JsonSerialize(using = ToStringSerializer.class)
     @Id
     private ObjectId id;
     private String username;
