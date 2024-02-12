@@ -3,6 +3,7 @@ package com.example.items;
 public enum ItemTypeEnum {
     WEAPON_MELEE("Weapon Melee"),
     WEAPON_RANGED("Weapon Ranged"),
+    SHIELD("Shield"),
     CHEST_ARMOR("Chest Armor"),
     HELMET("Helmet"),
     GLOVES("Gloves"),
