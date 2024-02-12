@@ -1,9 +1,7 @@
 package com.example.characters;
 
 import com.example.characters.equipment.CharacterEquipment;
-import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.characters.equipment.EquipmentService;
-import com.example.items.Item;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;

@@ -1,4 +1,5 @@
 package com.example.characters.equipment;
+import com.example.characters.equipment.Equipment.UnEquipItemResult;
 
 import com.example.auth.SecuredRestController;
 import com.example.items.Item;
@@ -34,7 +35,7 @@ public class CharacterEquipmentController implements SecuredRestController {
 
     }
     @PostMapping("/unequip/debug/{equipmentId}/{slot}")
-    public Optional<Item> unEquipBySlotDebug(
+    public UnEquipItemResult unEquipBySlotDebug(
             @PathVariable String equipmentId,
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) {

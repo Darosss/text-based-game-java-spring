@@ -2,6 +2,9 @@ package com.example.characters;
 
 import com.example.characters.equipment.CharacterEquipment;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
+import com.example.characters.equipment.Equipment.UnEquipItemResult;
+import com.example.characters.equipment.Equipment.EquipItemResult;
+
 import com.example.items.Item;
 import com.example.users.inventory.Inventory;
 import dev.morphia.Datastore;
@@ -20,86 +23,92 @@ public class CharacterInventoryService {
     public CharacterInventoryService(Datastore datastore) {
         this.datastore = datastore;
     }
-    public boolean unEquipItem (ObjectId userId, CharacterEquipmentFieldsEnum slot) throws Exception {
+    public UnEquipItemResult unEquipItem (ObjectId userId, CharacterEquipmentFieldsEnum slot) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
             Character character = this.fetchCharacter(session, userId);
-            boolean transactionDone = false;
             if (userInventory != null && character != null) {
-                transactionDone = this.handleUnEquipTransaction(session, slot, userInventory, character);
-            }
-            if (transactionDone) {
+                UnEquipItemResult transactionDone = this.handleUnEquipTransaction(session, slot, userInventory, character);
+            if (transactionDone.success()) {
                 session.commitTransaction();
-                return true;
             } else {
                 session.abortTransaction();
-                return false;
             }
+            return transactionDone;
+            }
+
+        return new UnEquipItemResult(false, "Cannot find user inventory and/or character. Contact administration", Optional.empty());
+
         }catch(Exception e){
             throw new Exception("Something went wrong when trying to equip item");
         }
     }
 
-    private boolean handleUnEquipTransaction(
+    private UnEquipItemResult handleUnEquipTransaction(
             MorphiaSession session, CharacterEquipmentFieldsEnum slot,
             Inventory userInventory, Character character
         ){
         CharacterEquipment equipment = character.getEquipment();
-        Optional<Item> unEquippedItem = equipment.unEquipItem(slot);
 
-        if (unEquippedItem.isEmpty()) return false;
+        UnEquipItemResult unEquippedItemData = equipment.unEquipItem(slot);
 
-        boolean itemAddedToInv = userInventory.addItem(unEquippedItem.get());
+        if (!unEquippedItemData.success() || unEquippedItemData.item().isEmpty()) return unEquippedItemData;
 
-        if(!itemAddedToInv) return false;
+        boolean itemAddedToInv = userInventory.addItem(unEquippedItemData.item().get());
 
-        this.calculateStatisticsAndSave(session, unEquippedItem.get(), character, userInventory, false);
+        if(!itemAddedToInv)
+            return new UnEquipItemResult(false,
+                    "Couldn't remove item and add to inventory. Try again latter" ,
+                    Optional.empty()
+            );
+
+        this.calculateStatisticsAndSave(session, unEquippedItemData.item().get(), character, userInventory, false);
 
 
-        return true;
+        return unEquippedItemData;
     }
 
-    public boolean equipItem (ObjectId userId, Item item, CharacterEquipmentFieldsEnum slot) throws Exception {
+    public EquipItemResult  equipItem (ObjectId userId, Item item, CharacterEquipmentFieldsEnum slot) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
             Character character = this.fetchCharacter(session, userId);
-            boolean transactionDone = false;
+
 
             if (userInventory != null && character != null) {
 
-                transactionDone = this.handleEquipTransaction(session, item, slot, userInventory, character);
-                if(transactionDone) {
+                EquipItemResult transactionDone = this.handleEquipTransaction(session, item, slot, userInventory, character);
+                if(transactionDone.success()) {
                     session.commitTransaction();
-                    return true;
-                }{
+                }else {
                     session.abortTransaction();
-                    return false;
                 }
-
+                return transactionDone;
             }
+            return new EquipItemResult(false,
+                    "Cannot find user inventory and/or character. Contact administration"
+            );
 
-            return transactionDone;
         }catch(Exception e){
             System.out.println(e);
             throw new Exception("Something went wrong when trying to equip item");
         }
     }
 
-    private boolean handleEquipTransaction (
+    private EquipItemResult  handleEquipTransaction (
             MorphiaSession session, Item item, CharacterEquipmentFieldsEnum slot,
             Inventory userInventory, Character character
     ){
         Optional<Item> itemToEquip = userInventory.removeItemById(item.getId());
 
-        if (itemToEquip.isEmpty()) return false;
+        if (itemToEquip.isEmpty()) return new EquipItemResult(false, "Item does not exist.");
 
-        boolean equipped = character.getEquipment().equipItem(slot, item);
-        if(!equipped) return false;
+        EquipItemResult equippedData = character.getEquipment().equipItem(slot, item);
 
-        this.calculateStatisticsAndSave(session, itemToEquip.get(), character, userInventory, true);
-        return true;
+        if(equippedData.success()) this.calculateStatisticsAndSave(session, itemToEquip.get(), character, userInventory, true);
+
+        return equippedData;
     }
     private void calculateStatisticsAndSave(MorphiaSession session, Item item, Character character, Inventory userInventory, boolean isEquip) {
         character.calculateStatisticByItem(item, isEquip);

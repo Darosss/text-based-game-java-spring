@@ -2,7 +2,10 @@ package com.example.characters;
 
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
+import com.example.characters.equipment.CharacterEquipment;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
+import com.example.characters.equipment.Equipment.EquipItemResult;
+import com.example.characters.equipment.Equipment.UnEquipItemResult;
 import com.example.items.*;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticObject;
@@ -129,7 +132,7 @@ public class CharactersController implements SecuredRestController {
     }
 
     @PostMapping("/equip/{characterId}/{itemId}/{slot}")
-    public boolean equipCharacterItem(
+    public EquipItemResult equipCharacterItem(
             @PathVariable String characterId,
             @PathVariable String itemId,
             @PathVariable CharacterEquipmentFieldsEnum slot
@@ -143,11 +146,11 @@ public class CharactersController implements SecuredRestController {
             return this.characterInventoryService.equipItem(new ObjectId(loggedUserId), itemToEquip.get(), slot);
         }
 
-        return false;
+        return new EquipItemResult(false, "Something went wrong. Try again later.");
     }
 
     @PostMapping("/un-equip/{characterId}/{slot}")
-    public boolean unEquipCharacterItem(
+    public UnEquipItemResult unEquipCharacterItem(
             @PathVariable String characterId,
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) throws Exception {
@@ -158,7 +161,7 @@ public class CharactersController implements SecuredRestController {
             {
                 return this.characterInventoryService.unEquipItem(new ObjectId(loggedUserId), slot);
             }
-        return false;
+        return new UnEquipItemResult(false, "Something went wrong. Try again later.", Optional.empty());
     }
 
 

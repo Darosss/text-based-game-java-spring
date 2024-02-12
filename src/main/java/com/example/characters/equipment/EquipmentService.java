@@ -1,7 +1,7 @@
 package com.example.characters.equipment;
 
-import com.example.items.Item;
 import dev.morphia.Datastore;
+import com.example.characters.equipment.Equipment.UnEquipItemResult;
 import dev.morphia.query.filters.Filters;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,15 +37,14 @@ public class EquipmentService {
         return Optional.ofNullable(datastore.find(CharacterEquipment.class).filter(Filters.eq("id", new ObjectId(id))).first());
     }
 
-    public Optional<Item> unEquipItem(String equipmentId, CharacterEquipmentFieldsEnum slot){
+    public UnEquipItemResult unEquipItem(String equipmentId, CharacterEquipmentFieldsEnum slot){
         Optional<CharacterEquipment> equipment = this.findById(equipmentId);
         if(equipment.isPresent()){
             CharacterEquipment equipmentRef = equipment.get();
-            Optional<Item> unEquippedItem = equipmentRef.unEquipItem(slot);
+            UnEquipItemResult unEquippedItem = equipmentRef.unEquipItem(slot);
              this.update(equipment.get());
              return unEquippedItem;
-
         }
-        return null;
+        return new UnEquipItemResult(false, "There is no found character equipment. Please try again latter", Optional.empty());
     }
 }

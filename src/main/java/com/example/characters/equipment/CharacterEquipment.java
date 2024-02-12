@@ -1,5 +1,6 @@
 package com.example.characters.equipment;
-
+import com.example.characters.equipment.Equipment.EquipItemResult;
+import com.example.characters.equipment.Equipment.UnEquipItemResult;
 import com.example.characters.Character;
 import com.example.items.Item;
 import com.example.items.ItemTypeEnum;
@@ -11,7 +12,6 @@ import dev.morphia.annotations.Id;
 import dev.morphia.annotations.Reference;
 import org.bson.types.ObjectId;
 
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -30,40 +30,61 @@ import java.util.Optional;
     private Map<CharacterEquipmentFieldsEnum, Item> slots = new HashMap<>();
     public CharacterEquipment() {}
 
-    public boolean equipItem(CharacterEquipmentFieldsEnum slot, Item item) {
-        if (this.slots.get(slot) != null) return false;
-        boolean canWear = switch (slot) {
-            case HEAD -> canWearOnHead(item);
-            case LEFT_HAND -> canWearOnLHand(item);
-            case RIGHT_HAND -> canWearOnRHand(item);
-            default -> false;
+
+
+    public EquipItemResult equipItem(CharacterEquipmentFieldsEnum slot, Item item) {
+        if (this.slots.get(slot) != null) return new EquipItemResult(false, "Slot is already equipped");
+        boolean correctItemTypeToWear = slot.getAvailableItemTypes().contains(item.getType());
+        if(!correctItemTypeToWear) return new EquipItemResult(false, "Item does not have correct type to wear on that slot");
+
+        EquipItemResult result = switch (slot) {
+            case LEFT_HAND -> canWearOnHand(item, true);
+            case RIGHT_HAND -> canWearOnHand(item, false);
+
+            default -> new EquipItemResult(true, "Successfully equipped item");
         };
 
-        if(canWear) { this.slots.put(slot, item); }
-        return canWear;
-    }
+        if(result.success()) { this.slots.put(slot, item); }
 
+        return result;
 
-    private boolean isCorrectItemToWear(EnumSet<ItemTypeEnum> requiredTypes, ItemTypeEnum itemType) {
-        return requiredTypes.contains(itemType);
     }
-    private boolean canWearOnHead(Item item) {
-        EnumSet<ItemTypeEnum> requiredTypes = EnumSet.of(ItemTypeEnum.HELMET);
-        return  isCorrectItemToWear(requiredTypes, item.getType());
-    }
-    private boolean canWearOnLHand(Item item) {
-        EnumSet<ItemTypeEnum> requiredTypes = EnumSet.of(ItemTypeEnum.WEAPON_MELEE, ItemTypeEnum.WEAPON_RANGED);
-        return isCorrectItemToWear(requiredTypes, item.getType());
-    }
-    private boolean canWearOnRHand(Item item) {
-        EnumSet<ItemTypeEnum> requiredTypes = EnumSet.of(ItemTypeEnum.WEAPON_MELEE, ItemTypeEnum.WEAPON_RANGED);
-        return isCorrectItemToWear(requiredTypes, item.getType());
-    }
-    public Optional<Item> unEquipItem(CharacterEquipmentFieldsEnum slot){
-        if (this.slots.get(slot) != null) {
-            return Optional.ofNullable(this.slots.remove(slot));
+    private EquipItemResult canWearOnHand(Item item, boolean leftHand) {
+        Item oppositeHand = this.slots.get(leftHand ? CharacterEquipmentFieldsEnum.RIGHT_HAND : CharacterEquipmentFieldsEnum.LEFT_HAND);
+        if (oppositeHand != null) {
+            ItemTypeEnum itemType = item.getType();
+            ItemTypeEnum slotItemType = oppositeHand.getType();
+
+            String message = "";
+            boolean success = true;
+
+             switch(itemType){
+                case SHIELD -> {
+                    if(slotItemType.equals(itemType)) { success = false; message = "Cannot equip two shields"; }
+                    else if(slotItemType.equals(ItemTypeEnum.WEAPON_RANGED)) { success = false; message = "Cannot equip shield with ranged weapon"; }
+                }
+                case WEAPON_RANGED ->  {
+                    if(slotItemType.equals(itemType)) { success = false; message = "Cannot equip two ranged weapons"; }
+                    else if(slotItemType.equals(ItemTypeEnum.SHIELD)){ success = false; message = "Cannot equip ranged weapon with shield"; }
+                    else if(slotItemType.equals(ItemTypeEnum.WEAPON_MELEE)){ success = false; message = "Cannot equip ranged weapon with melee weapon"; }
+                }
+                case WEAPON_MELEE -> {
+                    if(slotItemType.equals(ItemTypeEnum.WEAPON_RANGED)) { success = false; message = "Cannot equip melee weapon with ranged weapon"; }
+                }
+            }
+
+            if(!success) return new EquipItemResult(success, message);
         }
-        return Optional.empty();
+        return new EquipItemResult(true, "Successfully equipped item");
+    };
+
+    public UnEquipItemResult unEquipItem(CharacterEquipmentFieldsEnum slot){
+        if (this.slots.get(slot) != null) {
+            Optional<Item> unequippedItem =  Optional.ofNullable(this.slots.remove(slot));
+            return new UnEquipItemResult(true, "Successfully unequipped item", unequippedItem);
+        }
+        return new UnEquipItemResult(true, "There is no item to take off", Optional.empty());
+
     }
     public Item getEquippedItemByField(CharacterEquipmentFieldsEnum slot) {
         return this.slots.get(slot);
