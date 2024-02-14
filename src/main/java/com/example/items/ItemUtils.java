@@ -2,6 +2,7 @@ package com.example.items;
 
 import com.example.items.statistics.*;
 import com.example.utils.RandomUtils;
+import org.springframework.data.util.Pair;
 
 import java.util.*;
 
@@ -16,6 +17,18 @@ public class ItemUtils {
     public static double getItemLeveFactorPercentStatistics(int itemLevel) {
         double ITEM_STATISTIC_PERCENT_FACTOR_PER_LEVEL = 0.25;
         return (ITEM_STATISTIC_PERCENT_FACTOR_PER_LEVEL * itemLevel);
+    }
+
+    public static int getItemValueBasedOnRarityLevel(int level, ItemRarityEnum rarity) {
+        double BASE_ITEM_COST = 100.0; double BASE_ITEM_COST_PER_LEVEL = 50;
+        double itemValue = BASE_ITEM_COST + (level * BASE_ITEM_COST_PER_LEVEL);
+
+        for(ItemRarityEnum value: ItemRarityEnum.values()){
+            itemValue += itemValue * value.getBonusCostValue();
+            if(rarity.equals(value)) break;
+        }
+
+        return (int) itemValue;
     }
     public static ItemTypeEnum getRandomItemType() {
 
@@ -52,36 +65,44 @@ public class ItemUtils {
         return ItemRarityEnum.COMMON;
     }
 
+    public static int getConsumableItemHpGain(int level, ItemRarityEnum rarity, ItemsSubtypes subtype){
+        double hpGain = subtype.getHealthGainPerLevel() * level;
+        for(ItemRarityEnum value: ItemRarityEnum.values()){
+            hpGain += hpGain * (value.getBonusValue()/100);
+            if(rarity.equals(value)) break;
+        }
 
+        return (int) hpGain;
+    }
 
     public static Item generateItemWithoutBaseStats(
-            String itemName, ItemTypeEnum type, int level, int value, ItemRarityEnum rarity,
-            float weight, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
+            String itemName, ItemTypeEnum type, ItemsSubtypes subtype, int level, ItemRarityEnum rarity, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
     ) {
-        return new Item(itemName, "Description of "+itemName, level, value, type, rarity, weight,prefix, suffix, new HashMap<>(), new HashMap<>());
+        Pair<Float, Float> weightRange = subtype.getWeightRange();
+        float itemWeight = RandomUtils.getRandomValueWithinRange(weightRange.getFirst(), weightRange.getSecond());
+        return new Item(itemName, "Description of "+itemName, level, getItemValueBasedOnRarityLevel(level, rarity), type, subtype, rarity, itemWeight,prefix, suffix, new HashMap<>(), new HashMap<>());
     }
 
 
     //NOTE: That's for debug right now;
     private static Item generateItem(
-            String itemName, ItemTypeEnum type, int level, int value, ItemRarityEnum rarity,
+            String itemName, ItemTypeEnum type, ItemsSubtypes subtype, int level, int value, ItemRarityEnum rarity,
             float weight, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
             Map<String, ItemStatisticsObject> baseStatistics,
             Map<String, ItemStatisticsObject> baseAdditionalStatistics
     ){
+
         return new Item(itemName, "Description of "+itemName,
-                level, value, type, rarity, weight,prefix, suffix,
+                level, value, type, subtype, rarity, weight,prefix, suffix,
                 baseStatistics, baseAdditionalStatistics
         );
 
     }
 
     public static Item generateRandomItemWithoutBaseStats(String name, int itemLevel, ItemTypeEnum itemType){
-        return  generateItemWithoutBaseStats(name, itemType, itemLevel,
-                RandomUtils.getRandomValueWithinRange(1,40000),
-                getRandomRarityItem(),
-                RandomUtils.getRandomValueWithinRange(0.1f,100f),
-                getRandomItemPrefix(), getRandomItemSuffix()
+        ItemsSubtypes subtype = RandomUtils.getRandomItemFromArray(itemType.getSubtypes());
+        return  generateItemWithoutBaseStats(name, itemType, subtype, itemLevel,
+                getRandomRarityItem(), getRandomItemPrefix(), getRandomItemSuffix()
         );
     };
 
@@ -90,7 +111,8 @@ public class ItemUtils {
                                           Map<String, ItemStatisticsObject> baseStatistics,
                                           Map<String, ItemStatisticsObject> baseAdditionalStatistics
     ){
-        return generateItem(name, itemType, itemLevel,
+        ItemsSubtypes subtype = RandomUtils.getRandomItemFromArray(itemType.getSubtypes());
+        return generateItem(name, itemType, subtype, itemLevel,
                 RandomUtils.getRandomValueWithinRange(1,40000),
                 getRandomRarityItem(),
                 RandomUtils.getRandomValueWithinRange(0.1f,100f),
@@ -112,6 +134,7 @@ public class ItemUtils {
         }
     return generatedItems;
     }
+
     public static <KeyType extends String> Map<KeyType, ItemStatisticsObject> getMergedItemStatisticsObjectMaps(Map<KeyType, ItemStatisticsObject> destination, Map<KeyType, ItemStatisticsObject> source) {
         Map<KeyType, ItemStatisticsObject> newMap = new HashMap<>();
         source.forEach((sourceKey, sourceValue) -> {

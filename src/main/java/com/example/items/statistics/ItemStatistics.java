@@ -2,6 +2,7 @@ package com.example.items.statistics;
 
 import com.example.items.ItemRarityEnum;
 import com.example.items.ItemUtils;
+import com.example.items.ItemsSubtypes;
 import dev.morphia.annotations.ExternalEntity;
 import org.springframework.data.util.Pair;
 import java.util.*;
@@ -18,17 +19,21 @@ public class ItemStatistics {
     public ItemStatistics(){}
     public ItemStatistics(
             Map<String, ItemStatisticsObject> baseStatistics, Map<String, ItemStatisticsObject> baseAdditionalStatistics,
-            ItemPrefixesEnum prefix, ItemSuffixesEnum suffix, int itemLevel, ItemRarityEnum itemRarity
+            ItemPrefixesEnum prefix, ItemSuffixesEnum suffix, int itemLevel, ItemRarityEnum itemRarity, ItemsSubtypes subtype
     ) {
         this.baseStatistics.putAll(baseStatistics);
         this.additionalStatistics.putAll(baseAdditionalStatistics);
 
         this.baseStatistics.putAll(this.getMergedStatsWithPrefixSuffix(baseStatistics, prefix, suffix));
         this.additionalStatistics.putAll(this.getMergedAdditionalStatsWithPrefixSuffix(baseStatistics, prefix, suffix));
-
         this.handleStatisticsUpdateBasedOnLevel(itemLevel);
+
+        this.handleAdditionalStatisticsUpdateBasedOnSubtype(itemLevel, subtype);
+
         this.handleStatisticsUpdateBasedOnRarity(itemRarity);
     }
+
+
     private Map<String, ItemStatisticsObject> mergeStatsFromPrefixSuffix(ItemPrefixesEnum prefix, ItemSuffixesEnum suffix) {
         return ItemUtils.getMergedItemStatisticsObjectMaps(prefix.getStatistics(), suffix.getStatistics());
     }
@@ -77,6 +82,19 @@ public class ItemStatistics {
             });
         });
     }
+
+
+    private void handleAdditionalStatisticsUpdateBasedOnSubtype(int itemLevel, ItemsSubtypes subtype) {
+        subtype.getAdditionalStatisticsPerLevel().forEach((k, v)-> {
+            int subtypeStatValue = (int) (v*itemLevel);
+            if(this.additionalStatistics.containsKey(k.toString())) {
+                this.additionalStatistics.get(k.toString()).increaseValue(subtypeStatValue);
+            }else {
+                this.additionalStatistics.put(k.toString(), new ItemStatisticsObject(k.toString(), subtypeStatValue, 0));
+            }
+        });
+    }
+
 
     private void handleStatisticsUpdateBasedOnLevel(int itemLevel) {
         double increaseValueFactor = ItemUtils.getItemLevelFactorValueStatistics(itemLevel) / 100;

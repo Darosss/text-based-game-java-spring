@@ -39,7 +39,9 @@ public class Item {
     private Integer upgradePoints;
 
     private ItemTypeEnum type;
+    private ItemsSubtypes subtype;
 
+    private int hpGain;
     private ItemRarityEnum rarity;
 
     private float weight;
@@ -53,7 +55,7 @@ public class Item {
      */
     public Item() {}
     public Item(String name, String description, Integer level,
-                Integer value, ItemTypeEnum type,
+                Integer value, ItemTypeEnum type, ItemsSubtypes subtype,
                 ItemRarityEnum rarity, float weight,
                 ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
                 Map<String, ItemStatisticsObject> baseStatistics,
@@ -67,9 +69,10 @@ public class Item {
         this.prefix = prefix;
         this.suffix = suffix;
         this.type = type;
+        this.subtype = subtype;
         this.rarity = rarity;
-        this.statistics = new ItemStatistics(baseStatistics, baseAdditionalStatistics, prefix, suffix, level, rarity);
-        this.upgradePoints = 0;
+        if(type.equals(ItemTypeEnum.CONSUMABLE)) this.hpGain = ItemUtils.getConsumableItemHpGain(level, rarity, subtype);
+        else this.statistics = new ItemStatistics(baseStatistics, baseAdditionalStatistics, prefix, suffix, level, rarity, subtype);        this.upgradePoints = 0;
         this.weight = weight;
     }
 
@@ -113,6 +116,10 @@ public class Item {
         return type;
     }
 
+    public ItemsSubtypes getSubtype() {
+        return subtype;
+    }
+
     public ItemRarityEnum getRarity() {
         return rarity;
     }
@@ -144,6 +151,10 @@ public class Item {
 
     public ItemStatistics getStatistics() {
         return statistics;
+    }
+
+    public int getHpGain() {
+        return hpGain;
     }
 
     @Override
