@@ -51,7 +51,7 @@ public class AttackCalculations {
 
     private static int getCalculatedAttackValue(BaseHero hero, double criticBonus ) {
         int minDmg = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.MIN_DAMAGE);
-        int maxDmg = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.MIN_DAMAGE);
+        int maxDmg = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.MAX_DAMAGE);
 
         double minDmgWithBonus = (minDmg + (minDmg * (criticBonus / 100)));
         double maxDmgWithBonus = (maxDmg + (maxDmg * (criticBonus / 100)));
