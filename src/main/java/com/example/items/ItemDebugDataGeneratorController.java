@@ -27,6 +27,16 @@ public class ItemDebugDataGeneratorController implements SecuredRestController {
         return service.create(ItemUtils.generateRandomItems(countOfItems));
     }
 
+    @PostMapping("items/debug/createItem/{level}/{type}")
+    public Item generateItemWithLevelAndType(
+            @PathVariable int level,
+            @PathVariable ItemTypeEnum type
+    ){
+        return service.create(ItemUtils.generateRandomItemWithoutBaseStats(
+                "Item custom level", level, type
+        ));
+    }
+
     @DeleteMapping("items/debug/delete-all")
     public void deleteAllItems() {
         service.removeAllItems();
