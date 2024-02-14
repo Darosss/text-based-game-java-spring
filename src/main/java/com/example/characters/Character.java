@@ -105,8 +105,12 @@ public class Character  extends BaseHero {
         }
     }
 
+    public long getExpToLevelUp () {
+        return ExperienceUtils.calculateExpToNextLevel(this.level);
+    }
+
     private void checkLevelUp() {
-        long expToLevelUp = ExperienceUtils.calculateExpToNextLevel(this.level);
+        long expToLevelUp = this.getExpToLevelUp();
         while (this.experience >= expToLevelUp) {
             this.experience -= expToLevelUp;
             this.levelUp();
@@ -157,5 +161,7 @@ public class Character  extends BaseHero {
     public User getUser() {
         return user;
     }
+
+
 
 }
