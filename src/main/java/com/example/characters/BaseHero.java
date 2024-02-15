@@ -15,7 +15,7 @@ public class BaseHero {
 
     protected final HeroStatisticsObject stats = new HeroStatisticsObject();
     protected void updateHealthBasedOnMaxHealth(){
-        this.health = this.stats.getAdditionalStatistics().get(AdditionalStatisticsNamesEnum.MAX_HEALTH).getEffectiveValue();
+        this.health = this.stats.getMaxHealthEffValue();
     }
     public BaseHero(){};
     public BaseHero(String name) {
@@ -50,14 +50,17 @@ public class BaseHero {
         return health;
     }
 
-    protected void setHealth(Integer health) {
-        this.health = health;
+    protected void setHealth(int newHealth) {
+        if(newHealth > 0) this.health = Math.min(newHealth, this.stats.getMaxHealthEffValue());
+        else this.health = 0;
     }
 
     public void decreaseHealth(int value) {
         this.setHealth(this.health - value);
+    }
 
-        health = Math.max(health, 0);
+    public void increaseHealth(int value){
+        this.setHealth(this.health + value);
     }
     public void setLevel(Integer level) {
         this.level = level;
