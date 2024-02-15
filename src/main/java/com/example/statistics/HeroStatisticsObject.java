@@ -13,6 +13,11 @@ public class HeroStatisticsObject {
             StatisticsUtils.generateDefaultHeroAdditionalStatistics();
 
     public HeroStatisticsObject(){}
+
+    public int getMaxHealthEffValue(){
+        return this.additionalStatistics.get(AdditionalStatisticsNamesEnum.MAX_HEALTH).getEffectiveValue();
+
+    }
     public void updateStatistic(BaseStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
         this.statistics.get(statName).updateStatistic(value, updateType);
         this.updateAdditionalStatisticsBasedOnBasic(statName);
