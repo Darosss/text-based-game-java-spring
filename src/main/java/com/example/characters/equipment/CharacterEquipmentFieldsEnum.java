@@ -11,7 +11,7 @@ public enum CharacterEquipmentFieldsEnum {
     RIGHT_HAND("right hand", EnumSet.of(ItemTypeEnum.WEAPON_MELEE, ItemTypeEnum.WEAPON_RANGED, ItemTypeEnum.SHIELD)),
     CHEST("chest", EnumSet.of(ItemTypeEnum.CHEST_ARMOR)),
     ARMS("arms", EnumSet.of(ItemTypeEnum.GLOVES)),
-    LEFT("legs", EnumSet.of(ItemTypeEnum.LEG_ARMOR)),
+    LEGS("legs", EnumSet.of(ItemTypeEnum.LEG_ARMOR)),
     FOOTS("foots", EnumSet.of(ItemTypeEnum.BOOTS)),
     L_RING_1("left ring 1", EnumSet.of(ItemTypeEnum.RING)),
     L_RING_2("left ring 2", EnumSet.of(ItemTypeEnum.RING)),
