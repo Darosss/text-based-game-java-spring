@@ -7,8 +7,8 @@ import java.util.EnumSet;
 public enum CharacterEquipmentFieldsEnum {
     HEAD("head", EnumSet.of(ItemTypeEnum.HELMET)),
     NECK("neck", EnumSet.of(ItemTypeEnum.NECKLACE)),
-    LEFT_HAND("left hand", EnumSet.of(ItemTypeEnum.WEAPON_MELEE, ItemTypeEnum.WEAPON_RANGED, ItemTypeEnum.SHIELD)),
-    RIGHT_HAND("right hand", EnumSet.of(ItemTypeEnum.WEAPON_MELEE, ItemTypeEnum.WEAPON_RANGED, ItemTypeEnum.SHIELD)),
+    LEFT_HAND("left hand", EnumSet.of(ItemTypeEnum.WEAPON_MELEE, ItemTypeEnum.WEAPON_RANGED, ItemTypeEnum.SHIELD, ItemTypeEnum.WEAPON_MELEE_TWO_HAND)),
+    RIGHT_HAND("right hand", EnumSet.of(ItemTypeEnum.WEAPON_MELEE, ItemTypeEnum.WEAPON_RANGED, ItemTypeEnum.SHIELD, ItemTypeEnum.WEAPON_MELEE_TWO_HAND)),
     CHEST("chest", EnumSet.of(ItemTypeEnum.CHEST_ARMOR)),
     ARMS("arms", EnumSet.of(ItemTypeEnum.GLOVES)),
     LEGS("legs", EnumSet.of(ItemTypeEnum.LEG_ARMOR)),

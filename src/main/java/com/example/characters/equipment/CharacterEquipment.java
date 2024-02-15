@@ -62,15 +62,22 @@ import java.util.Optional;
                 case SHIELD -> {
                     if(slotItemType.equals(itemType)) { success = false; message = "Cannot equip two shields"; }
                     else if(slotItemType.equals(ItemTypeEnum.WEAPON_RANGED)) { success = false; message = "Cannot equip shield with ranged weapon"; }
+                    else if(slotItemType.equals(ItemTypeEnum.WEAPON_MELEE_TWO_HAND)) { success = false; message = "Cannot equip shield with two handed weapon"; }
                 }
                 case WEAPON_RANGED ->  {
                     if(slotItemType.equals(itemType)) { success = false; message = "Cannot equip two ranged weapons"; }
                     else if(slotItemType.equals(ItemTypeEnum.SHIELD)){ success = false; message = "Cannot equip ranged weapon with shield"; }
-                    else if(slotItemType.equals(ItemTypeEnum.WEAPON_MELEE)){ success = false; message = "Cannot equip ranged weapon with melee weapon"; }
+                    else if(slotItemType.equals(ItemTypeEnum.WEAPON_MELEE) || slotItemType.equals(ItemTypeEnum.WEAPON_MELEE_TWO_HAND))
+                    { success = false; message = "Cannot equip ranged weapon with melee weapon"; }
                 }
                 case WEAPON_MELEE -> {
                     if(slotItemType.equals(ItemTypeEnum.WEAPON_RANGED)) { success = false; message = "Cannot equip melee weapon with ranged weapon"; }
+                    else if(slotItemType.equals(ItemTypeEnum.WEAPON_MELEE_TWO_HAND)) { success = false; message = "Cannot equip melee weapon two handed weapon"; }
                 }
+                 case WEAPON_MELEE_TWO_HAND -> {
+                     success = false; message = "Can equip only one two hand weapon";
+                 }
+
             }
 
             if(!success) return new EquipItemResult(success, message);
