@@ -6,6 +6,7 @@ import com.example.characters.equipment.Equipment.UnEquipItemResult;
 import com.example.characters.equipment.Equipment.EquipItemResult;
 
 import com.example.items.Item;
+import com.example.items.ItemTypeEnum;
 import com.example.users.inventory.Inventory;
 import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
@@ -18,7 +19,8 @@ import java.util.Optional;
 @Service
 public class CharacterInventoryService {
     private final Datastore datastore;
-
+    //TODO: think about those:
+    // - should transactions get only ids, or objects.
     @Autowired
     public CharacterInventoryService(Datastore datastore) {
         this.datastore = datastore;
@@ -96,6 +98,7 @@ public class CharacterInventoryService {
         }
     }
 
+    //TODO: think about item id, item here xd and character
     private EquipItemResult  handleEquipTransaction (
             MorphiaSession session, Item item, CharacterEquipmentFieldsEnum slot,
             Inventory userInventory, Character character
@@ -110,6 +113,44 @@ public class CharacterInventoryService {
 
         return equippedData;
     }
+
+    public boolean useConsumableItem(Inventory inventory, Character character, Item item) throws Exception {
+        if(!item.getType().equals(ItemTypeEnum.CONSUMABLE)) return false;
+        try(MorphiaSession session = datastore.startSession()) {
+            session.startTransaction();
+
+
+            if(this.handleUseConsumableTransaction(session, item, character, inventory)){
+                session.commitTransaction();
+                return true;
+
+            }else {
+                session.abortTransaction();
+                return false;
+            }
+
+        }catch(Exception e){
+
+            System.out.println(e);
+            throw new Exception("Something went wrong when trying to use consumable item");
+        }
+    }
+
+    private boolean handleUseConsumableTransaction(MorphiaSession session, Item item, Character character, Inventory inventory){
+        int hpGain = item.getHpGain();
+        if(hpGain > 0) character.increaseHealth(item.getHpGain());
+        else character.decreaseHealth(item.getHpGain());
+        inventory.removeItemById(item.getId());
+        try {
+            session.save(character);
+            session.save(character.getEquipment());
+            session.save(inventory);
+            return true;
+        }catch(Exception e){
+            return false;
+        }
+    }
+
     private void calculateStatisticsAndSave(MorphiaSession session, Item item, Character character, Inventory userInventory, boolean isEquip) {
         character.calculateStatisticByItem(item, isEquip);
         //TODO: for now save - latter make find.update() ?

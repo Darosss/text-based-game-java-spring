@@ -2,7 +2,6 @@ package com.example.characters;
 
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.SecuredRestController;
-import com.example.characters.equipment.CharacterEquipment;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.characters.equipment.Equipment.EquipItemResult;
 import com.example.characters.equipment.Equipment.UnEquipItemResult;
@@ -12,6 +11,8 @@ import com.example.statistics.BaseStatisticObject;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
 import com.example.users.UserService;
+import com.example.users.inventory.Inventory;
+import com.example.users.inventory.InventoryService;
 import com.example.utils.RandomUtils;
 import org.apache.coyote.BadRequestException;
 import org.bson.types.ObjectId;
@@ -26,6 +27,7 @@ public class CharactersController implements SecuredRestController {
     private ItemService itemService;
     private final AuthenticationFacade authenticationFacade;
     private UserService userService;
+    private InventoryService inventoryService;
 
     private final CharacterInventoryService characterInventoryService;
 
@@ -33,11 +35,13 @@ public class CharactersController implements SecuredRestController {
     public CharactersController(CharacterService characterService, ItemService itemService,
                                 UserService userService,
                                 AuthenticationFacade authenticationFacade,
-                                CharacterInventoryService characterInventoryService) {
+                                CharacterInventoryService characterInventoryService,
+                                InventoryService inventoryService) {
         this.service = characterService;
         this.itemService = itemService;
         this.userService = userService;
         this.authenticationFacade = authenticationFacade;
+        this.inventoryService = inventoryService;
         this.characterInventoryService = characterInventoryService;
     }
 
@@ -127,10 +131,23 @@ public class CharactersController implements SecuredRestController {
         if(foundChar == null) return null;
 
         return foundChar.getStats().getStatistics().get(name);
-
-
     }
 
+    @PostMapping("/use-consumable/{itemId}")
+    public boolean useConsumable(
+            @PathVariable String itemId
+    ) throws Exception {
+        String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
+        Optional<Character> foundCharacter = this.service.findOneMainCharacterByUserId(loggedUserId);
+        Optional<Item> itemToUse = this.itemService.findOne(itemId);
+        Inventory inventory = this.inventoryService.getUserInventory(loggedUserId);
+
+        if(foundCharacter.isEmpty() || itemToUse.isEmpty()) return false;
+
+        Item itemInstance = itemToUse.get();
+        if(!itemInstance.getType().equals(ItemTypeEnum.CONSUMABLE)) return false;
+        return this.characterInventoryService.useConsumableItem(inventory, foundCharacter.get(), itemInstance);
+    };
     @PostMapping("/equip/{characterId}/{itemId}/{slot}")
     public EquipItemResult equipCharacterItem(
             @PathVariable String characterId,
