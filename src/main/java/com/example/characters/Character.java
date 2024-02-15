@@ -120,6 +120,7 @@ public class Character  extends BaseHero {
 
     private void levelUp() {
         level++;
+        this.updateHealthBasedOnMaxHealth();
         System.out.println("Level up! New level: " + level);
     }
     public boolean isMainCharacter() {
