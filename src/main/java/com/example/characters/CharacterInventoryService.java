@@ -6,6 +6,7 @@ import com.example.characters.equipment.Equipment.UnEquipItemResult;
 import com.example.characters.equipment.Equipment.EquipItemResult;
 
 import com.example.items.Item;
+import com.example.items.ItemConsumable;
 import com.example.items.ItemTypeEnum;
 import com.example.users.inventory.Inventory;
 import dev.morphia.Datastore;
@@ -114,7 +115,7 @@ public class CharacterInventoryService {
         return equippedData;
     }
 
-    public boolean useConsumableItem(Inventory inventory, Character character, Item item) throws Exception {
+    public boolean useConsumableItem(Inventory inventory, Character character, ItemConsumable item) throws Exception {
         if(!item.getType().equals(ItemTypeEnum.CONSUMABLE)) return false;
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
@@ -136,7 +137,7 @@ public class CharacterInventoryService {
         }
     }
 
-    private boolean handleUseConsumableTransaction(MorphiaSession session, Item item, Character character, Inventory inventory){
+    private boolean handleUseConsumableTransaction(MorphiaSession session, ItemConsumable item, Character character, Inventory inventory){
         int hpGain = item.getHpGain();
         if(hpGain > 0) character.increaseHealth(item.getHpGain());
         else character.decreaseHealth(item.getHpGain());

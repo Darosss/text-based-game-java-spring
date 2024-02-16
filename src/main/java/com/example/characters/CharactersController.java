@@ -167,14 +167,12 @@ public class CharactersController implements SecuredRestController {
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<MainCharacter> mainCharacter = this.service.findMainCharacterByUserId(loggedUserId);
-        Optional<Item> itemToUse = this.itemService.findOne(itemId);
+        Optional<ItemConsumable> itemToUse = this.itemService.findOne(itemId, ItemConsumable.class);
+
         Inventory inventory = this.inventoryService.getUserInventory(loggedUserId);
 
         if(mainCharacter.isEmpty() || itemToUse.isEmpty()) return false;
-
-        Item itemInstance = itemToUse.get();
-        if(!itemInstance.getType().equals(ItemTypeEnum.CONSUMABLE)) return false;
-        return this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(), itemInstance);
+        return this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(),  itemToUse.get());
     };
     @PostMapping("/equip/{characterId}/{itemId}/{slot}")
     public EquipItemResult equipCharacterItem(
@@ -183,7 +181,7 @@ public class CharactersController implements SecuredRestController {
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
-        Optional<Item> itemToEquip = this.itemService.findOne(itemId);
+        Optional<ItemWearable> itemToEquip = this.itemService.findOne(itemId, ItemWearable.class);
         if(itemToEquip.isPresent()){
             return this.characterInventoryService.equipItem(new ObjectId(loggedUserId), new ObjectId(characterId), itemToEquip.get(), slot);
         }

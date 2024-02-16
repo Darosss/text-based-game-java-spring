@@ -13,33 +13,25 @@ import java.util.Optional;
 @Service
 public class ItemService {
     private final Datastore datastore;
-
-
     @Autowired
     public ItemService(Datastore datastore) {
         this.datastore = datastore;
     }
-
-    public Optional<Item> findOne(String id) {
-        return Optional.ofNullable(datastore.find(Item.class)
-                .filter(Filters.eq("id", new ObjectId(id))).first());
+    public <T extends Item> Optional<T> findOne(String id, Class<T> itemClass) {
+        return Optional.ofNullable(datastore.find(itemClass)
+                .filter(Filters.eq("id", new ObjectId(id)))
+                .first());
     }
-
     public List<Item> findAll() {
         return datastore.find(Item.class).stream().toList();
     }
 
-    public Item create(Item item) {
-        return datastore.save(item);
-
-    };
-    public List<Item> create(List<Item> item) {
+    public <T extends Item> T create(T item) {
         return datastore.save(item);
     };
-
-    public Optional<Item> findItemByItemType(ItemTypeEnum type) {
-        return Optional.ofNullable(datastore.find(Item.class).filter(Filters.eq("type", type)).first());
-    }
+    public <T extends Item> List<T> create(List<T> item) {
+        return datastore.save(item);
+    };
 
     public void removeAllItems(){
         datastore

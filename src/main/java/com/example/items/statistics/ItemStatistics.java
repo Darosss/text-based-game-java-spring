@@ -26,11 +26,25 @@ public class ItemStatistics {
 
         this.baseStatistics.putAll(this.getMergedStatsWithPrefixSuffix(baseStatistics, prefix, suffix));
         this.additionalStatistics.putAll(this.getMergedAdditionalStatsWithPrefixSuffix(baseStatistics, prefix, suffix));
-        this.handleStatisticsUpdateBasedOnLevel(itemLevel);
 
         this.handleAdditionalStatisticsUpdateBasedOnSubtype(itemLevel, subtype);
 
         this.handleStatisticsUpdateBasedOnRarity(itemRarity);
+    }
+
+    /**
+     * Constructor mostly used for consumables and mercenaries items, without prefix, suffix
+     *
+     */
+    public ItemStatistics(
+            Map<String, ItemStatisticsObject> baseStatistics, Map<String, ItemStatisticsObject> baseAdditionalStatistics,
+            int itemLevel, ItemRarityEnum itemRarity, ItemsSubtypes subtype
+    ){
+        this.baseStatistics.putAll(baseStatistics);
+        this.additionalStatistics.putAll(baseAdditionalStatistics);
+        this.handleAdditionalStatisticsUpdateBasedOnSubtype(itemLevel, subtype);
+        this.handleStatisticsUpdateBasedOnRarity(itemRarity);
+
     }
 
 

@@ -263,10 +263,22 @@ public enum  ItemsSubtypes {
     COMMON_FOOD(10.0, Pair.of(0.1f, 0.1f)),
 
     //NEUTRAL
-    COMMON_NEUTRAL(Pair.of(0.1f, 0.3f));
+    COMMON_NEUTRAL(Pair.of(0.1f, 0.3f)),
+
+
+    //MERCENARY
+    ASSASSIN(Pair.of(0.1f, 0.1f)),
+    BATTLE_MASTER(Pair.of(0.1f, 0.1f)),
+    MEDIC(Pair.of(0.1f, 0.1f)),
+    BARD(Pair.of(0.1f, 0.1f)),
+    STRATEGIST(Pair.of(0.1f, 0.1f)),
+    DEFENDER(Pair.of(0.1f, 0.1f)),
+    SCOUT(Pair.of(0.1f, 0.1f)),
+    THUG(Pair.of(0.1f, 0.1f));
     private final Map<AdditionalStatisticsNamesEnum, Double> additionalStatisticsPerLevel;
     private final double healthGainPerLevel;
     private final Pair<Float, Float> weightRange;
+
     ItemsSubtypes(Map<AdditionalStatisticsNamesEnum, Double> additionalStatisticsPerLevel,
     Pair<Float, Float> weightRange
     ) {
@@ -280,6 +292,8 @@ public enum  ItemsSubtypes {
         this.healthGainPerLevel = 0;
         this.weightRange = weightRange;
     }
+
+
 
     /**
      * For consumable health gain

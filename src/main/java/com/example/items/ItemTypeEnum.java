@@ -52,7 +52,13 @@ public enum ItemTypeEnum {
     CONSUMABLE("Consumable",
             new ItemsSubtypes[]{ItemsSubtypes.COMMON_FOOD, ItemsSubtypes.HEALTH_POTION}),
     NEUTRAL("Neutral",
-            new ItemsSubtypes[]{ItemsSubtypes.COMMON_NEUTRAL});
+            new ItemsSubtypes[]{ItemsSubtypes.COMMON_NEUTRAL}),
+
+    MERCENARY("Mercenary",
+            new ItemsSubtypes[]{ItemsSubtypes.ASSASSIN, ItemsSubtypes.BATTLE_MASTER, ItemsSubtypes.MEDIC,
+                    ItemsSubtypes.STRATEGIST, ItemsSubtypes.BARD, ItemsSubtypes.DEFENDER, ItemsSubtypes.SCOUT,
+                    ItemsSubtypes.THUG
+            });
 
     private final String displayName;
     private final ItemsSubtypes[] subtypes;

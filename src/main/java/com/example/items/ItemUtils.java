@@ -78,24 +78,35 @@ public class ItemUtils {
     public static Item generateItemWithoutBaseStats(
             String itemName, ItemTypeEnum type, ItemsSubtypes subtype, int level, ItemRarityEnum rarity, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
     ) {
-        Pair<Float, Float> weightRange = subtype.getWeightRange();
-        float itemWeight = RandomUtils.getRandomValueWithinRange(weightRange.getFirst(), weightRange.getSecond());
-        return new Item(itemName, "Description of "+itemName, level, getItemValueBasedOnRarityLevel(level, rarity), type, subtype, rarity, itemWeight,prefix, suffix, new HashMap<>(), new HashMap<>());
+        return generateItem(itemName, type, subtype, level, rarity, prefix,suffix, new HashMap<>(), new HashMap<>());
     }
 
-
-    //NOTE: That's for debug right now;
     private static Item generateItem(
-            String itemName, ItemTypeEnum type, ItemsSubtypes subtype, int level, int value, ItemRarityEnum rarity,
-            float weight, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
+            String itemName, ItemTypeEnum type, ItemsSubtypes subtype, int level,  ItemRarityEnum rarity,
+            ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
             Map<String, ItemStatisticsObject> baseStatistics,
             Map<String, ItemStatisticsObject> baseAdditionalStatistics
     ){
 
-        return new Item(itemName, "Description of "+itemName,
-                level, value, type, subtype, rarity, weight,prefix, suffix,
-                baseStatistics, baseAdditionalStatistics
-        );
+        Pair<Float, Float> weightRange = subtype.getWeightRange();
+        float itemWeight = RandomUtils.getRandomValueWithinRange(weightRange.getFirst(), weightRange.getSecond());
+        int itemValue = getItemValueBasedOnRarityLevel(level, rarity);
+        switch (type){
+            case CONSUMABLE -> {
+                return new ItemConsumable(itemName, "Description of "+itemName,
+                        level, itemValue,
+                        rarity, itemWeight, subtype);
+            }
+            case MERCENARY -> {
+                return new ItemMercenary(itemName, "Description of "+itemName,
+                        level, getItemValueBasedOnRarityLevel(level, rarity), rarity, itemWeight, subtype,
+                        //TODO: add stats for mercenaries
+                        baseStatistics, baseAdditionalStatistics);
+            }
+        }
+        return new ItemWearable(itemName, "Description of "+itemName,
+                level, getItemValueBasedOnRarityLevel(level, rarity), type,
+                subtype, rarity, itemWeight,prefix, suffix, new HashMap<>(), new HashMap<>());
 
     }
 
@@ -113,10 +124,8 @@ public class ItemUtils {
     ){
         ItemsSubtypes subtype = RandomUtils.getRandomItemFromArray(itemType.getSubtypes());
         return generateItem(name, itemType, subtype, itemLevel,
-                RandomUtils.getRandomValueWithinRange(1,40000),
-                getRandomRarityItem(),
-                RandomUtils.getRandomValueWithinRange(0.1f,100f),
-                getRandomItemPrefix(), getRandomItemSuffix(), baseStatistics, baseAdditionalStatistics
+                getRandomRarityItem(),getRandomItemPrefix(),
+                getRandomItemSuffix(), baseStatistics, baseAdditionalStatistics
         );
     };
 

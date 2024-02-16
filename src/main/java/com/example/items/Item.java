@@ -30,22 +30,13 @@ public class Item {
     private String description;
 
     private Integer level;
-
     private Integer value;
-
-    private ItemPrefixesEnum prefix;
-    private ItemSuffixesEnum suffix;
-
     private Integer upgradePoints;
-
     private ItemTypeEnum type;
     private ItemsSubtypes subtype;
-
-    private int hpGain;
     private ItemRarityEnum rarity;
-
     private float weight;
-    private ItemStatistics statistics;
+    protected ItemStatistics statistics;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -56,23 +47,17 @@ public class Item {
     public Item() {}
     public Item(String name, String description, Integer level,
                 Integer value, ItemTypeEnum type, ItemsSubtypes subtype,
-                ItemRarityEnum rarity, float weight,
-                ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
-                Map<String, ItemStatisticsObject> baseStatistics,
-                Map<String, ItemStatisticsObject> baseAdditionalStatistics
+                ItemRarityEnum rarity, float weight
 
     ) {
         this.name = name;
         this.description = description;
         this.level = level;
         this.value = value;
-        this.prefix = prefix;
-        this.suffix = suffix;
         this.type = type;
         this.subtype = subtype;
+        this.upgradePoints = 0;
         this.rarity = rarity;
-        if(type.equals(ItemTypeEnum.CONSUMABLE)) this.hpGain = ItemUtils.getConsumableItemHpGain(level, rarity, subtype);
-        else this.statistics = new ItemStatistics(baseStatistics, baseAdditionalStatistics, prefix, suffix, level, rarity, subtype);        this.upgradePoints = 0;
         this.weight = weight;
     }
 
@@ -92,9 +77,7 @@ public class Item {
         return name;
     }
 
-    public String getNameWithPrefixAndSuffix() {
-        return prefix.getDisplayName() + " " + name  + " " + suffix.getDisplayName();
-     }
+
 
     public String getDescription() {
         return description;
@@ -124,13 +107,6 @@ public class Item {
         return rarity;
     }
 
-    public ItemPrefixesEnum getPrefix() {
-        return prefix;
-    }
-
-    public ItemSuffixesEnum getSuffix() {
-        return suffix;
-    }
 
     public float getWeight() { return weight; }
 
@@ -153,9 +129,6 @@ public class Item {
         return statistics;
     }
 
-    public int getHpGain() {
-        return hpGain;
-    }
 
     @Override
     public String toString() {
@@ -166,8 +139,6 @@ public class Item {
                 ", description='" + description + '\'' +
                 ", level=" + level +
                 ", value=" + value +
-                ", prefix=" + prefix +
-                ", suffix=" + suffix +
                 ", upgradePoints=" + upgradePoints +
                 ", type=" + type +
                 ", rarity=" + rarity +
