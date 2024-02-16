@@ -32,38 +32,43 @@ public class CharacterService {
         return datastore.save(character);
     }
 
-    public List<Character> findAll() {
-        return datastore.find(Character.class).stream().toList();
+    public List<Character> findAll(){
+        return this.datastore.find(Character.class).stream().toList();
     }
-
-    public List<Character> findUserCharacters(String userId) {
-        return datastore.find(Character.class).filter(Filters.eq("user", new ObjectId(userId))).stream().toList();
+    public List<MercenaryCharacter> findUserMercenaries(String userId) {
+        return datastore.find(MercenaryCharacter.class).filter(Filters.eq("user", new ObjectId(userId))).stream().toList();
     }
+    public MainCharacter createMainCharacter(User user, String name) {
+        CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
-    public Character create(User user, boolean asMainCharacter) {
-         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
-
-        Character character = new Character("Default character name", user, equipment, asMainCharacter);
-        Character savedCharacter = datastore.save(character);
+        MainCharacter savedCharacter = datastore.save(new MainCharacter(name, user, equipment));
         equipment.setCharacter(savedCharacter);
         this.equipmentService.update(equipment);
 
         return savedCharacter;
-
     }
-    public Character createDebugCharacter(
-            User user, int level,long experience, boolean asMainCharacter,
-            Map<BaseStatisticsNamesEnum, Integer> baseStatistic,
+    public MercenaryCharacter createMercenaryCharacter(User user, String name) {
+        CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
+
+        MercenaryCharacter savedCharacter = datastore.save(new MercenaryCharacter(name, user, equipment));
+        equipment.setCharacter(savedCharacter);
+        this.equipmentService.update(equipment);
+
+        return savedCharacter;
+    }
+
+    public MainCharacter createDebugCharacter(
+            User user, int level, Map<BaseStatisticsNamesEnum, Integer> baseStatistic,
             Map<AdditionalStatisticsNamesEnum, Integer> additionalStats
             ) {
 
         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
-        Character character = new Character("User character debug", user, equipment,
-                level, experience, asMainCharacter, baseStatistic, additionalStats
+        MainCharacter character = new MainCharacter("User character debug", user, equipment,
+                level, baseStatistic, additionalStats
                 );
 
-        Character savedCharacter = datastore.save(character);
+        MainCharacter savedCharacter = datastore.save(character);
 
         equipment.setCharacter(savedCharacter);
         this.equipmentService.update(equipment);
@@ -72,22 +77,22 @@ public class CharacterService {
     }
 
     public Optional<Character> findById(String id) {
-        return Optional.ofNullable(datastore.find(Character.class).filter(Filters.eq("id", new ObjectId(id))).first());
+        return Optional.ofNullable(datastore.find(Character.class)
+                .filter(
+                        Filters.eq("id", new ObjectId(id))).first());
     }
     public Optional<Character> findOneByUserId(String userId) {
         return Optional.ofNullable(datastore.find(Character.class).filter(Filters.eq("user", new ObjectId(userId))).first());
     }
-    public Optional<Character> findOneMainCharacterByUserId(String userId) {
-        return Optional.ofNullable(datastore.find(Character.class).filter(
-                Filters.eq("user", new ObjectId(userId)),
-                Filters.eq("isMainCharacter", true)
-        ).first());
-    }
-
     public Character findOne(){
         return datastore.find(Character.class).first();
     }
 
+    public Optional<MainCharacter> findMainCharacterByUserId(String userId){
+        return Optional.ofNullable(datastore.find(MainCharacter.class).filter(
+                Filters.eq("user", new ObjectId(userId))
+        ).first());
+    }
 
     public void removeAllCharactersAndEquipments(){
         datastore

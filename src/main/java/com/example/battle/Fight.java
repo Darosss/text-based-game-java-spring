@@ -7,6 +7,7 @@ import com.example.characters.BaseHero;
 import com.example.characters.Character;
 import com.example.battle.data.DefendReturnData;
 import com.example.characters.ExperienceUtils;
+import com.example.characters.MainCharacter;
 import com.example.enemies.Enemy;
 import com.example.enemies.EnemyUtils;
 import com.example.items.Item;
@@ -255,11 +256,8 @@ public class Fight {
     }
 
     //TODO: maybe this will not be needed - when other heroes will be in separate collection (as items)?
-    private Character findUserMainCharacter() {
-        return (Character) this.userHeroesDetails.values().stream().filter((v)->{
-            Character character = (Character)v.getHero();
-            return character.isMainCharacter();
-        }).toList().get(0).getHero();
+    private BaseHero findUserMainCharacter() {
+        return this.userHeroesDetails.values().stream().filter((v)-> v.getHero() instanceof MainCharacter).toList().get(0).getHero();
 
 
     }

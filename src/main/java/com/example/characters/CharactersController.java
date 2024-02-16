@@ -45,57 +45,87 @@ public class CharactersController implements SecuredRestController {
         this.characterInventoryService = characterInventoryService;
     }
 
-    //Later for admins
-    @GetMapping("/")
-    public List<Character> findAll() {
-              return this.service.findAll();
-    }
+    @GetMapping("/your-mercenaries")
+    public List<MercenaryCharacter> findYourMercenaries() throws Exception {
+        List<MercenaryCharacter> characters = this.service.findUserMercenaries(this.authenticationFacade.getJwtTokenPayload().id());
 
-    @GetMapping("/your-characters")
-    public List<Character> findYourCharacters() throws Exception {
-        return this.service.findUserCharacters(this.authenticationFacade.getJwtTokenPayload().id());
+        characters.forEach((v)->{
+
+            System.out.println(v.getName() + "  co ");
+            System.out.println(v instanceof Character);
+            System.out.println(v instanceof MercenaryCharacter);
+        });
+
+        return characters;
     }
     @GetMapping("/your-main-character")
-    public Optional<Character> findYourMainCharacter() throws Exception {
-        return this.service.findOneMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
+    public Optional<MainCharacter> findYourMainCharacter() throws Exception {
+        return this.service.findMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
+    }
+
+    @GetMapping("debug/all")
+    public List<Character> findAll()  {
+        return this.service.findAll();
     }
 
     @PostMapping("/create")
-    public Character create() throws Exception {
+    public MainCharacter createMainCharacter() throws Exception {
 
         Optional<User> user = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
 
         if(user.isPresent()) {
             User userInst = user.get();
-            if(this.service.findOneMainCharacterByUserId(userInst.getId().toString()).isPresent()){
+            if(this.service.findMainCharacterByUserId(userInst.getId().toString()).isPresent()){
                 throw new BadRequestException("User already have main character");
             }
 
-            Character createdChar = service.create(user.get(), true);
+            MainCharacter createdChar = service.createMainCharacter(user.get(), userInst.getUsername());
             userInst.addCharacter(createdChar);
             this.userService.update(userInst);
         }
         return null;
     }
-    @PostMapping("/debug/create-empty-char/{userId}/{asMainCharacter}")
+
+    // For debug ignore ;p
+    @PostMapping("/debug/create-empty-char/{userId}/{name}/{asMainCharacter}")
     public Character create(@PathVariable String userId,
+                            @PathVariable String name,
                             @PathVariable boolean asMainCharacter
     ){
         Optional<User> user = this.userService.findOneById(userId);
-        return user.map(value -> service.create(value, true)).orElse(null);
+        if(asMainCharacter) {
+            return user.map(value -> service.createMainCharacter(value, name)).orElse(null);
+        }else {
+            return user.map(value -> service.createMercenaryCharacter(value, name)).orElse(null);
+        }
     }
-    @PostMapping("/debug/create-with-random-stats/{asMainCharacter}")
+
+
+    @PostMapping("/debug/create-mercenary-character-with-random-stats")
+        public MercenaryCharacter createDebugMercenary(
+                ) throws Exception {
+            Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
+            if(foundUser.isPresent()) {
+                User userInst = foundUser.get();
+                MercenaryCharacter createdChar = service.createMercenaryCharacter(
+                        userInst, "MERCENARY"
+                );
+                userInst.addCharacter(createdChar);
+                this.userService.update(userInst);
+                return createdChar;
+            }
+            return null;
+        }
+
+    @PostMapping("/debug/create-main-character-with-random-stats")
     public Character createDebug(
-            @PathVariable boolean asMainCharacter
     ) throws Exception {
         Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
         if(foundUser.isPresent()) {
             User userInst = foundUser.get();
-            Character createdChar = service.createDebugCharacter(
+            MainCharacter createdChar = service.createDebugCharacter(
                     userInst,
                     RandomUtils.getRandomValueWithinRange(1, 55),
-                    RandomUtils.getRandomValueWithinRange(4, 909),
-                    asMainCharacter,
                     Map.of(
                             BaseStatisticsNamesEnum.STRENGTH, RandomUtils.getRandomValueWithinRange(1, 55),
                             BaseStatisticsNamesEnum.DEXTERITY, RandomUtils.getRandomValueWithinRange(1, 55),
@@ -121,9 +151,7 @@ public class CharactersController implements SecuredRestController {
     @GetMapping("/statistics/{name}/effective-value")
         public int getEffectiveValueByStatName(@PathVariable BaseStatisticsNamesEnum name) {
             Character foundChar = service.findOne();
-
         return foundChar.getStats().getStatistics().get(name).getEffectiveValue();
-
     }
     @GetMapping("/statistics/{name}")
     public BaseStatisticObject getCharacterStats(@PathVariable BaseStatisticsNamesEnum name) {
@@ -138,15 +166,15 @@ public class CharactersController implements SecuredRestController {
             @PathVariable String itemId
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
-        Optional<Character> foundCharacter = this.service.findOneMainCharacterByUserId(loggedUserId);
+        Optional<MainCharacter> mainCharacter = this.service.findMainCharacterByUserId(loggedUserId);
         Optional<Item> itemToUse = this.itemService.findOne(itemId);
         Inventory inventory = this.inventoryService.getUserInventory(loggedUserId);
 
-        if(foundCharacter.isEmpty() || itemToUse.isEmpty()) return false;
+        if(mainCharacter.isEmpty() || itemToUse.isEmpty()) return false;
 
         Item itemInstance = itemToUse.get();
         if(!itemInstance.getType().equals(ItemTypeEnum.CONSUMABLE)) return false;
-        return this.characterInventoryService.useConsumableItem(inventory, foundCharacter.get(), itemInstance);
+        return this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(), itemInstance);
     };
     @PostMapping("/equip/{characterId}/{itemId}/{slot}")
     public EquipItemResult equipCharacterItem(
@@ -156,11 +184,8 @@ public class CharactersController implements SecuredRestController {
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<Item> itemToEquip = this.itemService.findOne(itemId);
-        Optional<Character> foundCharacter = this.service.findById(characterId);
-        if(     itemToEquip.isPresent() &&
-                foundCharacter.isPresent() && foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId))
-        ){
-            return this.characterInventoryService.equipItem(new ObjectId(loggedUserId), itemToEquip.get(), slot);
+        if(itemToEquip.isPresent()){
+            return this.characterInventoryService.equipItem(new ObjectId(loggedUserId), new ObjectId(characterId), itemToEquip.get(), slot);
         }
 
         return new EquipItemResult(false, "Something went wrong. Try again later.");
@@ -172,13 +197,8 @@ public class CharactersController implements SecuredRestController {
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
-        Optional<Character> foundCharacter = this.service.findById(characterId);
-            if(foundCharacter.isPresent() &&
-                    foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
-            {
-                return this.characterInventoryService.unEquipItem(new ObjectId(loggedUserId), slot);
-            }
-        return new UnEquipItemResult(false, "Something went wrong. Try again later.", Optional.empty());
+
+        return this.characterInventoryService.unEquipItem(new ObjectId(loggedUserId),  new ObjectId(characterId), slot);
     }
 
 
@@ -187,11 +207,11 @@ public class CharactersController implements SecuredRestController {
                                   @PathVariable int addValue
                                   ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
-        Optional<Character> foundCharacter = this.service.findOneByUserId(loggedUserId);
+        Optional<MainCharacter> foundCharacter = this.service.findMainCharacterByUserId(loggedUserId);
         if(foundCharacter.isPresent() &&
                 foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
         {
-            Character characterInst = foundCharacter.get();
+            MainCharacter characterInst = foundCharacter.get();
             characterInst.getStats().getStatistics().get(statisticName).increaseValue(addValue);
             this.service.update(characterInst);
             return true;
@@ -204,11 +224,11 @@ public class CharactersController implements SecuredRestController {
                                   @PathVariable int subtractValue
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
-        Optional<Character> foundCharacter = this.service.findOneByUserId(loggedUserId);
+        Optional<MainCharacter> foundCharacter = this.service.findMainCharacterByUserId(loggedUserId);
         if(foundCharacter.isPresent() &&
                 foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
         {
-            Character characterInst = foundCharacter.get();
+            MainCharacter characterInst = foundCharacter.get();
             characterInst.getStats().getStatistics().get(statisticName).decreaseValue(subtractValue);
             this.service.update(characterInst);
             return true;

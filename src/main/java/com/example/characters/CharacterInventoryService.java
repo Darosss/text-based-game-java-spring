@@ -25,11 +25,11 @@ public class CharacterInventoryService {
     public CharacterInventoryService(Datastore datastore) {
         this.datastore = datastore;
     }
-    public UnEquipItemResult unEquipItem (ObjectId userId, CharacterEquipmentFieldsEnum slot) throws Exception {
+    public UnEquipItemResult unEquipItem (ObjectId userId, ObjectId characterId, CharacterEquipmentFieldsEnum slot) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
-            Character character = this.fetchCharacter(session, userId);
+            Character character = this.fetchCharacter(session, characterId, userId);
             if (userInventory != null && character != null) {
                 UnEquipItemResult transactionDone = this.handleUnEquipTransaction(session, slot, userInventory, character);
             if (transactionDone.success()) {
@@ -71,11 +71,11 @@ public class CharacterInventoryService {
         return unEquippedItemData;
     }
 
-    public EquipItemResult  equipItem (ObjectId userId, Item item, CharacterEquipmentFieldsEnum slot) throws Exception {
+    public EquipItemResult  equipItem (ObjectId userId, ObjectId characterId, Item item, CharacterEquipmentFieldsEnum slot) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
-            Character character = this.fetchCharacter(session, userId);
+            Character character = this.fetchCharacter(session, characterId, userId);
 
 
             if (userInventory != null && character != null) {
@@ -163,9 +163,11 @@ public class CharacterInventoryService {
                 .filter(Filters.eq("user", userId))
                 .first();
     }
-    private Character fetchCharacter(MorphiaSession session, ObjectId userId) {
+    private Character fetchCharacter(MorphiaSession session, ObjectId characterId, ObjectId userId) {
         return session.find(Character.class)
-                .filter(Filters.eq("user", userId))
+                .filter(Filters.eq("user", userId) ,
+                        Filters.eq("id", characterId)
+                )
                 .first();
     }
 }

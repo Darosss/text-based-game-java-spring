@@ -27,9 +27,6 @@ public class Character  extends BaseHero {
     @JsonIgnoreProperties("character")
     @Reference
     private CharacterEquipment equipment;
-    private Long experience = 0L;
-
-    private boolean isMainCharacter;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -38,45 +35,39 @@ public class Character  extends BaseHero {
         super();
     }
 
-    public Character(String name, User user, CharacterEquipment equipment, boolean isMainCharacter) {
+    public Character(String name, User user, CharacterEquipment equipment) {
         super(name);
         //TODO: make parameter and depend on class change basics
         //For set equipment here and character in equipment
         this.equipment = equipment;
         this.user = user;
-        this.isMainCharacter = true;
     }
-    public Character(String name, User user, CharacterEquipment equipment, boolean isMainCharacter, int level, long experience) {
-        this(name, user, equipment, isMainCharacter);
+    public Character(String name, User user, CharacterEquipment equipment, int level) {
+        this(name, user, equipment);
         this.level = level;
-        this.experience = experience;
     }
 
     //TODO: one of constructor should have = class type which will constitute what and how many default stats there are
-    public Character(String name, User user, CharacterEquipment equipment, int level, long experience,
+    public Character(String name, User user, CharacterEquipment equipment, int level,
                      Map<BaseStatisticsNamesEnum, Integer> baseStatistics
                      ) {
         super(name, level, baseStatistics);
 
         //TODO: tbh its for debug, ignore
-        this.experience = experience;
         //For set equipment here and character in equipment
         this.equipment = equipment;
         this.user = user;
     }
 
-    public Character(String name, User user, CharacterEquipment equipment, int level, long experience,
-                     boolean isMainCharacter,
+    public Character(String name, User user, CharacterEquipment equipment, int level,
                      Map<BaseStatisticsNamesEnum, Integer> baseStatistics,
                      Map<AdditionalStatisticsNamesEnum, Integer> additionalStatistics
     ) {
         super(name, level, baseStatistics, additionalStatistics);
         //TODO: tbh its for debug, ignore
-        this.experience = experience;
         //For set equipment here and character in equipment
         this.equipment = equipment;
         this.user = user;
-        this.isMainCharacter = isMainCharacter;
     }
 
     public void calculateStatisticByItem(Item item, boolean isEquip){
@@ -97,55 +88,19 @@ public class Character  extends BaseHero {
             }
         });
     }
-
-    public void gainExperience(long experiencePoints) {
-        if (experiencePoints > 0) {
-            this.experience += experiencePoints;
-            this.checkLevelUp();
-        }
-    }
-
-    public long getExpToLevelUp () {
-        return ExperienceUtils.calculateExpToNextLevel(this.level);
-    }
-
-    private void checkLevelUp() {
-        long expToLevelUp = this.getExpToLevelUp();
-        while (this.experience >= expToLevelUp) {
-            this.experience -= expToLevelUp;
-            this.levelUp();
-            expToLevelUp = ExperienceUtils.calculateExpToNextLevel(this.level);
-        }
-    }
-
-    private void levelUp() {
-        level++;
-        this.updateHealthBasedOnMaxHealth();
-        System.out.println("Level up! New level: " + level);
-    }
-    public boolean isMainCharacter() {
-        return isMainCharacter;
-    }
-
     @Override
     public String toString() {
         return "Character{" +
-                "id='" + id + '\'' +
-                ", level=" + level +
-                ", experience=" + experience +
+                "id=" + id +
+                ", user=" + user +
+                ", equipment=" + equipment +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
                 '}';
     }
-
-
     @Override
     public ObjectId getId() {
         return id;
-    }
-
-    public Long getExperience() {
-        return experience;
     }
 
     public LocalDateTime getCreatedAt() {

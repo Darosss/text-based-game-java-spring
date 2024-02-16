@@ -1,12 +1,10 @@
 package com.example.characters;
 
 import com.example.statistics.*;
-import dev.morphia.annotations.ExternalEntity;
 import org.bson.types.ObjectId;
 
 import java.util.Map;
 
-@ExternalEntity(target = BaseHero.class)
 public class BaseHero {
     private ObjectId baseHeroId;
     protected String name;

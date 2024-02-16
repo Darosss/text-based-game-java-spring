@@ -2,8 +2,8 @@ package com.example.skirmishes;
 
 import com.example.battle.BattleManagerService;
 import com.example.battle.reports.FightReport;
-import com.example.characters.Character;
 import com.example.characters.CharacterService;
+import com.example.characters.MainCharacter;
 import com.example.enemies.Enemy;
 import com.example.enemies.EnemyType;
 import com.example.enemies.EnemyUtils;
@@ -42,8 +42,8 @@ public class ChallengesService {
         return Optional.of(new HandleCurrentChallengeReturn(skirmish, fightReport));
     }
 
-    private Character getUserMainCharacter(String userId) throws Exception {
-        Optional<Character> foundCharacter = this.characterService.findOneMainCharacterByUserId(userId);
+    private MainCharacter getUserMainCharacter(String userId) throws Exception {
+        Optional<MainCharacter> foundCharacter = this.characterService.findMainCharacterByUserId(userId);
         if(foundCharacter.isEmpty()) throw new Exception("Something went wrong - no found character");
 
         return foundCharacter.get();
@@ -54,21 +54,18 @@ public class ChallengesService {
 
         if(challenge.isEmpty()) return null;
 
-        Character mainCharacter = this.getUserMainCharacter(userId);
+        MainCharacter mainCharacter = this.getUserMainCharacter(userId);
 
         Enemy createdEnemy = this.prepareChallengeEnemy(challenge.get().getDifficulty(), mainCharacter.getLevel());
 
         FightReport fightReport = this.battleManagerService.performFight(mainCharacter, createdEnemy);
         this.handleOnFinishFight(fightReport, mainCharacter);
 
-
         return fightReport;
     }
 
-    private void handleOnFinishFight(FightReport report, Character mainCharacter){
+    private void handleOnFinishFight(FightReport report, MainCharacter mainCharacter){
         mainCharacter.gainExperience(report.getGainedExperience());
-        //TODO: add gold, items etc
-
 
         this.characterService.update(mainCharacter);
     }
