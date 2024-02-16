@@ -21,9 +21,6 @@ public class SkirmishesService {
         this.datastore = datastore;
     }
 
-    public Character update(Character character) {
-        return datastore.save(character);
-    }
     public Optional<Skirmish> findOneByUserId(ObjectId userId) {
         return Optional.ofNullable(datastore.find(Skirmish.class).filter(Filters.eq("user", userId)).first());
     }
