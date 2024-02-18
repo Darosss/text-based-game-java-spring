@@ -16,16 +16,44 @@ public class BaseStatisticObject extends  CharacterStatisticObject<BaseStatistic
         super(name, value);
     }
 
+    @Override
     public void setValue(int newValue) {
         this.updateMaxProportion(newValue);
         super.setValue(newValue);
+    }
+
+    @Override
+    public void increaseValue(int value) {
+        this.updateMaxProportion(this.value + value);
+        super.increaseValue(value);
+    }
+
+    @Override
+    public void decreaseValue(int value) {
+        this.updateMaxProportion(this.value - value);
+        super.decreaseValue(value);
+    }
+
+    @Override
+    public void updateStatistic(int value, StatisticsUtils.StatisticUpdateType updateType) {
+        super.updateStatistic(value, updateType);
+    }
+
+    @Override
+    public void increaseStatistic(int value, StatisticsUtils.StatisticUpdateType updateType) {
+        super.increaseStatistic(value, updateType);
+    }
+
+    @Override
+    public void decreaseStatistic(int value, StatisticsUtils.StatisticUpdateType updateType) {
+        if(updateType.equals(StatisticsUtils.StatisticUpdateType.VALUE)) this.updateMaxProportion(this.value - value);
+        super.decreaseStatistic(value, updateType);
     }
 
     protected int getCalculatedEffectiveValue() {
         int calculatedEffective = super.getCalculatedEffectiveValue(
             this.getValue() + this.getBonus()
         );
-
         return Math.min(calculatedEffective, max);
     }
 
@@ -39,7 +67,7 @@ public class BaseStatisticObject extends  CharacterStatisticObject<BaseStatistic
     }
 
     private void updateMaxProportion() {
-        this.max = value * 2;
+        this.max = this.value * 2;
     }
     private void updateMaxProportion(int newValue) {
         this.max = newValue * 2;

@@ -47,20 +47,15 @@ public class CharactersController implements SecuredRestController {
 
     @GetMapping("/your-mercenaries")
     public List<MercenaryCharacter> findYourMercenaries() throws Exception {
-        List<MercenaryCharacter> characters = this.service.findUserMercenaries(this.authenticationFacade.getJwtTokenPayload().id());
-
-        characters.forEach((v)->{
-
-            System.out.println(v.getName() + "  co ");
-            System.out.println(v instanceof Character);
-            System.out.println(v instanceof MercenaryCharacter);
-        });
-
-        return characters;
+        return this.service.findUserMercenaries(this.authenticationFacade.getJwtTokenPayload().id());
     }
     @GetMapping("/your-main-character")
     public Optional<MainCharacter> findYourMainCharacter() throws Exception {
         return this.service.findMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
+    }
+    @GetMapping("characters/{characterId}")
+    public Optional<Character> findYourCharacterById(@PathVariable String characterId) {
+        return this.service.findById(characterId);
     }
 
     @GetMapping("debug/all")
@@ -200,6 +195,27 @@ public class CharactersController implements SecuredRestController {
     }
 
 
+    @PostMapping("/equip-mercenary/{characterId}/{itemId}")
+    public EquipItemResult equipMercenary(
+            @PathVariable String characterId,
+            @PathVariable String itemId
+    ) throws Exception {
+        String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
+        Optional<ItemMercenary> itemToEquip = this.itemService.findOne(itemId, ItemMercenary.class);
+        if(itemToEquip.isPresent()){
+            return this.characterInventoryService.useMercenaryItemOnMercenaryCharacter(
+                    new ObjectId(loggedUserId), new ObjectId(characterId), itemToEquip.get());
+        }
+        return new EquipItemResult(false, "Item not found");
+    }
+    @PostMapping("/un-equip-mercenary/{characterId}")
+    public UnEquipItemResult unEquipMercenary(
+            @PathVariable String characterId
+    ) throws Exception {
+        String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
+        return this.characterInventoryService.unEquipMercenaryItemFromMercenaryCharacter(
+                new ObjectId(loggedUserId), new ObjectId(characterId));
+    }
     @PatchMapping("/train-statistic/{statisticName}/{addValue}")
     public boolean trainStatistic(@PathVariable BaseStatisticsNamesEnum statisticName,
                                   @PathVariable int addValue

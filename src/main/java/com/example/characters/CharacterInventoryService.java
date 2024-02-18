@@ -7,6 +7,7 @@ import com.example.characters.equipment.Equipment.EquipItemResult;
 
 import com.example.items.Item;
 import com.example.items.ItemConsumable;
+import com.example.items.ItemMercenary;
 import com.example.items.ItemTypeEnum;
 import com.example.users.inventory.Inventory;
 import dev.morphia.Datastore;
@@ -30,7 +31,7 @@ public class CharacterInventoryService {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
-            Character character = this.fetchCharacter(session, characterId, userId);
+            Character character = this.fetchCharacter(session, characterId, userId, Character.class);
             if (userInventory != null && character != null) {
                 UnEquipItemResult transactionDone = this.handleUnEquipTransaction(session, slot, userInventory, character);
             if (transactionDone.success()) {
@@ -76,7 +77,7 @@ public class CharacterInventoryService {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
-            Character character = this.fetchCharacter(session, characterId, userId);
+            Character character = this.fetchCharacter(session, characterId, userId, Character.class);
 
 
             if (userInventory != null && character != null) {
@@ -152,6 +153,73 @@ public class CharacterInventoryService {
         }
     }
 
+    public EquipItemResult useMercenaryItemOnMercenaryCharacter(ObjectId userId, ObjectId characterId, ItemMercenary item) throws Exception {
+        try(MorphiaSession session = datastore.startSession()) {
+            session.startTransaction();
+            Inventory userInventory = this.fetchUserInventory(session, userId);
+            MercenaryCharacter character = this.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
+
+            if (userInventory != null && character != null) {
+
+                EquipItemResult transactionDone = this.handleUseMercenaryItemTransaction(session, item, character, userInventory);
+                if(transactionDone.success()) {
+                    session.commitTransaction();
+                }else {
+                    session.abortTransaction();
+                }
+                return transactionDone;
+            }
+            return new EquipItemResult(false,
+                    "Cannot find user inventory and/or character. Contact administration"
+            );
+        }catch(Exception e){
+            System.out.println(e);
+            throw new Exception("Something went wrong when trying to use mercenary item");
+        }
+
+    }
+    private EquipItemResult handleUseMercenaryItemTransaction(MorphiaSession session, ItemMercenary item, MercenaryCharacter character, Inventory inventory){
+        Optional<Item> itemToEquip = inventory.removeItemById(item.getId());
+        if (itemToEquip.isEmpty()) return new EquipItemResult(false, "Item does not exist.");
+        character.setMercenary(item);
+        session.save(character);
+        session.save(inventory);
+
+        return new EquipItemResult(true, "Successfully used mercenary item");
+    }
+
+    public UnEquipItemResult unEquipMercenaryItemFromMercenaryCharacter(ObjectId userId, ObjectId characterId) throws Exception {
+        try(MorphiaSession session = datastore.startSession()) {
+            session.startTransaction();
+            Inventory userInventory = this.fetchUserInventory(session, userId);
+            MercenaryCharacter character = this.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
+            if (userInventory != null && character != null) {
+                UnEquipItemResult transactionDone = this.handleUnEquipMercenaryItemTransaction(session, character, userInventory);
+                if (transactionDone.success()) {
+                    session.commitTransaction();
+                } else {
+                    session.abortTransaction();
+                }
+                return transactionDone;
+            }
+
+            return new UnEquipItemResult(false, "Cannot find user inventory and/or character. Contact administration", Optional.empty());
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new Exception("Something went wrong when trying to un equip mercenary item");
+        }
+    }
+    private UnEquipItemResult handleUnEquipMercenaryItemTransaction(MorphiaSession session, MercenaryCharacter character, Inventory inventory){
+        ItemMercenary mercenaryItem = character.getMercenary();
+        inventory.addItem(mercenaryItem);
+        character.setMercenary(null);
+        session.save(character);
+        session.save(inventory);
+
+        return new UnEquipItemResult(true, "Successfully un equipped mercenary item", Optional.of(mercenaryItem));
+    }
+
     private void calculateStatisticsAndSave(MorphiaSession session, Item item, Character character, Inventory userInventory, boolean isEquip) {
         character.calculateStatisticByItem(item, isEquip);
         //TODO: for now save - latter make find.update() ?
@@ -164,8 +232,8 @@ public class CharacterInventoryService {
                 .filter(Filters.eq("user", userId))
                 .first();
     }
-    private Character fetchCharacter(MorphiaSession session, ObjectId characterId, ObjectId userId) {
-        return session.find(Character.class)
+    private<T extends Character> T fetchCharacter(MorphiaSession session, ObjectId characterId, ObjectId userId, Class<T> characterClass) {
+        return session.find(characterClass)
                 .filter(Filters.eq("user", userId) ,
                         Filters.eq("id", characterId)
                 )

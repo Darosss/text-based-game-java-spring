@@ -22,7 +22,6 @@ public class HeroStatisticsObject {
         this.statistics.get(statName).updateStatistic(value, updateType);
         this.updateAdditionalStatisticsBasedOnBasic(statName);
     }
-
     public void updateStatisticsOnEquip(BaseStatisticsNamesEnum statName, int value, float percentageValue) {
         this.statistics.get(statName).increaseStatistic(value, StatisticsUtils.StatisticUpdateType.BONUS);
         this.statistics.get(statName).increaseStatistic(((int)percentageValue), StatisticsUtils.StatisticUpdateType.PERCENTAGE_BONUS);
@@ -47,13 +46,6 @@ public class HeroStatisticsObject {
     public void updateAdditionalStatistic(AdditionalStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
         this.additionalStatistics.get(statName).updateStatistic(value, updateType);
     }
-    public void increaseAdditionalStatistic(AdditionalStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
-        this.additionalStatistics.get(statName).increaseStatistic(value, updateType);
-    }
-    public void decreaseAdditionalStatistic(AdditionalStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
-        this.additionalStatistics.get(statName).decreaseStatistic(value, updateType);
-    }
-
 
     public Map<BaseStatisticsNamesEnum, BaseStatisticObject> getStatistics() {
         return statistics;
