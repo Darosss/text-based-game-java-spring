@@ -1,6 +1,7 @@
 package com.example.items;
 
 import com.example.statistics.AdditionalStatisticsNamesEnum;
+import com.example.statistics.BaseStatisticsNamesEnum;
 import org.springframework.data.util.Pair;
 
 import java.util.HashMap;
@@ -264,17 +265,99 @@ public enum  ItemsSubtypes {
 
     //NEUTRAL
     COMMON_NEUTRAL(Pair.of(0.1f, 0.3f)),
-
-
     //MERCENARY
-    ASSASSIN(Pair.of(0.1f, 0.1f)),
-    BATTLE_MASTER(Pair.of(0.1f, 0.1f)),
-    MEDIC(Pair.of(0.1f, 0.1f)),
-    BARD(Pair.of(0.1f, 0.1f)),
-    STRATEGIST(Pair.of(0.1f, 0.1f)),
-    DEFENDER(Pair.of(0.1f, 0.1f)),
-    SCOUT(Pair.of(0.1f, 0.1f)),
-    THUG(Pair.of(0.1f, 0.1f));
+    ASSASSIN(new HashMap<>(Map.of(
+                    BaseStatisticsNamesEnum.STRENGTH, 1.5,
+                    BaseStatisticsNamesEnum.INTELLIGENCE, 1.7,
+                    BaseStatisticsNamesEnum.CONSTITUTION, 1.7,
+                    BaseStatisticsNamesEnum.CHARISMA, 1.5,
+                    BaseStatisticsNamesEnum.DEXTERITY, 5.0,
+                    BaseStatisticsNamesEnum.LUCK, 3.0
+            )),
+            new HashMap<>(Map.of(
+                    AdditionalStatisticsNamesEnum.INITIATIVE, 1.2
+            )),
+            Pair.of(0.1f, 0.1f)),
+    BATTLE_MASTER(new HashMap<>(Map.of(
+                    BaseStatisticsNamesEnum.STRENGTH, 3.0,
+                    BaseStatisticsNamesEnum.INTELLIGENCE, 1.0,
+                    BaseStatisticsNamesEnum.CONSTITUTION, 3.0,
+                    BaseStatisticsNamesEnum.CHARISMA, 2.5,
+                    BaseStatisticsNamesEnum.DEXTERITY, 2.0,
+                    BaseStatisticsNamesEnum.LUCK, 1.3
+            )),
+            new HashMap<>(Map.of()),
+            Pair.of(0.1f, 0.1f)),
+    MEDIC(new HashMap<>(Map.of(
+                    BaseStatisticsNamesEnum.STRENGTH, 0.5,
+                    BaseStatisticsNamesEnum.INTELLIGENCE, 5.0,
+                    BaseStatisticsNamesEnum.CONSTITUTION, 0.5,
+                    BaseStatisticsNamesEnum.CHARISMA, 2.0,
+                    BaseStatisticsNamesEnum.DEXTERITY, 0.5,
+                    BaseStatisticsNamesEnum.LUCK, 0.5
+            )),
+            new HashMap<>(Map.of()),
+            Pair.of(0.1f, 0.1f)),
+    BARD(new HashMap<>(Map.of(
+                    BaseStatisticsNamesEnum.STRENGTH, 1.0,
+                    BaseStatisticsNamesEnum.INTELLIGENCE, 4.0,
+                    BaseStatisticsNamesEnum.CONSTITUTION, 1.0,
+                    BaseStatisticsNamesEnum.CHARISMA, 4.0,
+                    BaseStatisticsNamesEnum.DEXTERITY, 1.1,
+                    BaseStatisticsNamesEnum.LUCK, 1.2
+            )),
+            new HashMap<>(Map.of()),
+            Pair.of(0.1f, 0.1f)),
+    STRATEGIST(new HashMap<>(Map.of(
+                    BaseStatisticsNamesEnum.STRENGTH, 1.0,
+                    BaseStatisticsNamesEnum.INTELLIGENCE, 4.0,
+                    BaseStatisticsNamesEnum.CONSTITUTION, 1.9,
+                    BaseStatisticsNamesEnum.CHARISMA, 2.0,
+                    BaseStatisticsNamesEnum.DEXTERITY, 1.0,
+                    BaseStatisticsNamesEnum.LUCK, 1.0
+            )),
+            new HashMap<>(Map.of(
+                    AdditionalStatisticsNamesEnum.INITIATIVE, 2.0
+            )),
+            Pair.of(0.1f, 0.1f)),
+    DEFENDER(new HashMap<>(Map.of(
+                    BaseStatisticsNamesEnum.STRENGTH, 2.5,
+                    BaseStatisticsNamesEnum.INTELLIGENCE, 1.5,
+                    BaseStatisticsNamesEnum.CONSTITUTION, 6.0,
+                    BaseStatisticsNamesEnum.CHARISMA, 1.0,
+                    BaseStatisticsNamesEnum.DEXTERITY, 0.2,
+                    BaseStatisticsNamesEnum.LUCK, 0.2
+    )),
+            new HashMap<>(Map.of(
+                    AdditionalStatisticsNamesEnum.THREAT, 1.3,
+                    AdditionalStatisticsNamesEnum.ARMOR, 1.3
+            )),
+            Pair.of(0.1f, 0.1f)),
+    SCOUT(new HashMap<>(Map.of(
+                    BaseStatisticsNamesEnum.STRENGTH, 1.1,
+                    BaseStatisticsNamesEnum.INTELLIGENCE, 1.5,
+                    BaseStatisticsNamesEnum.CONSTITUTION, 1.1,
+                    BaseStatisticsNamesEnum.CHARISMA, 0.5,
+                    BaseStatisticsNamesEnum.DEXTERITY, 5.0,
+                    BaseStatisticsNamesEnum.LUCK, 3.0
+    )),
+            new HashMap<>(Map.of(
+                    AdditionalStatisticsNamesEnum.INITIATIVE, 2.5
+            )),
+            Pair.of(0.1f, 0.1f)),
+    THUG(new HashMap<>(Map.of(
+                    BaseStatisticsNamesEnum.STRENGTH, 3.0,
+                    BaseStatisticsNamesEnum.INTELLIGENCE, 0.5,
+                    BaseStatisticsNamesEnum.CONSTITUTION, 2.0,
+                    BaseStatisticsNamesEnum.CHARISMA, 3.0,
+                    BaseStatisticsNamesEnum.DEXTERITY, 0.8,
+                    BaseStatisticsNamesEnum.LUCK, 0.5
+            )),
+            new HashMap<>(Map.of(
+                    AdditionalStatisticsNamesEnum.THREAT, 2.5
+            )),
+            Pair.of(0.1f, 0.1f));
+    private final Map<BaseStatisticsNamesEnum, Double> baseStatisticsPerLevel;
     private final Map<AdditionalStatisticsNamesEnum, Double> additionalStatisticsPerLevel;
     private final double healthGainPerLevel;
     private final Pair<Float, Float> weightRange;
@@ -283,12 +366,14 @@ public enum  ItemsSubtypes {
     Pair<Float, Float> weightRange
     ) {
         this.additionalStatisticsPerLevel = additionalStatisticsPerLevel;
+        this.baseStatisticsPerLevel = new HashMap<>();
         this.healthGainPerLevel = 0;
         this.weightRange = weightRange;
     }
 
     ItemsSubtypes(Pair<Float, Float> weightRange){
         this.additionalStatisticsPerLevel=new HashMap<>();
+        this.baseStatisticsPerLevel = new HashMap<>();
         this.healthGainPerLevel = 0;
         this.weightRange = weightRange;
     }
@@ -302,7 +387,21 @@ public enum  ItemsSubtypes {
     ItemsSubtypes(double healthGain, Pair<Float, Float> weightRange){
         this.healthGainPerLevel = healthGain;
         this.additionalStatisticsPerLevel=new HashMap<>();
+        this.baseStatisticsPerLevel = new HashMap<>();
         this.weightRange = weightRange;
+    }
+
+    /**
+     * For more advanced subtype with base stats + additional stats
+     */
+    ItemsSubtypes(
+            Map<BaseStatisticsNamesEnum, Double> baseStatisticsPerLevel,
+            Map<AdditionalStatisticsNamesEnum, Double> additionalStatisticsPerLevel,
+            Pair<Float, Float> weightRange){
+        this.additionalStatisticsPerLevel= additionalStatisticsPerLevel;
+        this.baseStatisticsPerLevel = baseStatisticsPerLevel;
+        this.weightRange = weightRange;
+        this.healthGainPerLevel = 0;
     }
 
     public double getHealthGainPerLevel() {
@@ -311,6 +410,10 @@ public enum  ItemsSubtypes {
 
     public Map<AdditionalStatisticsNamesEnum, Double> getAdditionalStatisticsPerLevel() {
         return additionalStatisticsPerLevel;
+    }
+
+    public Map<BaseStatisticsNamesEnum, Double> getBaseStatisticsPerLevel() {
+        return baseStatisticsPerLevel;
     }
 
     public Pair<Float, Float> getWeightRange() {
