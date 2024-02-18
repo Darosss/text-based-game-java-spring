@@ -3,6 +3,7 @@ package com.example.users;
 import com.example.auth.JwtTokenPayload;
 import com.example.characters.Character;
 import com.example.users.inventory.Inventory;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
@@ -23,17 +24,20 @@ public class User {
     @Id
     private ObjectId id;
     private String username;
+    @JsonIgnore
     private String password;
     private String email;
     private boolean isActive = true;
     private List<String> roles = new ArrayList<>();
-    @JsonIgnoreProperties("user")
+//    @JsonIgnoreProperties("user")
+    @JsonIgnore
     @Reference
     private Inventory inventory;
 
     private int maxCharactersPerUser = 4;
 
-    @JsonIgnoreProperties("user")
+//    @JsonIgnoreProperties("user")
+    @JsonIgnore
     @Reference(ignoreMissing = true, lazy = true)
     private HashSet<Character> characters;
     @CreatedDate
