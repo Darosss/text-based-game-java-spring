@@ -27,6 +27,7 @@ public class ItemStatistics {
         this.baseStatistics.putAll(this.getMergedStatsWithPrefixSuffix(baseStatistics, prefix, suffix));
         this.additionalStatistics.putAll(this.getMergedAdditionalStatsWithPrefixSuffix(baseStatistics, prefix, suffix));
 
+        this.handleBaseStatisticsUpdateBasedOnSubtype(itemLevel, subtype);
         this.handleAdditionalStatisticsUpdateBasedOnSubtype(itemLevel, subtype);
 
         this.handleStatisticsUpdateBasedOnRarity(itemRarity);
@@ -43,6 +44,7 @@ public class ItemStatistics {
         this.baseStatistics.putAll(baseStatistics);
         this.additionalStatistics.putAll(baseAdditionalStatistics);
         this.handleAdditionalStatisticsUpdateBasedOnSubtype(itemLevel, subtype);
+        this.handleBaseStatisticsUpdateBasedOnSubtype(itemLevel, subtype);
         this.handleStatisticsUpdateBasedOnRarity(itemRarity);
 
     }
@@ -105,6 +107,16 @@ public class ItemStatistics {
                 this.additionalStatistics.get(k.toString()).increaseValue(subtypeStatValue);
             }else {
                 this.additionalStatistics.put(k.toString(), new ItemStatisticsObject(k.toString(), subtypeStatValue, 0));
+            }
+        });
+    }
+    private void handleBaseStatisticsUpdateBasedOnSubtype(int itemLevel, ItemsSubtypes subtype) {
+        subtype.getBaseStatisticsPerLevel().forEach((k, v)-> {
+            int subtypeStatValue = (int) (v*itemLevel);
+            if(this.baseStatistics.containsKey(k.toString())) {
+                this.baseStatistics.get(k.toString()).increaseValue(subtypeStatValue);
+            }else {
+                this.baseStatistics.put(k.toString(), new ItemStatisticsObject(k.toString(), subtypeStatValue, 0));
             }
         });
     }
