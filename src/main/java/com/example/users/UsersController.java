@@ -24,9 +24,20 @@ public class UsersController implements SecuredRestController {
         return this.service.findAll();
     }
 
-    @GetMapping("/profile")
-    public JwtTokenPayload getProfile() throws Exception {
+    @GetMapping("/token-info")
+    public JwtTokenPayload getTokenInfo() throws Exception {
         return authenticationFacade.getJwtTokenPayload();
+    }
+    @GetMapping("/profile")
+    public Optional<User> getProfile() throws Exception {
+        return this.service.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
+    }
+    @GetMapping("/your-characters-ids")
+    public List<String> getCharactersIds() throws Exception {
+        Optional<User> user = this.service.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
+
+        return user.map(value -> value.getCharacters().stream().map((character->character.getId().toString())).toList()).orElse(null);
+
     }
     @GetMapping("users/{id}")
     public Optional<User> getUserById(@PathVariable String id){
