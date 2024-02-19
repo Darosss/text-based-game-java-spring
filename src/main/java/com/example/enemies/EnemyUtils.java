@@ -7,6 +7,8 @@ import com.example.skirmishes.EnemySkirmishDifficulty;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.utils.RandomUtils;
+import org.springframework.data.util.Pair;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +27,7 @@ public class EnemyUtils {
             case IMPOSSIBLE -> new LevelRange(characterLevel+10, characterLevel*2);
         };
     }
+
 
     public static double getEnemyStatsMultiplier(EnemyType type){
         return switch (type){
@@ -75,6 +78,30 @@ public class EnemyUtils {
         }
 
         return EnemyType.COMMON;
+    }
+
+    public static EnemyType getEnemyTypeBasedOnDungeonLevel(int dungeonLevel) {
+        double additionalBonusMultiplier = 3.1;
+        if(dungeonLevel % 10 == 0) additionalBonusMultiplier = 5.0;
+
+        return getEnemyTypeDependsOnProbability(additionalBonusMultiplier);
+    }
+
+    public static int getCountOfDungeonEnemiesBasedOnDungeonLevel(int dungeonLevel) {
+        List<Pair<Integer, Double>> countEnemiesData = new ArrayList<>(
+                List.of(
+                        Pair.of(4, 0.2),
+                        Pair.of(3, 0.5),
+                        Pair.of(2, 1.0)
+                )
+        );
+
+        for(Pair<Integer, Double> data : countEnemiesData) {
+            double percentChance = data.getSecond();
+            if(RandomUtils.checkPercentageChance(percentChance + (percentChance * dungeonLevel) )) return data.getFirst();
+        }
+
+        return 1;
     }
 
     public static EnemyType getEnemyTypeBasedOnSkirmishDifficulty(EnemySkirmishDifficulty difficulty){

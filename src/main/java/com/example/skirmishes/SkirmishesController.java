@@ -18,7 +18,8 @@ import java.util.Optional;
 @RestController("skirmishes")
 public class SkirmishesController implements SecuredRestController {
     //TODO: move somewhere - maybe into user or sth
-    private final long CHALLENGE_WAIT_TIME_MINUTES = 1;
+    private final int CHALLENGE_WAIT_TIME_MINUTES = 2;
+    private final int DUNGEON_WAIT_TIME_MINUTES = 2;
     private final AuthenticationFacade authenticationFacade;
     private final UserService userService;
     private final SkirmishesService service;
@@ -36,7 +37,6 @@ public class SkirmishesController implements SecuredRestController {
         this.service = skirmishesService;
         this.challengesService = challengesService;
         this.itemsInventoryService = itemsInventoryService;
-
     }
 
     @GetMapping("/your-skirmishes")
@@ -45,16 +45,16 @@ public class SkirmishesController implements SecuredRestController {
         if(foundUser.isEmpty()) return null;
 
         User userInstance = foundUser.get();
-
         return this.service.getOrCreateSkirmish(userInstance, 2);
     }
 
 
     @GetMapping("/current-challenge")
     public FightReport getChallengeStatus() throws Exception {
-        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-        if(foundUser.isEmpty()) return null;
         String userId = this.authenticationFacade.getJwtTokenPayload().id();
+
+        Optional<User> foundUser = this.userService.findOneById(userId);
+        if(foundUser.isEmpty()) return null;
         Skirmish foundSkirmish = this.service.getOrCreateSkirmish(foundUser.get(), 2);
 
         Optional<ChallengesService.HandleCurrentChallengeReturn> returnData =
@@ -109,6 +109,38 @@ public class SkirmishesController implements SecuredRestController {
         return this.service.update(foundSkirmish);
     }
 
+
+    @GetMapping("/dungeons")
+    public Dungeons getDungeons() throws Exception {
+        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
+        if(foundUser.isEmpty()) return null;
+
+        User userInstance = foundUser.get();
+        Skirmish skirmish = this.service.getOrCreateSkirmish(userInstance, 2);
+
+        return skirmish.getDungeons();
+    }
+
+    @PostMapping("/dungeons/start-a-fight/{dungeonLevel}")
+    public FightReport startDungeonFight(@PathVariable int dungeonLevel) throws Exception {
+        String userId = this.authenticationFacade.getJwtTokenPayload().id();
+        Optional<User> foundUser = this.userService.findOneById(userId);
+        if(foundUser.isEmpty()) return null;
+        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(foundUser.get(), 2);
+
+
+        Optional<ChallengesService.HandleDungeonReturn> returnData =
+        this.challengesService.handleDungeonFight(foundSkirmish, userId, dungeonLevel, this.DUNGEON_WAIT_TIME_MINUTES);
+
+        if(returnData.isEmpty()) return null; //add message + handle
+
+        ChallengesService.HandleDungeonReturn returnDataInst = returnData.get();
+
+        this.service.update(returnDataInst.skirmish());
+
+        returnDataInst.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(foundUser.get(), item));
+        return returnDataInst.report();
+    }
 
     @PostMapping("/debug/generate-new-challenges")
     public Skirmish generateNewChallenges() throws Exception {

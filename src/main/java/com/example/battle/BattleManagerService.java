@@ -27,6 +27,9 @@ public class BattleManagerService {
         fightInstance.startFight();
         return fightInstance.getFightReport();
     }
-
-
+    public FightReport performTeamFight(List<Character> characters, List<Enemy> enemies){
+        Fight fightInstance = new Fight(characters, enemies);
+        fightInstance.startFight();
+        return fightInstance.getFightReport();
+    }
 }

@@ -23,15 +23,14 @@ public class Skirmish {
     @JsonIgnore
     @Reference(idOnly = true, lazy=true)
     private User user;
-    private Map<String, SkirmishData> challenges = new HashMap<>();
+    private final Map<String, SkirmishData> challenges = new HashMap<>();
 
+    private final Dungeons dungeons = new Dungeons();
     private ChosenChallenge chosenChallenge;
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
     private LocalDateTime updatedAt;
-
-
     public record ChosenChallenge(String id, LocalDateTime timestamp){}
 
     public Skirmish() {}
@@ -72,8 +71,14 @@ public class Skirmish {
     }
     public ObjectId getId() { return id; }
     public User getUser() { return user; }
+
+    public Dungeons getDungeons() {
+        return dungeons;
+    }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
+
 
 
     public ChosenChallenge getChosenChallenge() {
@@ -87,8 +92,8 @@ public class Skirmish {
     }
 
     public boolean isChallengeTimeCompleted(){
-        if(chosenChallenge != null) return chosenChallenge.timestamp().isBefore(LocalDateTime.now());
-        return false;
+        if(chosenChallenge == null) return false;
+        return chosenChallenge.timestamp().isBefore(LocalDateTime.now());
     }
 
     public SkirmishData getChallengeById(String id){
