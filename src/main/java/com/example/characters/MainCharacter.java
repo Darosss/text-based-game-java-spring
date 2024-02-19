@@ -4,10 +4,8 @@ import com.example.characters.equipment.CharacterEquipment;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
-import dev.morphia.annotations.ExternalEntity;
 
 import java.util.Map;
-@ExternalEntity(target = Character.class, discriminator = "Character")
 public class MainCharacter extends Character {
     private Long experience = 0L;
 

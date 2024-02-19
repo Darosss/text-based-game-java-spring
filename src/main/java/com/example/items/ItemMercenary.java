@@ -2,11 +2,9 @@ package com.example.items;
 
 import com.example.items.statistics.ItemStatistics;
 import com.example.items.statistics.ItemStatisticsObject;
-import dev.morphia.annotations.ExternalEntity;
 
 import java.util.Map;
 
-@ExternalEntity(target = Item.class, discriminator = "Item")
 public class ItemMercenary extends Item{
     //TODO: add stats for mercenaries
     // (enums with types of mercenary like: tank, fighter, assassin etc??

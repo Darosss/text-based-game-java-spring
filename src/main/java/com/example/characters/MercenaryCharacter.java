@@ -6,12 +6,10 @@ import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.statistics.StatisticsUtils;
 import com.example.users.User;
-import dev.morphia.annotations.ExternalEntity;
 import dev.morphia.annotations.Reference;
 
 import javax.annotation.Nullable;
 
-@ExternalEntity(target = Character.class, discriminator = "Character")
 public class MercenaryCharacter extends Character{
     @Reference(idOnly = true, lazy = true)
     private ItemMercenary mercenary;

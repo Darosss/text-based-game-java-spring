@@ -4,11 +4,9 @@ import com.example.items.statistics.ItemPrefixesEnum;
 import com.example.items.statistics.ItemStatistics;
 import com.example.items.statistics.ItemStatisticsObject;
 import com.example.items.statistics.ItemSuffixesEnum;
-import dev.morphia.annotations.ExternalEntity;
 
 import java.util.Map;
 
-@ExternalEntity(target = Item.class, discriminator = "Item")
 public class ItemWearable extends Item{
     private ItemPrefixesEnum prefix;
     private ItemSuffixesEnum suffix;

@@ -1,14 +1,5 @@
 package com.example.items;
 
-import com.example.items.statistics.ItemPrefixesEnum;
-import com.example.items.statistics.ItemStatistics;
-import com.example.items.statistics.ItemStatisticsObject;
-import com.example.items.statistics.ItemSuffixesEnum;
-import dev.morphia.annotations.ExternalEntity;
-
-import java.util.Map;
-
-@ExternalEntity(target = Item.class, discriminator = "Item")
 public class ItemConsumable extends  Item {
     private final int hpGain;
     public ItemConsumable(String name, String description, Integer level,
