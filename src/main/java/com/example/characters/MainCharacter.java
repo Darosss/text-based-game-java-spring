@@ -1,12 +1,17 @@
 package com.example.characters;
 
 import com.example.characters.equipment.CharacterEquipment;
+import com.example.errorhandling.GlobalDefaultExceptionHandler;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 public class MainCharacter extends Character {
+    private static final Logger logger = LoggerFactory.getLogger(MainCharacter.class);
+
     private Long experience = 0L;
 
     public MainCharacter() {super();};
@@ -40,7 +45,7 @@ public class MainCharacter extends Character {
     private void levelUp() {
         level++;
         this.updateHealthBasedOnMaxHealth();
-        System.out.println("Level up! New level: " + level);
+        logger.debug("Level up! New level: {}", this.level);
     }
 
     public Long getExperience() {

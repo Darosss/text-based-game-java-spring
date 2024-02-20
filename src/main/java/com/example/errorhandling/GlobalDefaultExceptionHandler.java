@@ -1,6 +1,8 @@
 package com.example.errorhandling;
 import com.example.response.ErrorResponse;
 import org.apache.coyote.BadRequestException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ControllerAdvice
 public class GlobalDefaultExceptionHandler {
+    private static final Logger logger = LoggerFactory.getLogger(GlobalDefaultExceptionHandler.class);
 
     @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -25,8 +28,8 @@ public class GlobalDefaultExceptionHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ResponseEntity<String> handleException(Exception e) {
         // Log the exception details for debugging
-        System.out.println(e.getMessage());
-        e.printStackTrace();
+        logger.error("Error: ", e);
+
 
         // Provide a response with more information
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -43,35 +46,10 @@ public class GlobalDefaultExceptionHandler {
     private String generateReferenceId() {
         // Generate a unique reference ID for tracking the issue
         // You might use a timestamp or some other mechanism
+        //TODO: make this method later
         return "REF-" + System.currentTimeMillis();
     }
 }
-//    @ExceptionHandler(value = Exception.class)
-//    public ModelAndView
-//    defaultErrorHandler(HttpServletRequest req, Exception e) throws Exception {
-//        System.out.println(e);
-//        // If the exception is annotated with @ResponseStatus rethrow it and let
-//        // the framework handle it - like the OrderNotFoundException example
-//        // at the start of this post.
-//        // AnnotationUtils is a Spring Framework utility class.
-//        if (AnnotationUtils.findAnnotation
-//                (e.getClass(), ResponseStatus.class) != null)
-//            throw e;
-//
-//        // Otherwise setup and send the user to a default error-view.
-//        ModelAndView mav = new ModelAndView();
-//        mav.addObject("exception", e);
-//        mav.addObject("url", req.getRequestURL());
-//        mav.setViewName(DEFAULT_ERROR_VIEW);
-//        return mav;
-//    }
-
-//    @ExceptionHandler(IllegalArgumentException.class)
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ResponseEntity<String> handleIllegalArgumentException(IllegalArgumentException e) {
-//        return ResponseEntity.badRequest().body("Invalid ObjectId provided");
-//    }
-
 
 
 

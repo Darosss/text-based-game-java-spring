@@ -6,10 +6,14 @@ import com.example.battle.data.AttackReturnData;
 import com.example.characters.BaseHero;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.utils.RandomUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 
 public class AttackCalculations {
+    private static final Logger logger = LoggerFactory.getLogger(AttackCalculations.class);
+
     private static final double CRITIC_SCALING_FACTOR = 0.05;
     private static final double LETHAL_CRITIC_SCALING_FACTOR = 1.1;
 
@@ -30,8 +34,7 @@ public class AttackCalculations {
     }
     private static boolean isCritic(BaseHero hero) {
         double criticChance = calculateCriticChance(hero);
-        //TODO: remove those logs
-        System.out.println("CRITIC CHANCE: " + criticChance);
+        logger.debug("Critic chance: {}", criticChance);
         return RandomUtils.checkPercentageChance(criticChance);
     }
 
@@ -44,8 +47,7 @@ public class AttackCalculations {
     }
     private static boolean isLethalCritic(BaseHero hero) {
         double lethalCriticChance = calculateLethalCriticChance(hero);
-        //TODO: remove those logs
-        System.out.println("LETHAL CRITIC CHANCE: " + lethalCriticChance);
+        logger.debug("Lethal critic chance: {}", lethalCriticChance);
         return RandomUtils.checkPercentageChance(lethalCriticChance);
     }
 
@@ -83,8 +85,7 @@ public class AttackCalculations {
     public static AttackReturnData generateAttackValue(BaseHero hero, boolean doubleAttackPossible/*TODO: add some optionals from fight?*/){
         AttackBase attackBase = getAttackBaseValues(hero);
         boolean doubledAttack = doubleAttackPossible && isDoubledAttack(hero);
-        //TODO : remove logs
-        if(doubledAttack) System.out.println("DOUBLED ATTACK TRIGGERED!!");
+        logger.debug("Double attack triggered");
         AttackDebuffs attackDebuffs = getAttackDebuffs();
         return new AttackReturnData(hero.getName(), attackBase, doubledAttack, attackDebuffs);
     }

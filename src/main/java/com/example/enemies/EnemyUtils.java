@@ -7,6 +7,8 @@ import com.example.skirmishes.EnemySkirmishDifficulty;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.utils.RandomUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.util.Pair;
 
 import java.util.ArrayList;
@@ -14,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 
 public class EnemyUtils {
+    private static final Logger logger = LoggerFactory.getLogger(EnemyUtils.class);
+
     public record LevelRange(int min, int max){}
 
     public record ItemProbabilityLoot(int percent, int minItems, int maxItems){};
@@ -145,7 +149,7 @@ public class EnemyUtils {
         }
 
         for (Item item : items) {
-            System.out.println("Looted item from enemy: | level:" + item.getLevel() +" | name:"+  item.getName());
+            logger.debug("Looted item. Item level: {}, itemName: {}", item.getLevel(), item.getName());
         }
         return items;
     }

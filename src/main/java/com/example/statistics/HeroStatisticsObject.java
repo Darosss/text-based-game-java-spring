@@ -1,12 +1,14 @@
 package com.example.statistics;
 
 import dev.morphia.annotations.ExternalEntity;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import org.slf4j.Logger;
 
 @ExternalEntity(target= HeroStatisticsObject.class)
 public class HeroStatisticsObject {
-
+    private static final Logger logger = LoggerFactory.getLogger(HeroStatisticsObject.class);
     private final Map<BaseStatisticsNamesEnum, BaseStatisticObject> statistics =
             StatisticsUtils.generateDefaultHeroStatistics();
     private final Map<AdditionalStatisticsNamesEnum, AdditionalStatisticObject> additionalStatistics =
@@ -187,12 +189,13 @@ public class HeroStatisticsObject {
                 //min, max dmg, armor (or toughness), critical damage / dead damage (something like cbk)
                 this.updateStrengthStatisticsBasedOnBasicStat();
 
-                System.out.println("UPDATED STRENGTH");
+                logger.debug("UPDATED STRENGTH");
+
                 break;
             }
             case DEXTERITY:{
                 this.updateDexterityStatisticsBasedOnBasicStat();
-                System.out.println("UPDATED DEXTERITY");
+                logger.debug("UPDATED DEXTERITY");
 
                 // crit chance max 50,
                 // base should be 5 maybe
@@ -202,7 +205,7 @@ public class HeroStatisticsObject {
             }
             case CONSTITUTION:{
                 this.updateConstitutionStatisticsBasedOnBasicStat();
-                System.out.println("UPDATED CONSTITUTION");
+                logger.debug("UPDATED CONSTITUTION");
                 // adds max health, maybe if provided: regeneration health per hour, toughness / endurance
                 // add basic amor? block chance
                 // more resistance for de buffs later
@@ -210,7 +213,7 @@ public class HeroStatisticsObject {
             }
             case INTELLIGENCE:{
                 this.updateIntelligenceStatisticsBasedOnBasicStat();
-                System.out.println("UPDATED INTELLIGENCE");
+                logger.debug("UPDATED INTELLIGENCE");
                 // if magic provided: more magic dmg, increase initiative,
                 // more intelligence(but as basic only, bonus is not counted) will decrease max level of items that user can wear
 
@@ -218,13 +221,13 @@ public class HeroStatisticsObject {
             }
             case LUCK:{
                 this.updateLuckStatisticsBasedOnBasicStat();
-                System.out.println("UPDATED LUCK");
+                logger.debug("UPDATED LUCK");
                 // increase critical, deadly strike, maybe % to found loot from enemies
                 break;
             }
             case CHARISMA:{
                 this.updateCharismaStatisticsBasedOnBasicStat();
-                System.out.println("UPDATED CHARISMA");
+                logger.debug("UPDATED CHARISMA");
                 // increase threat, small initiative bonus
                 // more resistance for de buffs later
                 break;

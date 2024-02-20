@@ -1,8 +1,11 @@
 package com.example.characters;
 
 import com.example.enemies.EnemyType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ExperienceUtils {
+    private static final Logger logger = LoggerFactory.getLogger(ExperienceUtils.class);
     public static long BASE_EXPERIENCE_FOR_LEVEL = 100L;
     public static double EXPERIENCE_LEVEL_SCALING_FACTOR = 30.0;
     public static double EXPERIENCE_LEVEL_FACTOR_BASE = 0.9;
@@ -27,10 +30,8 @@ public class ExperienceUtils {
         double enemyTypeBonus = getEnemyTypeBonus(enemyType);
         long experience = (long) Math.max(1, (baseExperience * scalingFactor * enemyTypeBonus));
 
-        System.out.println("Scaling factor: "+scalingFactor+" | experience: " + experience +
-                " | enemy level: " + enemyLevel+ " | player lvl: " + playerLevel + " | diff "
-                + enemyDifferenceFactor +" b + d: " + baseExperience  * enemyDifferenceFactor );
-
+        logger.debug("Scaling factor: {}, experience: {}, enemyLevel: {}, playerLevel: {}, enemyDifferenceFactor: {}, baseExperience * enemyDifferenceFactor: {}",
+                scalingFactor, experience, enemyLevel, playerLevel, enemyDifferenceFactor, baseExperience * enemyDifferenceFactor);
         return experience;
     }
 
@@ -41,7 +42,7 @@ public class ExperienceUtils {
                 (EXPERIENCE_LEVEL_FACTOR_EXPONENT + levelScalingFactor)
         );
         long neededExp = (long) (BASE_EXPERIENCE_FOR_LEVEL * levelFactor);
-        System.out.println("NEEDED " + neededExp);
+        logger.debug("Needed: {} exp for {} level ", neededExp, currentLevel);
 
         return neededExp;
     }

@@ -13,11 +13,14 @@ import com.example.enemies.EnemyUtils;
 import com.example.items.Item;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.IntStream;
 
 public class Fight {
+    private static final Logger logger = LoggerFactory.getLogger(Fight.class);
     //TODO: later add fight options(bonuses) - for example: loot multiplier from fight, exp multiplier etc. etc;
     private final int maxTurns;
     private final int baseInitiativePerCycle = 20;
@@ -125,7 +128,7 @@ public class Fight {
         //At end of fight add lastly living heroes
         this.userHeroesDetails.values().forEach((v)->this.fightReport.addToCharacters((Character) v.getHero()));
         this.enemyHeroesDetails.values().forEach((v)->this.fightReport.addToEnemies((Enemy) v.getHero()));
-        System.out.println("END OF FIGHT");
+        logger.debug("End of fight!");
 
     }
 
@@ -162,7 +165,8 @@ public class Fight {
                 FightTurnReport turnReport = new FightTurnReport(turnCount);
                 //TODO: known bug where hero health =1/0
                 // when dies so fast its throwing an error
-                System.out.println("\u001B[0m"  +"************* "+ (turnCount+1) + " TURN STARTED *************");
+                logger.debug("************* {} TURN STARTED ************* ", turnCount+1);
+
                 turnCount ++;
                 cycleCounter = 0;
                 for(ObjectId id: this.turnParticipants){
@@ -196,8 +200,8 @@ public class Fight {
 
     private <DetailsType extends BaseHero> void handleHeroTurn(BattleDetails<DetailsType> heroDetails, FightTurnReport currentTurnReport, boolean isUserTurn) {
         //TODO: logs to remove
-        if(heroDetails.isUserCharacter()) System.out.println("\u001B[34m"+"** User turn "+heroDetails.getHero().getId()+ " **");
-        else System.out.println("\u001B[31m"+"** Enemy turn "+heroDetails.getHero().getId() + " ** ");
+        if(heroDetails.isUserCharacter()) logger.debug("** User turn ** - {} : ({})", heroDetails.getHero().getName(), heroDetails.getHero().getId());
+        else logger.debug("** Enemy turn ** - {} : ({})", heroDetails.getHero().getName(), heroDetails.getHero().getId());
 
         BaseHero heroToAttack = isUserTurn ? getMostThreateningEnemyHero() : getMostThreateningUserHero();
         CombatReturnData turnData = this.attackAndDefend(heroDetails.getHero(),

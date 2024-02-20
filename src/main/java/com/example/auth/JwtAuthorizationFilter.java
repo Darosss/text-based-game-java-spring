@@ -6,6 +6,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,6 +23,7 @@ import java.util.Map;
 
 @Component
 public class JwtAuthorizationFilter extends OncePerRequestFilter {
+    private static final Logger logger = LoggerFactory.getLogger(JwtAuthorizationFilter.class);
 
     private final JwtUtil jwtUtil;
     private final ObjectMapper mapper;
@@ -40,12 +43,13 @@ public class JwtAuthorizationFilter extends OncePerRequestFilter {
                 return;
             }
             //TODO: remove those logs
-            System.out.println("token : "+accessToken);
+            logger.debug("token: {}", accessToken);
             Claims claims = jwtUtil.resolveClaims(request);
 
             if(claims != null & jwtUtil.validateClaims(claims)){
                 String principal = claims.getSubject();
-                System.out.println("principal : "+principal);
+
+                logger.debug("principal: {}", principal);
                 Authentication authentication =
                         new UsernamePasswordAuthenticationToken(principal,"",new ArrayList<>());
                 SecurityContextHolder.getContext().setAuthentication(authentication);

@@ -14,12 +14,16 @@ import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
 import dev.morphia.transactions.MorphiaSession;
 import org.bson.types.ObjectId;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
 public class CharacterInventoryService {
+    private static final Logger logger = LoggerFactory.getLogger(CharacterInventoryService.class);
+
     private final Datastore datastore;
     //TODO: think about those:
     // - should transactions get only ids, or objects.
@@ -95,7 +99,7 @@ public class CharacterInventoryService {
             );
 
         }catch(Exception e){
-            System.out.println(e);
+            logger.error("Error occurred in equipItem", e);
             throw new Exception("Something went wrong when trying to equip item");
         }
     }
@@ -132,8 +136,7 @@ public class CharacterInventoryService {
             }
 
         }catch(Exception e){
-
-            System.out.println(e);
+            logger.error("Error occurred in useConsumableItem", e);
             throw new Exception("Something went wrong when trying to use consumable item");
         }
     }
@@ -173,7 +176,7 @@ public class CharacterInventoryService {
                     "Cannot find user inventory and/or character. Contact administration"
             );
         }catch(Exception e){
-            System.out.println(e);
+            logger.error("Error occurred in useMercenaryItemOnMercenaryCharacter", e);
             throw new Exception("Something went wrong when trying to use mercenary item");
         }
 

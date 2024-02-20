@@ -7,6 +7,8 @@ import com.example.users.User;
 import com.example.users.UserService;
 import com.example.users.inventory.Inventory;
 import com.example.users.inventory.InventoryService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 @Controller
 @RequestMapping("/auth")
 public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthenticationManager authenticationManager;
     private JwtUtil jwtUtil;
     private UserService userService;
@@ -45,7 +48,7 @@ public class AuthController {
             String token = jwtUtil.createToken(user.getUser());
             LoginResponse loginRes = new LoginResponse(user.getUser().getEmail(), token);
 
-            System.out.println("TOKEN : "+token);
+            logger.debug("Token: {}", token);
             return ResponseEntity.ok(loginRes);
 
         }catch (BadCredentialsException e){
