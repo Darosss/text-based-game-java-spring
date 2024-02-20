@@ -23,11 +23,11 @@ import java.util.*;
 
 @RestController("characters")
 public class CharactersController implements SecuredRestController {
-    private CharacterService service;
-    private ItemService itemService;
+    private final CharacterService service;
+    private final ItemService itemService;
     private final AuthenticationFacade authenticationFacade;
-    private UserService userService;
-    private InventoryService inventoryService;
+    private final UserService userService;
+    private final InventoryService inventoryService;
 
     private final CharacterInventoryService characterInventoryService;
 

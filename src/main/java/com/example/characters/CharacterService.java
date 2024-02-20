@@ -18,8 +18,8 @@ import java.util.Optional;
 
 @Service
 public class CharacterService {
-    private Datastore datastore;
-    private EquipmentService equipmentService;
+    private final Datastore datastore;
+    private final EquipmentService equipmentService;
 
     @Autowired
     public CharacterService(Datastore datastore, EquipmentService equipmentService) {

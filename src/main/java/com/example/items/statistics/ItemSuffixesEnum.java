@@ -16,7 +16,7 @@ public enum ItemSuffixesEnum  {
 
 
     private final String displayName;
-    private Map<String, ItemStatisticsObject> statistics ;
+    private final Map<String, ItemStatisticsObject> statistics ;
     private final Map<String, ItemStatisticsObject> additionalStatistics;
 
 

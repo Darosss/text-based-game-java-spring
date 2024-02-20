@@ -11,9 +11,7 @@ import java.util.Optional;
 
 @Service
 public class EquipmentService {
-
     private final Datastore datastore;
-
 
     @Autowired
     public EquipmentService(Datastore datastore) {

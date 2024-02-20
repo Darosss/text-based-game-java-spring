@@ -4,8 +4,8 @@ import dev.morphia.annotations.ExternalEntity;
 
 @ExternalEntity(target = SkirmishData.class)
 public class SkirmishData {
-    private EnemySkirmishDifficulty difficulty;
-    private String name;
+    private final EnemySkirmishDifficulty difficulty;
+    private final String name;
 
     SkirmishData(EnemySkirmishDifficulty difficulty, String name) {
         this.difficulty = difficulty;

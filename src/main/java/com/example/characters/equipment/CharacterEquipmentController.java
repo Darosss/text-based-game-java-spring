@@ -16,7 +16,7 @@ import java.util.Optional;
 
 @RestController("equipment")
 public class CharacterEquipmentController implements SecuredRestController {
-    private EquipmentService service;
+    private final EquipmentService service;
 
     @Autowired
     public CharacterEquipmentController(EquipmentService equipmentService){

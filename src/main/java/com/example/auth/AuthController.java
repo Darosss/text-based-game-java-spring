@@ -23,9 +23,9 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthenticationManager authenticationManager;
-    private JwtUtil jwtUtil;
-    private UserService userService;
-    private InventoryService inventoryService;
+    private final JwtUtil jwtUtil;
+    private final UserService userService;
+    private final InventoryService inventoryService;
     public AuthController(AuthenticationManager authenticationManager, JwtUtil jwtUtil,
                           UserService userService, InventoryService inventoryService) {
         this.authenticationManager = authenticationManager;

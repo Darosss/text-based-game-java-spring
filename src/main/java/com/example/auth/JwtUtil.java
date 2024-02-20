@@ -22,7 +22,7 @@ public class JwtUtil {
 
     //TODO: move to env
     private final String secretKey = dotenv.get("JWT_SECRET_KEY");
-    private long accessTokenValidity = Long.parseLong(Objects.requireNonNull(dotenv.get("JWT_TOKEN_VALIDITY_MS")));
+    private final long accessTokenValidity = Long.parseLong(Objects.requireNonNull(dotenv.get("JWT_TOKEN_VALIDITY_MS")));
     private final String TOKEN_HEADER = "Authorization";
     private final String TOKEN_PREFIX = "Bearer ";
 
