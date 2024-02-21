@@ -5,8 +5,7 @@
         </encoder>
     </appender>
 
-
-    <logger name="dev.morphia.mapping.codec.pojo.EntityDecoder" level="INFO" />
+    <logger name="dev.morphia.mapping" level="ERROR" />
     <logger name="org.mongodb" level="WARN" />
     <root level="debug">
         <appender-ref ref="STDOUT" />
