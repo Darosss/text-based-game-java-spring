@@ -22,7 +22,7 @@ import java.util.Optional;
     @Id
     private ObjectId id;
 
-    @JsonIgnoreProperties("equipment")
+    @JsonIgnore
     @Reference(idOnly = true, lazy = true)
     private Character character;
 
@@ -117,7 +117,6 @@ import java.util.Optional;
     public String toString() {
         return "CharacterEquipment{" +
                 "id=" + id +
-                ", character=" + character +
                 ", slots=" + slots +
                 '}';
     }
