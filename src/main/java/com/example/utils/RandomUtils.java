@@ -27,9 +27,8 @@ public class RandomUtils {
     }
 
     public static boolean checkPercentageChance(double percentage) {
-        if (percentage < 0 || percentage > 100) {
-            throw new IllegalArgumentException("Percentage must be between 0 and 100.");
-        }
+        if(percentage < 0) return false;
+        else if(percentage > 100) return true;
 
         double randomValue = random.nextDouble() * 100.0;
         return randomValue <= percentage;
