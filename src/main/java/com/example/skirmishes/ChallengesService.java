@@ -24,8 +24,9 @@ public class ChallengesService {
     private final BattleManagerService battleManagerService;
     private final CharacterService characterService;
 
-    public record HandleCurrentChallengeReturn (Skirmish skirmish, FightReport report){}
-    public record HandleDungeonReturn (Skirmish skirmish, FightReport report){}
+    public record CommonReturnData(Skirmish skirmish, FightReport report){}
+    public record HandleCurrentChallengeReturn (String message, Optional<CommonReturnData> data){}
+    public record HandleDungeonReturn (String message, Optional<CommonReturnData> data){}
 
     @Autowired
     public ChallengesService(BattleManagerService battleManagerService, CharacterService characterService) {
@@ -33,26 +34,35 @@ public class ChallengesService {
         this.characterService = characterService;
     }
 
-    public Optional<HandleCurrentChallengeReturn> getAndHandleCurrentChallenge(Skirmish skirmish, String userId) throws Exception {
+    public HandleCurrentChallengeReturn getAndHandleCurrentChallenge(Skirmish skirmish, String userId) throws Exception {
         Skirmish.ChosenChallenge chosenChallenge = skirmish.getChosenChallenge();
 
         //Note: I'm not sure that throwing an error here is good idea. - think later
-        if(chosenChallenge == null) throw new BadRequestException("There is no current challenges at all");
+        if(chosenChallenge == null)
+            return new HandleCurrentChallengeReturn("There is no current challenges at all", Optional.empty());
 
-        if(!skirmish.isChallengeTimeCompleted()) return Optional.empty();
-
+        if(!skirmish.isChallengeTimeCompleted())
+            return new HandleCurrentChallengeReturn("Challenge not yet completed", Optional.empty());
 
         FightReport fightReport = this.completeFinishedChallenge(userId, skirmish);
-
-
-
-        return Optional.of(new HandleCurrentChallengeReturn(skirmish, fightReport));
+        return new HandleCurrentChallengeReturn(
+                "Challenge completed!",
+                Optional.of(new CommonReturnData(skirmish, fightReport)));
     }
 
-    public Optional<HandleDungeonReturn> handleDungeonFight(Skirmish skirmish, String userId, int dungeonLevel, int waitTime) throws Exception {
+    public HandleDungeonReturn handleDungeonFight(Skirmish skirmish, String userId, int dungeonLevel, int waitTime) throws Exception {
         Dungeons dungeons = skirmish.getDungeons();
-        if(!skirmish.getDungeons().canStartFight()) return Optional.empty(); //TODO: add cannot start fight and return date when can
-        if(dungeonLevel <=0 || dungeonLevel > dungeons.getCurrentLevel()) return Optional.empty(); // TODO: add cannot start fight because level is dungeonLevel = too small || too high
+        if(!skirmish.getDungeons().canStartFight())
+            return new HandleDungeonReturn(
+                    "You need to wait till: "+skirmish.getDungeons().getCanFightDate() + " to start a dungeon fight",
+                    Optional.empty());
+        if(dungeonLevel <=0)
+            return new HandleDungeonReturn("Dungeon level must be >=1", Optional.empty());
+        if(dungeonLevel > dungeons.getCurrentLevel())
+            return new HandleDungeonReturn(
+                    "You can't start a fight with dungeon level higher than current maximum level",
+                    Optional.empty()
+            );
 
         FightReport fightReport = this.completeStartedDungeonFight(userId, dungeonLevel);
 
@@ -64,7 +74,9 @@ public class ChallengesService {
             dungeons.increaseCurrentLevel();
         }
 
-        return Optional.of(new HandleDungeonReturn(skirmish, fightReport));
+        return new HandleDungeonReturn("Dungeon fight completed",
+                Optional.of(new CommonReturnData(skirmish, fightReport))
+                );
     }
 
 
@@ -89,7 +101,7 @@ public class ChallengesService {
 
         Enemy createdEnemy = this.prepareChallengeEnemy(challenge.get().getDifficulty(), mainCharacter.getLevel());
 
-        FightReport fightReport = this.battleManagerService.performFight(mainCharacter, createdEnemy);
+        FightReport fightReport = this.battleManagerService.performFight(mainCharacter, createdEnemy, mainCharacter.getLevel());
         this.handleOnFinishFight(fightReport, mainCharacter);
 
         return fightReport;
@@ -103,7 +115,7 @@ public class ChallengesService {
         List<Character> characters = new ArrayList<>(mercenaries);
         characters.add(mainCharacter);
 
-        FightReport fightReport = this.battleManagerService.performTeamFight(characters, createdEnemies);
+        FightReport fightReport = this.battleManagerService.performTeamFight(characters, createdEnemies, mainCharacter.getLevel());
 
         this.handleOnFinishFight(fightReport, mainCharacter);
         return fightReport;
