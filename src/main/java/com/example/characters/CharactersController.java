@@ -1,13 +1,15 @@
 package com.example.characters;
 
 import com.example.auth.AuthenticationFacade;
+import com.example.auth.LoggedUserUtils;
 import com.example.auth.SecuredRestController;
 import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.characters.equipment.Equipment.EquipItemResult;
 import com.example.characters.equipment.Equipment.UnEquipItemResult;
+import com.example.common.ResourceNotFoundException;
 import com.example.items.*;
+import com.example.response.CustomResponse;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
-import com.example.statistics.BaseStatisticObject;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
 import com.example.users.UserService;
@@ -17,6 +19,7 @@ import com.example.utils.RandomUtils;
 import org.apache.coyote.BadRequestException;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
@@ -46,212 +49,221 @@ public class CharactersController implements SecuredRestController {
     }
 
     @GetMapping("/your-mercenaries")
-    public List<MercenaryCharacter> findYourMercenaries() throws Exception {
-        return this.service.findUserMercenaries(this.authenticationFacade.getJwtTokenPayload().id());
+    public CustomResponse<List<MercenaryCharacter>> findYourMercenaries() throws Exception {
+        return new CustomResponse<>(HttpStatus.OK,
+                this.service.findUserMercenaries(this.authenticationFacade.getJwtTokenPayload().id())
+        );
     }
     @GetMapping("/your-main-character")
-    public Optional<MainCharacter> findYourMainCharacter() throws Exception {
-        return this.service.findMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
+    public CustomResponse<MainCharacter> findYourMainCharacter() throws Exception {
+        Optional<MainCharacter> character = this.service.findMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
+
+        return character.map((mainChar)->new CustomResponse<>(HttpStatus.OK, mainChar))
+                .orElseThrow(()->new BadRequestException("You do not have main character yet"));
     }
     @GetMapping("characters/{characterId}")
-    public Optional<Character> findYourCharacterById(@PathVariable String characterId) {
-        return this.service.findById(characterId);
+    public CustomResponse<Character> findYourCharacterById(@PathVariable String characterId) throws BadRequestException {
+        Optional<Character> character = this.service.findById(characterId);
+
+        return character.map((mainChar)->new CustomResponse<>(HttpStatus.OK, mainChar))
+                .orElseThrow(()-> new BadRequestException("Character with id: "+ characterId + " not found"));
     }
 
     @GetMapping("debug/all")
-    public List<Character> findAll()  {
-        return this.service.findAll();
+    public CustomResponse<List<Character>> findAll()  {
+        return new CustomResponse<>(HttpStatus.OK, this.service.findAll());
     }
 
     @PostMapping("/create")
-    public MainCharacter createMainCharacter() throws Exception {
+    public CustomResponse<MainCharacter> createMainCharacter() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
-        Optional<User> user = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-
-        if(user.isPresent()) {
-            User userInst = user.get();
-            if(this.service.findMainCharacterByUserId(userInst.getId().toString()).isPresent()){
-                throw new BadRequestException("User already have main character");
-            }
-
-            MainCharacter createdChar = service.createMainCharacter(user.get(), userInst.getUsername());
-            userInst.addCharacter(createdChar);
-            this.userService.update(userInst);
+        if(this.service.findMainCharacterByUserId(loggedUser.getId().toString()).isPresent()){
+            throw new BadRequestException("User already have main character");
         }
-        return null;
+
+        MainCharacter createdChar = service.createMainCharacter(loggedUser, loggedUser.getUsername());
+        loggedUser.addCharacter(createdChar);
+        this.userService.update(loggedUser);
+
+        return new CustomResponse<>(HttpStatus.CREATED, createdChar);
     }
 
     // For debug ignore ;p
     @PostMapping("/debug/create-empty-char/{userId}/{name}/{asMainCharacter}")
-    public Character create(@PathVariable String userId,
+    public CustomResponse<Character> create(@PathVariable String userId,
                             @PathVariable String name,
                             @PathVariable boolean asMainCharacter
     ){
-        Optional<User> user = this.userService.findOneById(userId);
+        Optional<User> foundUser = this.userService.findOneById(userId);
+
+        if(foundUser.isEmpty()) throw new ResourceNotFoundException("User", userId);
+
+
         if(asMainCharacter) {
-            return user.map(value -> service.createMainCharacter(value, name)).orElse(null);
+            return new CustomResponse<>(HttpStatus.CREATED, this.service.createMainCharacter(foundUser.get(), name));
         }else {
-            return user.map(value -> service.createMercenaryCharacter(value, name)).orElse(null);
+            return new CustomResponse<>(HttpStatus.CREATED, this.service.createMercenaryCharacter(foundUser.get(), name));
         }
     }
 
-
-    @PostMapping("/debug/create-mercenary-character-with-random-stats")
-        public MercenaryCharacter createDebugMercenary(
-                ) throws Exception {
-            Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-            if(foundUser.isPresent()) {
-                User userInst = foundUser.get();
-                MercenaryCharacter createdChar = service.createMercenaryCharacter(
-                        userInst, "MERCENARY"
-                );
-                userInst.addCharacter(createdChar);
-                this.userService.update(userInst);
-                return createdChar;
-            }
-            return null;
-        }
-
-    @PostMapping("/debug/create-main-character-with-random-stats")
-    public Character createDebug(
+    @PostMapping("/debug/create-mercenary-character-with-random-stats/{name}")
+        public CustomResponse<MercenaryCharacter> createDebugMercenary(
+                @PathVariable String name
     ) throws Exception {
-        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-        if(foundUser.isPresent()) {
-            User userInst = foundUser.get();
-            MainCharacter createdChar = service.createDebugCharacter(
-                    userInst,
-                    RandomUtils.getRandomValueWithinRange(1, 55),
-                    Map.of(
-                            BaseStatisticsNamesEnum.STRENGTH, RandomUtils.getRandomValueWithinRange(1, 55),
-                            BaseStatisticsNamesEnum.DEXTERITY, RandomUtils.getRandomValueWithinRange(1, 55),
-                            BaseStatisticsNamesEnum.CHARISMA, RandomUtils.getRandomValueWithinRange(1, 55),
-                            BaseStatisticsNamesEnum.CONSTITUTION, RandomUtils.getRandomValueWithinRange(1, 55),
-                            BaseStatisticsNamesEnum.INTELLIGENCE, RandomUtils.getRandomValueWithinRange(1, 55),
-                            BaseStatisticsNamesEnum.LUCK, RandomUtils.getRandomValueWithinRange(1, 55)
-                    ),
-                    Map.of(
-                            AdditionalStatisticsNamesEnum.INITIATIVE, 10,
-                            AdditionalStatisticsNamesEnum.MIN_DAMAGE, 1,
-                            AdditionalStatisticsNamesEnum.MAX_DAMAGE, 2,
-                            AdditionalStatisticsNamesEnum.MAX_HEALTH, 350
-                            )
-                    );
-
-            userInst.addCharacter(createdChar);
-            this.userService.update(userInst);
-            return createdChar;
+            User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
+            MercenaryCharacter createdChar = service.createMercenaryCharacter(
+                    loggedUser, name
+            );
+            loggedUser.addCharacter(createdChar);
+            this.userService.update(loggedUser);
+            return new CustomResponse<>(HttpStatus.CREATED, createdChar);
         }
-        return null;
-    }
-    @GetMapping("/statistics/{name}/effective-value")
-        public int getEffectiveValueByStatName(@PathVariable BaseStatisticsNamesEnum name) {
-            Character foundChar = service.findOne();
-        return foundChar.getStats().getStatistics().get(name).getEffectiveValue();
-    }
-    @GetMapping("/statistics/{name}")
-    public BaseStatisticObject getCharacterStats(@PathVariable BaseStatisticsNamesEnum name) {
-        Character foundChar = service.findOne();
-        if(foundChar == null) return null;
 
-        return foundChar.getStats().getStatistics().get(name);
-    }
+    @PostMapping("/debug/create-main-character-with-random-stats/{name}")
+    public CustomResponse<MainCharacter> createDebug(
+            @PathVariable String name
+    ) throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
+        MainCharacter createdChar = service.createDebugCharacter(
+                loggedUser,
+                RandomUtils.getRandomValueWithinRange(1, 55),
+                Map.of(
+                        BaseStatisticsNamesEnum.STRENGTH, RandomUtils.getRandomValueWithinRange(1, 55),
+                        BaseStatisticsNamesEnum.DEXTERITY, RandomUtils.getRandomValueWithinRange(1, 55),
+                        BaseStatisticsNamesEnum.CHARISMA, RandomUtils.getRandomValueWithinRange(1, 55),
+                        BaseStatisticsNamesEnum.CONSTITUTION, RandomUtils.getRandomValueWithinRange(1, 55),
+                        BaseStatisticsNamesEnum.INTELLIGENCE, RandomUtils.getRandomValueWithinRange(1, 55),
+                        BaseStatisticsNamesEnum.LUCK, RandomUtils.getRandomValueWithinRange(1, 55)
+                ),
+                Map.of(
+                        AdditionalStatisticsNamesEnum.INITIATIVE, 10,
+                        AdditionalStatisticsNamesEnum.MIN_DAMAGE, 1,
+                        AdditionalStatisticsNamesEnum.MAX_DAMAGE, 2,
+                        AdditionalStatisticsNamesEnum.MAX_HEALTH, 350
+                        )
+                );
 
+            loggedUser.addCharacter(createdChar);
+            this.userService.update(loggedUser);
+            return new CustomResponse<>(HttpStatus.CREATED, createdChar);
+    }
     @PostMapping("/use-consumable/{itemId}")
-    public boolean useConsumable(
+    public CustomResponse<Boolean> useConsumable(
             @PathVariable String itemId
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
+
         Optional<MainCharacter> mainCharacter = this.service.findMainCharacterByUserId(loggedUserId);
         Optional<ItemConsumable> itemToUse = this.itemService.findOne(itemId, ItemConsumable.class);
 
         Inventory inventory = this.inventoryService.getUserInventory(loggedUserId);
 
-        if(mainCharacter.isEmpty() || itemToUse.isEmpty()) return false;
-        return this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(),  itemToUse.get());
+        if(itemToUse.isEmpty()) throw new ResourceNotFoundException("Item", itemId);
+        if(mainCharacter.isEmpty()) throw new ResourceNotFoundException("Main character does not exist");
+
+        return new CustomResponse<>(HttpStatus.OK,
+                this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(),  itemToUse.get())
+        );
     };
     @PostMapping("/equip/{characterId}/{itemId}/{slot}")
-    public EquipItemResult equipCharacterItem(
+    public CustomResponse<EquipItemResult> equipCharacterItem(
             @PathVariable String characterId,
             @PathVariable String itemId,
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<ItemWearable> itemToEquip = this.itemService.findOne(itemId, ItemWearable.class);
-        if(itemToEquip.isPresent()){
-            return this.characterInventoryService.equipItem(new ObjectId(loggedUserId), new ObjectId(characterId), itemToEquip.get(), slot);
-        }
 
-        return new EquipItemResult(false, "Something went wrong. Try again later.");
+        if(itemToEquip.isEmpty()) throw new ResourceNotFoundException("Item", itemId);
+
+        return new CustomResponse<>(HttpStatus.OK,
+                this.characterInventoryService.equipItem(
+                        new ObjectId(loggedUserId),
+                        new ObjectId(characterId),
+                        itemToEquip.get(), slot
+                )
+        );
+
     }
 
     @PostMapping("/un-equip/{characterId}/{slot}")
-    public UnEquipItemResult unEquipCharacterItem(
+    public CustomResponse<UnEquipItemResult> unEquipCharacterItem(
             @PathVariable String characterId,
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
 
-        return this.characterInventoryService.unEquipItem(new ObjectId(loggedUserId),  new ObjectId(characterId), slot);
+        return new CustomResponse<>(HttpStatus.OK,
+                this.characterInventoryService.unEquipItem(new ObjectId(loggedUserId),  new ObjectId(characterId), slot)
+        );
     }
 
 
     @PostMapping("/equip-mercenary/{characterId}/{itemId}")
-    public EquipItemResult equipMercenary(
+    public CustomResponse<EquipItemResult> equipMercenary(
             @PathVariable String characterId,
             @PathVariable String itemId
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<ItemMercenary> itemToEquip = this.itemService.findOne(itemId, ItemMercenary.class);
-        if(itemToEquip.isPresent()){
-            return this.characterInventoryService.useMercenaryItemOnMercenaryCharacter(
-                    new ObjectId(loggedUserId), new ObjectId(characterId), itemToEquip.get());
-        }
-        return new EquipItemResult(false, "Item not found");
+
+        if(itemToEquip.isEmpty()) throw new ResourceNotFoundException("Mercenary item", itemId);
+
+        return new CustomResponse<>(HttpStatus.OK, this.characterInventoryService.useMercenaryItemOnMercenaryCharacter(
+                new ObjectId(loggedUserId), new ObjectId(characterId), itemToEquip.get())
+        );
     }
     @PostMapping("/un-equip-mercenary/{characterId}")
-    public UnEquipItemResult unEquipMercenary(
+    public CustomResponse<UnEquipItemResult> unEquipMercenary(
             @PathVariable String characterId
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
-        return this.characterInventoryService.unEquipMercenaryItemFromMercenaryCharacter(
-                new ObjectId(loggedUserId), new ObjectId(characterId));
+        return new CustomResponse<>(HttpStatus.OK,
+                this.characterInventoryService.unEquipMercenaryItemFromMercenaryCharacter(
+                        new ObjectId(loggedUserId), new ObjectId(characterId))
+                );
     }
     @PatchMapping("/train-statistic/{statisticName}/{addValue}")
-    public boolean trainStatistic(@PathVariable BaseStatisticsNamesEnum statisticName,
+    public CustomResponse<Boolean> trainStatistic(@PathVariable BaseStatisticsNamesEnum statisticName,
                                   @PathVariable int addValue
                                   ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<MainCharacter> foundCharacter = this.service.findMainCharacterByUserId(loggedUserId);
-        if(foundCharacter.isPresent() &&
-                foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
-        {
-            MainCharacter characterInst = foundCharacter.get();
-            characterInst.getStats().getStatistics().get(statisticName).increaseValue(addValue);
-            this.service.update(characterInst);
-            return true;
-        }
-        return false;
+
+        if(foundCharacter.isEmpty()) throw new ResourceNotFoundException("Main character not found");
+        if(!foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
+            throw new BadRequestException("You can train only your character");
+
+        MainCharacter characterInst = foundCharacter.get();
+        characterInst.getStats().getStatistics().get(statisticName).increaseValue(addValue);
+        this.service.update(characterInst);
+        return new CustomResponse<>(HttpStatus.OK, true);
     }
 
     @PatchMapping("/debug/subtract-statistic/{statisticName}/{subtractValue}")
-    public boolean debugSubtractTrainStatistic(@PathVariable BaseStatisticsNamesEnum statisticName,
+    public CustomResponse<Boolean> debugSubtractTrainStatistic(@PathVariable BaseStatisticsNamesEnum statisticName,
                                   @PathVariable int subtractValue
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
         Optional<MainCharacter> foundCharacter = this.service.findMainCharacterByUserId(loggedUserId);
-        if(foundCharacter.isPresent() &&
-                foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
-        {
-            MainCharacter characterInst = foundCharacter.get();
-            characterInst.getStats().getStatistics().get(statisticName).decreaseValue(subtractValue);
-            this.service.update(characterInst);
-            return true;
-        }
-        return false;
+
+        if(foundCharacter.isEmpty()) throw new ResourceNotFoundException("Main character not found");
+        if(!foundCharacter.get().getUser().getId().equals(new ObjectId(loggedUserId)))
+           throw new BadRequestException("You can only subtract stats from your character");
+
+        MainCharacter characterInst = foundCharacter.get();
+        characterInst.getStats().getStatistics().get(statisticName).decreaseValue(subtractValue);
+        this.service.update(characterInst);
+        return new CustomResponse<>(HttpStatus.OK, true);
+
     }
 
+    //TODO: remove this endpoint.
     @DeleteMapping("debug/delete-all")
-    public void deleteAllItems() {
-        service.removeAllCharactersAndEquipments();
+    public CustomResponse<String> deleteAllItems() {
+        this.service.removeAllCharactersAndEquipments();
+
+        return new CustomResponse<>(HttpStatus.OK, "[DEBUG]: Successfully removed all characters");
     }
 }

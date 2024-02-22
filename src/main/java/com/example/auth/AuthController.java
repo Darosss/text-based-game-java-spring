@@ -1,6 +1,6 @@
 package com.example.auth;
 
-import com.example.response.ErrorResponse;
+import com.example.response.CustomResponse;
 import com.example.users.CreateUserDTO;
 import com.example.users.CustomUserDetails;
 import com.example.users.User;
@@ -10,16 +10,13 @@ import com.example.users.inventory.InventoryService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@RequestMapping("/auth")
+@RestController("/auth")
 public class AuthController {
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final AuthenticationManager authenticationManager;
@@ -33,9 +30,10 @@ public class AuthController {
         this.userService = userService;
         this.inventoryService = inventoryService;
     }
-    @ResponseBody
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginReq)  {
+
+    @ResponseBody()
+    @PostMapping("auth/login")
+    public CustomResponse<LoginResponse> login(@RequestBody LoginRequest loginReq) throws Exception {
         try {
             Authentication authentication =
                     authenticationManager.authenticate(
@@ -49,33 +47,24 @@ public class AuthController {
             LoginResponse loginRes = new LoginResponse(user.getUser().getEmail(), token);
 
             logger.debug("Token: {}", token);
-            return ResponseEntity.ok(loginRes);
+            return new CustomResponse<>(HttpStatus.OK, loginRes);
 
         }catch (BadCredentialsException e){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST,"Invalid username or password");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }catch (Exception e){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+            throw new BadCredentialsException("Invalid username or password");
         }
     }
 
     @ResponseBody
-    @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest registerRequest){
-        try{
-            Inventory inventory = this.inventoryService.create(new Inventory(1000));
-            CreateUserDTO createUserDto = new CreateUserDTO(
-                    registerRequest.getEmail(), registerRequest.getPassword(), registerRequest.getUsername(), inventory
-            );
+    @PostMapping("auth/register")
+    public CustomResponse<User> register(@RequestBody RegisterRequest registerRequest) {
+        Inventory inventory = this.inventoryService.create(new Inventory(1000));
+        CreateUserDTO createUserDto = new CreateUserDTO(
+                registerRequest.getEmail(), registerRequest.getPassword(), registerRequest.getUsername(), inventory
+        );
 
-            User createdUser =  this.userService.create(new User(createUserDto));
-            inventory.setUser(createdUser);
-            this.inventoryService.update(inventory);
-            return ResponseEntity.ok(createdUser);
-        }catch(Exception e){
-            ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST, e.getMessage());
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-        }
+        User createdUser =  this.userService.create(new User(createUserDto));
+        inventory.setUser(createdUser);
+        this.inventoryService.update(inventory);
+        return new CustomResponse<>(HttpStatus.CREATED, createdUser);
     }
 }

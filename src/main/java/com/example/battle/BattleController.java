@@ -8,10 +8,12 @@ import com.example.characters.MainCharacter;
 import com.example.enemies.Enemy;
 import com.example.enemies.EnemyType;
 import com.example.enemies.EnemyUtils;
+import com.example.response.CustomResponse;
 import com.example.skirmishes.EnemySkirmishDifficulty;
 import com.example.utils.RandomUtils;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,7 +40,7 @@ public class BattleController implements SecuredRestController {
     }
 
     @PostMapping("/debug/attack/{enemyType}")
-    public FightReport DebugAttack(
+    public CustomResponse<FightReport> DebugAttack(
             @PathVariable EnemyType enemyType
     ) throws Exception {
         Optional<MainCharacter> mainCharacter = this.characterService.findMainCharacterByUserId(this.authenticationFacade.getJwtTokenPayload().id());
@@ -51,16 +53,16 @@ public class BattleController implements SecuredRestController {
                     );
 
             MainCharacter characterInst = mainCharacter.get();
-            FightReport report =  this.battleManagerService.performFight(characterInst, enemy);
+            FightReport report =  this.battleManagerService.performFight(characterInst, enemy, characterInst.getLevel());
 
             characterInst.gainExperience(report.getGainedExperience());
             this.characterService.update(characterInst);
-            return report;
+            return new CustomResponse<>(HttpStatus.OK, report);
         }
         return null;
     }
     @PostMapping("/debug/attack/{enemyLevel}/{enemyType}")
-    public FightReport DebugAttackWithEnemyStrength(
+    public CustomResponse<FightReport> DebugAttackWithEnemyStrength(
             @PathVariable EnemySkirmishDifficulty difficulty,
             @PathVariable EnemyType enemyType
     ) throws Exception {
@@ -77,11 +79,11 @@ public class BattleController implements SecuredRestController {
                     enemyType, EnemyUtils.getEnemyStatsMultiplier(enemyType)
                 );
 
-            FightReport report =  this.battleManagerService.performFight(characterInst, enemy);
+            FightReport report =  this.battleManagerService.performFight(characterInst, enemy, characterInst.getLevel());
 
             characterInst.gainExperience(report.getGainedExperience());
             this.characterService.update(characterInst);
-            return report;
+            return new CustomResponse<>(HttpStatus.OK, report);
         }
         return null;
     }

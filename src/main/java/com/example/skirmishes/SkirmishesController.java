@@ -1,13 +1,15 @@
 package com.example.skirmishes;
 
 import com.example.auth.AuthenticationFacade;
+import com.example.auth.LoggedUserUtils;
 import com.example.auth.SecuredRestController;
-import com.example.battle.reports.FightReport;
 import com.example.items.ItemsInventoryService;
+import com.example.response.CustomResponse;
 import com.example.users.User;
 import com.example.users.UserService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -40,48 +42,41 @@ public class SkirmishesController implements SecuredRestController {
     }
 
     @GetMapping("/your-skirmishes")
-    public Skirmish getYourSkirmishes() throws Exception {
-        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-        if(foundUser.isEmpty()) return null;
-
-        User userInstance = foundUser.get();
-        return this.service.getOrCreateSkirmish(userInstance, 2);
+    public CustomResponse<Skirmish> getYourSkirmishes() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
+        return new CustomResponse<>(HttpStatus.OK, this.service.getOrCreateSkirmish(loggedUser, 2));
     }
 
 
     @GetMapping("/current-challenge")
-    public FightReport getChallengeStatus() throws Exception {
-        String userId = this.authenticationFacade.getJwtTokenPayload().id();
+    public CustomResponse<ChallengesService.HandleCurrentChallengeReturn> getChallengeStatus() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
-        Optional<User> foundUser = this.userService.findOneById(userId);
-        if(foundUser.isEmpty()) return null;
-        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(foundUser.get(), 2);
+        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
 
-        Optional<ChallengesService.HandleCurrentChallengeReturn> returnData =
-                this.challengesService.getAndHandleCurrentChallenge(foundSkirmish, userId);
+        ChallengesService.HandleCurrentChallengeReturn returnData =
+                this.challengesService.getAndHandleCurrentChallenge(foundSkirmish, loggedUser.getId().toString());
 
-        if(returnData.isEmpty()) return null; //add message + handle
+        if(returnData.data().isEmpty()) throw new BadRequestException(returnData.message());
 
-        ChallengesService.HandleCurrentChallengeReturn returnDataInst = returnData.get();
-
+        ChallengesService.CommonReturnData data = returnData.data().get();
+        data.skirmish().generateChallenges(2);
+        this.service.update(data.skirmish());
         //TODO: iterateCount - should be get from user collection(for example some users can have more than 2)
-        returnDataInst.skirmish().generateChallenges(2);
-        this.service.update(returnDataInst.skirmish());
+        data.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(loggedUser, item));
+        return new CustomResponse<>(HttpStatus.OK, returnData);
 
-        returnDataInst.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(foundUser.get(), item));
-        return returnDataInst.report();
     }
     @PostMapping("/start-challenge/{challengeId}")
-    public Skirmish.ChosenChallenge startSkirmishChallenge(
+    public CustomResponse<String> startSkirmishChallenge(
             @PathVariable String challengeId
     ) throws Exception {
-        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-        if(foundUser.isEmpty()) return null;
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
+
         //TODO: make it from configs plusMinutes - remember(Changed for debug)
         LocalDateTime challengeFinishTimestamp = LocalDateTime.now().plusSeconds(this.CHALLENGE_WAIT_TIME_MINUTES);
-        User userInstance = foundUser.get();
 
-        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(userInstance, 2);
+        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
         Skirmish.ChosenChallenge skirmishData = new Skirmish.ChosenChallenge(challengeId, challengeFinishTimestamp);
 
         if(foundSkirmish.getChosenChallenge() != null)
@@ -90,75 +85,63 @@ public class SkirmishesController implements SecuredRestController {
         foundSkirmish.setChosenChallenge(skirmishData);
         this.service.update(foundSkirmish);
 
-        return skirmishData;
+        return new CustomResponse<>(HttpStatus.OK, "Challenge successfully started");
     }
 
     @PostMapping("/cancel-current-challenge")
-    public Skirmish cancelCurrentChallenge() throws Exception {
-        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-        if(foundUser.isEmpty()) return null;
+    public CustomResponse<String> cancelCurrentChallenge() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
-        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(foundUser.get(), 2);
+        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
 
-        if(foundSkirmish.getChosenChallengeData().isEmpty()){
-            throw new BadRequestException("There is no started challenge to cancel");
-        }
+        if(foundSkirmish.getChosenChallengeData().isEmpty())
+            throw new BadRequestException("There is no started challenge at all");
 
         foundSkirmish.setChosenChallenge(null);
+        this.service.update(foundSkirmish);
 
-        return this.service.update(foundSkirmish);
+        return new CustomResponse<>(HttpStatus.OK, "Successfully canceled challenge");
     }
-
-
     @GetMapping("/dungeons")
-    public Dungeons getDungeons() throws Exception {
-        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-        if(foundUser.isEmpty()) return null;
+    public CustomResponse<Dungeons> getDungeons() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
+        Skirmish skirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
 
-        User userInstance = foundUser.get();
-        Skirmish skirmish = this.service.getOrCreateSkirmish(userInstance, 2);
-
-        return skirmish.getDungeons();
+        return new CustomResponse<>(HttpStatus.OK, skirmish.getDungeons());
     }
 
     @PostMapping("/dungeons/start-a-fight/{dungeonLevel}")
-    public FightReport startDungeonFight(@PathVariable int dungeonLevel) throws Exception {
-        String userId = this.authenticationFacade.getJwtTokenPayload().id();
-        Optional<User> foundUser = this.userService.findOneById(userId);
-        if(foundUser.isEmpty()) return null;
-        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(foundUser.get(), 2);
+    public CustomResponse<ChallengesService.HandleDungeonReturn> startDungeonFight(@PathVariable int dungeonLevel) throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
+        Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
 
-        Optional<ChallengesService.HandleDungeonReturn> returnData =
-        this.challengesService.handleDungeonFight(foundSkirmish, userId, dungeonLevel, this.DUNGEON_WAIT_TIME_MINUTES);
+        ChallengesService.HandleDungeonReturn returnData =
+        this.challengesService.handleDungeonFight(
+                foundSkirmish, loggedUser.getId().toString(),
+                dungeonLevel, this.DUNGEON_WAIT_TIME_MINUTES
+        );
+        if(returnData.data().isEmpty()) throw new BadRequestException(returnData.message());
 
-        if(returnData.isEmpty()) return null; //add message + handle
-
-        ChallengesService.HandleDungeonReturn returnDataInst = returnData.get();
-
-        this.service.update(returnDataInst.skirmish());
-
-        returnDataInst.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(foundUser.get(), item));
-        return returnDataInst.report();
+        ChallengesService.CommonReturnData data = returnData.data().get();
+        this.service.update(data.skirmish());
+        data.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(loggedUser, item));
+        return new CustomResponse<>(HttpStatus.OK, returnData);
     }
 
     @PostMapping("/debug/generate-new-challenges")
-    public Skirmish generateNewChallenges() throws Exception {
-        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-        if(foundUser.isEmpty()) return null;
+    public CustomResponse<Skirmish> generateNewChallenges() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
-        return this.service.generateNewChallengesForUser(foundUser.get(), 2);
-
+        return new CustomResponse<>(HttpStatus.OK, this.service.generateNewChallengesForUser(loggedUser, 2));
     }
     @GetMapping("/debug/delete-existing-create-debug-data")
-    public Skirmish createDebug() throws Exception {
-        Optional<User> foundUser = this.userService.findOneById(this.authenticationFacade.getJwtTokenPayload().id());
-        if(foundUser.isEmpty()) return null;
+    public CustomResponse<Skirmish> createDebug() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
-        User userInstance = foundUser.get();
-        Optional<Skirmish> foundSkirmish = this.service.findOneByUserId(userInstance.getId());
+        Optional<Skirmish> foundSkirmish = this.service.findOneByUserId(loggedUser.getId());
         foundSkirmish.ifPresent(skirmish -> this.service.removeById(skirmish.getId()));
-        return this.service.create(userInstance, 2);
+        return new CustomResponse<>(HttpStatus.OK, this.service.create(loggedUser, 2));
     }
 
 
