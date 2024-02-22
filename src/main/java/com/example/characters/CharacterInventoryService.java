@@ -36,20 +36,20 @@ public class CharacterInventoryService {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
             Character character = this.fetchCharacter(session, characterId, userId, Character.class);
-            if (userInventory != null && character != null) {
-                UnEquipItemResult transactionDone = this.handleUnEquipTransaction(session, slot, userInventory, character);
+
+            if (userInventory == null || character == null)  return new UnEquipItemResult(false,
+                    "Cannot find user inventory and/or character. Contact administration", Optional.empty()
+            );
+            UnEquipItemResult transactionDone = this.handleUnEquipTransaction(session, slot, userInventory, character);
             if (transactionDone.success()) {
                 session.commitTransaction();
             } else {
                 session.abortTransaction();
             }
             return transactionDone;
-            }
-
-        return new UnEquipItemResult(false, "Cannot find user inventory and/or character. Contact administration", Optional.empty());
 
         }catch(Exception e){
-            throw new Exception("Something went wrong when trying to equip item");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -84,23 +84,20 @@ public class CharacterInventoryService {
             Character character = this.fetchCharacter(session, characterId, userId, Character.class);
 
 
-            if (userInventory != null && character != null) {
-
-                EquipItemResult transactionDone = this.handleEquipTransaction(session, item, slot, userInventory, character);
-                if(transactionDone.success()) {
-                    session.commitTransaction();
-                }else {
-                    session.abortTransaction();
-                }
-                return transactionDone;
-            }
-            return new EquipItemResult(false,
+            if (userInventory == null || character == null)   return new EquipItemResult(false,
                     "Cannot find user inventory and/or character. Contact administration"
             );
 
+            EquipItemResult transactionDone = this.handleEquipTransaction(session, item, slot, userInventory, character);
+            if(transactionDone.success()) {
+                session.commitTransaction();
+            }else {
+                session.abortTransaction();
+            }
+            return transactionDone;
         }catch(Exception e){
             logger.error("Error occurred in equipItem", e);
-            throw new Exception("Something went wrong when trying to equip item");
+            throw new Exception(e.getMessage());
         }
     }
 
@@ -162,19 +159,17 @@ public class CharacterInventoryService {
             Inventory userInventory = this.fetchUserInventory(session, userId);
             MercenaryCharacter character = this.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
 
-            if (userInventory != null && character != null) {
-
-                EquipItemResult transactionDone = this.handleUseMercenaryItemTransaction(session, item, character, userInventory);
-                if(transactionDone.success()) {
-                    session.commitTransaction();
-                }else {
-                    session.abortTransaction();
-                }
-                return transactionDone;
-            }
-            return new EquipItemResult(false,
+            if (userInventory == null || character == null)   return new EquipItemResult(false,
                     "Cannot find user inventory and/or character. Contact administration"
             );
+
+            EquipItemResult transactionDone = this.handleUseMercenaryItemTransaction(session, item, character, userInventory);
+            if(transactionDone.success()) {
+                session.commitTransaction();
+            }else {
+                session.abortTransaction();
+            }
+            return transactionDone;
         }catch(Exception e){
             logger.error("Error occurred in useMercenaryItemOnMercenaryCharacter", e);
             throw new Exception("Something went wrong when trying to use mercenary item");
@@ -196,17 +191,19 @@ public class CharacterInventoryService {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
             MercenaryCharacter character = this.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
-            if (userInventory != null && character != null) {
-                UnEquipItemResult transactionDone = this.handleUnEquipMercenaryItemTransaction(session, character, userInventory);
-                if (transactionDone.success()) {
-                    session.commitTransaction();
-                } else {
-                    session.abortTransaction();
-                }
-                return transactionDone;
-            }
+            if (userInventory != null && character != null)
+                return new UnEquipItemResult(false,
+                        "Cannot find user inventory and/or character. Contact administration",
+                        Optional.empty());
 
-            return new UnEquipItemResult(false, "Cannot find user inventory and/or character. Contact administration", Optional.empty());
+            UnEquipItemResult transactionDone = this.handleUnEquipMercenaryItemTransaction(session, character, userInventory);
+            if (transactionDone.success()) {
+                session.commitTransaction();
+            } else {
+                session.abortTransaction();
+            }
+            return transactionDone;
+
 
         }catch(Exception e){
             e.printStackTrace();
