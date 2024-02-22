@@ -27,12 +27,13 @@ public class Fight {
     private final int minimumBaseCapInitiative = 50;
     private int baseMinimumInitiativeForTurn = 50;
     private final FightReport fightReport = new FightReport();
+    private final int mainHeroLevel;
     private final Map<ObjectId, BattleDetails<Character>> userHeroesDetails;
     private final Map<ObjectId, BattleDetails<Enemy>> enemyHeroesDetails;
 
     private final List<ObjectId> turnParticipants = new ArrayList<>();
 
-    Fight(List<Character> characters,List<Enemy> enemies, int maxTurns) {
+    Fight(List<Character> characters,List<Enemy> enemies, int maxTurns, int mainHeroLevel) {
 
         this.calculateMinimumInitiativeOfLevelsMean(
                 IntStream.concat(
@@ -43,11 +44,12 @@ public class Fight {
         this.userHeroesDetails = this.prepareUserHeroesDetails(characters);
         this.enemyHeroesDetails = this.prepareEnemiesHeroesDetails(enemies);
         this.maxTurns = maxTurns;
+        this.mainHeroLevel = mainHeroLevel;
 
     }
 
-    Fight(List<Character> characters, List<Enemy> enemies){
-        this(characters, enemies, 50);
+    Fight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel){
+        this(characters, enemies, 50, mainHeroLevel);
     }
 
     private void calculateMinimumInitiativeOfLevelsMean(int[] levels) {
@@ -222,7 +224,7 @@ public class Fight {
         Enemy enemy = (Enemy) this.enemyHeroesDetails.get(heroId).getHero();
         if(enemy.getHealth() <= 0){
             this.fightReport.increaseGainedExperience(
-                    ExperienceUtils.calculateExperienceFromEnemy(this.findUserMainCharacter().getLevel(),enemy.getLevel(),enemy.getType())
+                    ExperienceUtils.calculateExperienceFromEnemy(this.mainHeroLevel,enemy.getLevel(),enemy.getType())
             );
 
             List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel());
@@ -259,12 +261,6 @@ public class Fight {
 
     }
 
-    //TODO: maybe this will not be needed - when other heroes will be in separate collection (as items)?
-    private BaseHero findUserMainCharacter() {
-        return this.userHeroesDetails.values().stream().filter((v)-> v.getHero() instanceof MainCharacter).toList().get(0).getHero();
-
-
-    }
     public FightReport getFightReport() {
         return this.fightReport;
     }

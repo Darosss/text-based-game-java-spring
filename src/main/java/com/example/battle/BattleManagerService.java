@@ -9,8 +9,8 @@ import java.util.*;
 @Service
 public class BattleManagerService {
     //TODO: add reports into database
-    public FightReport performNormalFight(List<Character> characters, List<Enemy> enemies) {
-        Fight fightInstance = new Fight(characters, enemies);
+    public FightReport performNormalFight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel) {
+        Fight fightInstance = new Fight(characters, enemies, mainHeroLevel);
 
 
         //TODO: here we will need to checks whether fight is win - give xp, gold etc
@@ -22,13 +22,13 @@ public class BattleManagerService {
     }
 
 
-    public FightReport performFight(Character character, Enemy enemy){
-        Fight fightInstance = new Fight(List.of(character), List.of(enemy));
+    public FightReport performFight(Character character, Enemy enemy, int mainHeroLevel){
+        Fight fightInstance = new Fight(List.of(character), List.of(enemy), mainHeroLevel);
         fightInstance.startFight();
         return fightInstance.getFightReport();
     }
-    public FightReport performTeamFight(List<Character> characters, List<Enemy> enemies){
-        Fight fightInstance = new Fight(characters, enemies);
+    public FightReport performTeamFight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel){
+        Fight fightInstance = new Fight(characters, enemies, mainHeroLevel);
         fightInstance.startFight();
         return fightInstance.getFightReport();
     }
