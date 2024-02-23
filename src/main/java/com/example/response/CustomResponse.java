@@ -4,25 +4,22 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public class CustomResponse<T> {
-    private final ResponseEntity<BodyResponse<T>> responseEntity;
+    private final ResponseEntity<BodyResponse<T>> response;
 
     public CustomResponse( HttpStatus status, BodyResponse<T> bodyResponse) {
-        this.responseEntity = ResponseEntity.status(status).body(bodyResponse);
+        this.response = ResponseEntity.status(status).body(bodyResponse);
     }
 
-    public CustomResponse(HttpStatus status, String bodyMessage){
-        this.responseEntity = ResponseEntity.status(status).body(new BodyResponse<>(bodyMessage));
-    }
     public CustomResponse(HttpStatus status, T bodyData){
-        this.responseEntity = ResponseEntity.status(status).body(new BodyResponse<>(bodyData));
+        this.response = ResponseEntity.status(status).body(new BodyResponse<>(bodyData));
     }
 
     public CustomResponse(HttpStatus status, String bodyMessage, T bodyData){
-        this.responseEntity = ResponseEntity.status(status).body(new BodyResponse<>(bodyMessage, bodyData));
+        this.response = ResponseEntity.status(status).body(new BodyResponse<>(bodyMessage, bodyData));
     }
 
-    public ResponseEntity<BodyResponse<T>> getResponseEntity() {
-        return responseEntity;
+    public ResponseEntity<BodyResponse<T>> getResponse() {
+        return response;
     }
 
 }
