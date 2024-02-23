@@ -26,18 +26,22 @@ public class JwtUtil {
     private final String TOKEN_HEADER = "Authorization";
     private final String TOKEN_PREFIX = "Bearer ";
 
+    public record CreateTokenReturn(String token, Date expirationTime){}
 
 
-    public String createToken(User user) throws JsonProcessingException {
+    public CreateTokenReturn createToken(User user) throws JsonProcessingException {
         assert secretKey != null;
         SecretKey key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
         Date expirationTime = new Date(System.currentTimeMillis() + accessTokenValidity);
-        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-        String userDataAsString = ow.writeValueAsString(user.getDetailsForToken());
 
-        return Jwts.builder().subject(userDataAsString)
+        ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
+        String userDataAsString = ow.writeValueAsString(user.getDetailsForToken(expirationTime));
+
+        String token = Jwts.builder().subject(userDataAsString)
                 .expiration(expirationTime)
                 .signWith(key).compact();
+
+        return new CreateTokenReturn(token, expirationTime);
     }
 
 

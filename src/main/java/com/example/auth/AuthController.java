@@ -43,10 +43,10 @@ public class AuthController {
             CustomUserDetails user = (CustomUserDetails)authentication.getPrincipal();
             authentication.getDetails();
 
-            String token = jwtUtil.createToken(user.getUser());
-            LoginResponse loginRes = new LoginResponse(user.getUser().getEmail(), token);
+            JwtUtil.CreateTokenReturn createTokenReturn = jwtUtil.createToken(user.getUser());
+            LoginResponse loginRes = new LoginResponse(user.getUser().getEmail(), createTokenReturn.token(), createTokenReturn.expirationTime());
 
-            logger.debug("Token: {}", token);
+            logger.debug("Token: {}", createTokenReturn.token());
             return new CustomResponse<>(HttpStatus.OK, loginRes);
 
         }catch (BadCredentialsException e){

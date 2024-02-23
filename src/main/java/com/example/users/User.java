@@ -15,6 +15,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 
@@ -156,8 +157,8 @@ public class User {
 
 
 
-    public JwtTokenPayload getDetailsForToken(){
-        return new JwtTokenPayload(id.toString(), email, username);
+    public JwtTokenPayload getDetailsForToken(Date expirationTime){
+        return new JwtTokenPayload(id.toString(), email, username, expirationTime);
     }
     @Override
     public String toString() {
