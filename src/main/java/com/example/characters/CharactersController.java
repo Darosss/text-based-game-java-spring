@@ -86,7 +86,7 @@ public class CharactersController implements SecuredRestController {
         loggedUser.addCharacter(createdChar);
         this.userService.update(loggedUser);
 
-        return new CustomResponse<>(HttpStatus.CREATED, createdChar);
+        return new CustomResponse<>(HttpStatus.CREATED, "Successfully created main character", createdChar);
     }
 
     // For debug ignore ;p
@@ -101,9 +101,9 @@ public class CharactersController implements SecuredRestController {
 
 
         if(asMainCharacter) {
-            return new CustomResponse<>(HttpStatus.CREATED, this.service.createMainCharacter(foundUser.get(), name));
+            return new CustomResponse<>(HttpStatus.CREATED, "Successfully created main character character", this.service.createMainCharacter(foundUser.get(), name));
         }else {
-            return new CustomResponse<>(HttpStatus.CREATED, this.service.createMercenaryCharacter(foundUser.get(), name));
+            return new CustomResponse<>(HttpStatus.CREATED, "Successfully created mercenary character", this.service.createMercenaryCharacter(foundUser.get(), name));
         }
     }
 
@@ -117,7 +117,7 @@ public class CharactersController implements SecuredRestController {
             );
             loggedUser.addCharacter(createdChar);
             this.userService.update(loggedUser);
-            return new CustomResponse<>(HttpStatus.CREATED, createdChar);
+            return new CustomResponse<>(HttpStatus.CREATED, "Successfully created mercenary character", createdChar);
         }
 
     @PostMapping("/debug/create-main-character-with-random-stats/{name}")
@@ -146,7 +146,7 @@ public class CharactersController implements SecuredRestController {
 
             loggedUser.addCharacter(createdChar);
             this.userService.update(loggedUser);
-            return new CustomResponse<>(HttpStatus.CREATED, createdChar);
+            return new CustomResponse<>(HttpStatus.CREATED, "Successfully created main character with random stats", createdChar);
     }
     @PostMapping("/use-consumable/{itemId}")
     public CustomResponse<Boolean> useConsumable(
@@ -162,12 +162,14 @@ public class CharactersController implements SecuredRestController {
         if(itemToUse.isEmpty()) throw new ResourceNotFoundException("Item", itemId);
         if(mainCharacter.isEmpty()) throw new ResourceNotFoundException("Main character does not exist");
 
-        return new CustomResponse<>(HttpStatus.OK,
-                this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(),  itemToUse.get())
-        );
+        boolean usedItem = this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(),  itemToUse.get());
+        if(usedItem) return new CustomResponse<>(HttpStatus.OK, "Successfully used item", true);
+
+        //TODO: add here better messages through service. Like in equip un equip methods
+        throw new BadRequestException("Cannot use consumable item");
     };
     @PostMapping("/equip/{characterId}/{itemId}/{slot}")
-    public CustomResponse<EquipItemResult> equipCharacterItem(
+    public CustomResponse<Boolean> equipCharacterItem(
             @PathVariable String characterId,
             @PathVariable String itemId,
             @PathVariable CharacterEquipmentFieldsEnum slot
@@ -177,31 +179,33 @@ public class CharactersController implements SecuredRestController {
 
         if(itemToEquip.isEmpty()) throw new ResourceNotFoundException("Item", itemId);
 
-        return new CustomResponse<>(HttpStatus.OK,
-                this.characterInventoryService.equipItem(
-                        new ObjectId(loggedUserId),
-                        new ObjectId(characterId),
-                        itemToEquip.get(), slot
-                )
+        EquipItemResult returnData = this.characterInventoryService.equipItem(
+                new ObjectId(loggedUserId),
+                new ObjectId(characterId),
+                itemToEquip.get(), slot
         );
 
+        if(returnData.success()) return new CustomResponse<>(HttpStatus.OK, returnData.message(), true);
+
+        throw new BadRequestException(returnData.message());
     }
 
     @PostMapping("/un-equip/{characterId}/{slot}")
-    public CustomResponse<UnEquipItemResult> unEquipCharacterItem(
+    public CustomResponse<Item> unEquipCharacterItem(
             @PathVariable String characterId,
             @PathVariable CharacterEquipmentFieldsEnum slot
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
 
-        return new CustomResponse<>(HttpStatus.OK,
-                this.characterInventoryService.unEquipItem(new ObjectId(loggedUserId),  new ObjectId(characterId), slot)
-        );
+        UnEquipItemResult returnData = this.characterInventoryService.unEquipItem(new ObjectId(loggedUserId),  new ObjectId(characterId), slot);
+        if(returnData.success() && returnData.item().isPresent()) return new CustomResponse<>(HttpStatus.OK, returnData.message(), returnData.item().get());
+
+        throw new BadRequestException(returnData.message());
     }
 
 
     @PostMapping("/equip-mercenary/{characterId}/{itemId}")
-    public CustomResponse<EquipItemResult> equipMercenary(
+    public CustomResponse<Boolean> equipMercenary(
             @PathVariable String characterId,
             @PathVariable String itemId
     ) throws Exception {
@@ -210,19 +214,26 @@ public class CharactersController implements SecuredRestController {
 
         if(itemToEquip.isEmpty()) throw new ResourceNotFoundException("Mercenary item", itemId);
 
-        return new CustomResponse<>(HttpStatus.OK, this.characterInventoryService.useMercenaryItemOnMercenaryCharacter(
-                new ObjectId(loggedUserId), new ObjectId(characterId), itemToEquip.get())
-        );
+        EquipItemResult returnData = this.characterInventoryService.useMercenaryItemOnMercenaryCharacter(
+                new ObjectId(loggedUserId), new ObjectId(characterId), itemToEquip.get());
+
+        if(returnData.success()) return new CustomResponse<>(HttpStatus.OK, returnData.message(), true);
+
+        throw new BadRequestException(returnData.message());
     }
     @PostMapping("/un-equip-mercenary/{characterId}")
-    public CustomResponse<UnEquipItemResult> unEquipMercenary(
+    public CustomResponse<Item> unEquipMercenary(
             @PathVariable String characterId
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
-        return new CustomResponse<>(HttpStatus.OK,
-                this.characterInventoryService.unEquipMercenaryItemFromMercenaryCharacter(
-                        new ObjectId(loggedUserId), new ObjectId(characterId))
-                );
+
+        UnEquipItemResult returnData = this.characterInventoryService.unEquipMercenaryItemFromMercenaryCharacter(
+                new ObjectId(loggedUserId), new ObjectId(characterId)
+        );
+        if(returnData.success() && returnData.item().isPresent()) return new CustomResponse<>(HttpStatus.OK, returnData.message(), returnData.item().get());
+
+        throw new BadRequestException(returnData.message());
+
     }
     @PatchMapping("/train-statistic/{statisticName}/{addValue}")
     public CustomResponse<Boolean> trainStatistic(@PathVariable BaseStatisticsNamesEnum statisticName,
@@ -238,7 +249,7 @@ public class CharactersController implements SecuredRestController {
         MainCharacter characterInst = foundCharacter.get();
         characterInst.getStats().getStatistics().get(statisticName).increaseValue(addValue);
         this.service.update(characterInst);
-        return new CustomResponse<>(HttpStatus.OK, true);
+        return new CustomResponse<>(HttpStatus.OK, "Successfully trained statistic", true);
     }
 
     @PatchMapping("/debug/subtract-statistic/{statisticName}/{subtractValue}")
@@ -255,15 +266,15 @@ public class CharactersController implements SecuredRestController {
         MainCharacter characterInst = foundCharacter.get();
         characterInst.getStats().getStatistics().get(statisticName).decreaseValue(subtractValue);
         this.service.update(characterInst);
-        return new CustomResponse<>(HttpStatus.OK, true);
+        return new CustomResponse<>(HttpStatus.OK, "Successfully subtracted statistic",true);
 
     }
 
     //TODO: remove this endpoint.
     @DeleteMapping("debug/delete-all")
-    public CustomResponse<String> deleteAllItems() {
+    public CustomResponse<Boolean> deleteAllItems() {
         this.service.removeAllCharactersAndEquipments();
 
-        return new CustomResponse<>(HttpStatus.OK, "[DEBUG]: Successfully removed all characters");
+        return new CustomResponse<>(HttpStatus.OK, "[DEBUG]: Successfully removed all characters", true);
     }
 }

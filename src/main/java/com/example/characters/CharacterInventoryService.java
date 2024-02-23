@@ -5,10 +5,7 @@ import com.example.characters.equipment.CharacterEquipmentFieldsEnum;
 import com.example.characters.equipment.Equipment.UnEquipItemResult;
 import com.example.characters.equipment.Equipment.EquipItemResult;
 
-import com.example.items.Item;
-import com.example.items.ItemConsumable;
-import com.example.items.ItemMercenary;
-import com.example.items.ItemTypeEnum;
+import com.example.items.*;
 import com.example.users.inventory.Inventory;
 import dev.morphia.Datastore;
 import dev.morphia.query.filters.Filters;
@@ -191,7 +188,7 @@ public class CharacterInventoryService {
             session.startTransaction();
             Inventory userInventory = this.fetchUserInventory(session, userId);
             MercenaryCharacter character = this.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
-            if (userInventory != null && character != null)
+            if (userInventory == null && character == null)
                 return new UnEquipItemResult(false,
                         "Cannot find user inventory and/or character. Contact administration",
                         Optional.empty());

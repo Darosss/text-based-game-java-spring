@@ -68,7 +68,7 @@ public class SkirmishesController implements SecuredRestController {
 
     }
     @PostMapping("/start-challenge/{challengeId}")
-    public CustomResponse<String> startSkirmishChallenge(
+    public CustomResponse<Boolean> startSkirmishChallenge(
             @PathVariable String challengeId
     ) throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
@@ -85,11 +85,11 @@ public class SkirmishesController implements SecuredRestController {
         foundSkirmish.setChosenChallenge(skirmishData);
         this.service.update(foundSkirmish);
 
-        return new CustomResponse<>(HttpStatus.OK, "Challenge successfully started");
+        return new CustomResponse<>(HttpStatus.OK, "Challenge successfully started", true);
     }
 
     @PostMapping("/cancel-current-challenge")
-    public CustomResponse<String> cancelCurrentChallenge() throws Exception {
+    public CustomResponse<Boolean> cancelCurrentChallenge() throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
         Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
@@ -100,7 +100,7 @@ public class SkirmishesController implements SecuredRestController {
         foundSkirmish.setChosenChallenge(null);
         this.service.update(foundSkirmish);
 
-        return new CustomResponse<>(HttpStatus.OK, "Successfully canceled challenge");
+        return new CustomResponse<>(HttpStatus.OK, "Successfully canceled challenge", true);
     }
     @GetMapping("/dungeons")
     public CustomResponse<Dungeons> getDungeons() throws Exception {
