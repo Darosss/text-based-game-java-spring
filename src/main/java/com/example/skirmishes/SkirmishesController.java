@@ -3,6 +3,7 @@ package com.example.skirmishes;
 import com.example.auth.AuthenticationFacade;
 import com.example.auth.LoggedUserUtils;
 import com.example.auth.SecuredRestController;
+import com.example.battle.reports.FightReport;
 import com.example.items.ItemsInventoryService;
 import com.example.response.CustomResponse;
 import com.example.users.User;
@@ -49,7 +50,7 @@ public class SkirmishesController implements SecuredRestController {
 
 
     @GetMapping("/current-challenge")
-    public CustomResponse<ChallengesService.HandleCurrentChallengeReturn> getChallengeStatus() throws Exception {
+    public CustomResponse<FightReport> getChallengeStatus() throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
         Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
@@ -64,7 +65,7 @@ public class SkirmishesController implements SecuredRestController {
         this.service.update(data.skirmish());
         //TODO: iterateCount - should be get from user collection(for example some users can have more than 2)
         data.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(loggedUser, item));
-        return new CustomResponse<>(HttpStatus.OK, returnData);
+        return new CustomResponse<>(HttpStatus.OK, returnData.message(), returnData.data().get().report());
 
     }
     @PostMapping("/start-challenge/{challengeId}")
@@ -111,7 +112,7 @@ public class SkirmishesController implements SecuredRestController {
     }
 
     @PostMapping("/dungeons/start-a-fight/{dungeonLevel}")
-    public CustomResponse<ChallengesService.HandleDungeonReturn> startDungeonFight(@PathVariable int dungeonLevel) throws Exception {
+    public CustomResponse<FightReport> startDungeonFight(@PathVariable int dungeonLevel) throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
         Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
@@ -126,7 +127,7 @@ public class SkirmishesController implements SecuredRestController {
         ChallengesService.CommonReturnData data = returnData.data().get();
         this.service.update(data.skirmish());
         data.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(loggedUser, item));
-        return new CustomResponse<>(HttpStatus.OK, returnData);
+        return new CustomResponse<>(HttpStatus.OK, returnData.message(), returnData.data().get().report());
     }
 
     @PostMapping("/debug/generate-new-challenges")
