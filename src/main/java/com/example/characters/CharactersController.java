@@ -25,6 +25,7 @@ import java.util.*;
 
 
 @RestController("characters")
+@RequestMapping("characters")
 public class CharactersController implements SecuredRestController {
     private final CharacterService service;
     private final ItemService itemService;
@@ -61,7 +62,7 @@ public class CharactersController implements SecuredRestController {
         return character.map((mainChar)->new CustomResponse<>(HttpStatus.OK, mainChar))
                 .orElseThrow(()->new BadRequestException("You do not have main character yet"));
     }
-    @GetMapping("characters/{characterId}")
+    @GetMapping("/{characterId}")
     public CustomResponse<Character> findYourCharacterById(@PathVariable String characterId) throws BadRequestException {
         Optional<Character> character = this.service.findById(characterId);
 
