@@ -20,7 +20,7 @@ public class EnemyUtils {
 
     public record LevelRange(int min, int max){}
 
-    public record ItemProbabilityLoot(int percent, int minItems, int maxItems){};
+    public record ItemProbabilityLoot(double percent, int minItems, int maxItems){};
     public static LevelRange getEnemyLevelRanges(EnemySkirmishDifficulty difficulty, int characterLevel){
         return switch (difficulty){
             case NOOB -> new LevelRange(1, Math.max(1, characterLevel/2));
@@ -123,33 +123,38 @@ public class EnemyUtils {
         };
     }
 
-    private static ItemProbabilityLoot getItemProbabilityLootByEnemyType(EnemyType type){
+    private static ItemProbabilityLoot getItemProbabilityLootByEnemyType(EnemyType type, boolean isAlive){
+        double isAlivePercentAdjust = isAlive ? 0.8 : 1;
         return switch (type){
-            case COMMON -> new ItemProbabilityLoot(15, 1, 1);
-            case UNCOMMON -> new ItemProbabilityLoot(28, 1, 1);
-            case RARE -> new ItemProbabilityLoot(42, 1, 2);
-            case EPIC -> new ItemProbabilityLoot(60, 1, 2);
-            case BOSS -> new ItemProbabilityLoot(100, 2, 3);
-            case ANCESTOR -> new ItemProbabilityLoot(100, 3, 6);
+            case COMMON -> new ItemProbabilityLoot(15 * isAlivePercentAdjust, 1, 1);
+            case UNCOMMON -> new ItemProbabilityLoot(28 * isAlivePercentAdjust, 1, 1);
+            case RARE -> new ItemProbabilityLoot(42 * isAlivePercentAdjust, 1, 2);
+            case EPIC -> new ItemProbabilityLoot(60 * isAlivePercentAdjust, 1, 2);
+            case BOSS -> new ItemProbabilityLoot(100 * isAlivePercentAdjust, 2, 3);
+            case ANCESTOR -> new ItemProbabilityLoot(100 * isAlivePercentAdjust, 3, 6);
         };
     }
 
-    public static List<Item> checkLootFromEnemy(EnemyType type, int enemyLevel){
+    public static List<Item> checkLootFromEnemy(EnemyType type, int enemyLevel, boolean isAlive){
         List<Item> items = new ArrayList<>();
-        ItemProbabilityLoot itemProbData = getItemProbabilityLootByEnemyType(type);
+        ItemProbabilityLoot itemProbData = getItemProbabilityLootByEnemyType(type, isAlive);
+        logger.debug("Item prob data, percent: {}, minItems: {}, maxItems: {}", itemProbData.percent(), itemProbData.minItems(), itemProbData.maxItems());
+        if(RandomUtils.checkPercentageChance(itemProbData.percent())) {
+            int numberOfItems = RandomUtils.getRandomValueWithinRange(itemProbData.minItems(), itemProbData.maxItems());
+            for (int i = 0; i< numberOfItems; i++){
+                int itemLevel = RandomUtils.getRandomValueWithinRange(Math.max(1, enemyLevel - 5), enemyLevel + 8);
+                ItemTypeEnum itemType = ItemUtils.getRandomItemType();
+                //TODO: make random name generator for items
+                items.add(ItemUtils.generateRandomItemWithoutBaseStats(
+                        itemType + " from enemy: "+type+" | level: "+enemyLevel, itemLevel, itemType)
+                );
+            }
 
-        int numberOfItems = RandomUtils.getRandomValueWithinRange(itemProbData.minItems(), itemProbData.maxItems());
-        for (int i = 0; i< numberOfItems; i++){
-            int itemLevel = RandomUtils.getRandomValueWithinRange(Math.max(1, enemyLevel - 5), enemyLevel + 8);
-            ItemTypeEnum itemType = ItemUtils.getRandomItemType();
-            //TODO: make random name generator for items
-            items.add(ItemUtils.generateRandomItemWithoutBaseStats(
-                    itemType + " from enemy: "+type+" | level: "+enemyLevel, itemLevel, itemType)
-            );
-        }
-
-        for (Item item : items) {
-            logger.debug("Looted item. Item level: {}, itemName: {}", item.getLevel(), item.getName());
+            for (Item item : items) {
+                logger.debug("Looted item. Item level: {}, itemName: {}", item.getLevel(), item.getName());
+            }
+        }else {
+            logger.debug("Didn't loot any items from enemy type: {}, level: {}, isAlive: {}", type, enemyLevel, isAlive);
         }
         return items;
     }
