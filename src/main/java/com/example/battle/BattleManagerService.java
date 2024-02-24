@@ -10,7 +10,7 @@ import java.util.*;
 public class BattleManagerService {
     //TODO: add reports into database
     public FightReport performNormalFight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel) {
-        Fight fightInstance = new Fight(characters, enemies, mainHeroLevel);
+        Fight fightInstance = new Fight(characters, enemies, mainHeroLevel, false);
 
 
         //TODO: here we will need to checks whether fight is win - give xp, gold etc
@@ -23,12 +23,12 @@ public class BattleManagerService {
 
 
     public FightReport performFight(Character character, Enemy enemy, int mainHeroLevel){
-        Fight fightInstance = new Fight(List.of(character), List.of(enemy), mainHeroLevel);
+        Fight fightInstance = new Fight(List.of(character), List.of(enemy), 50, mainHeroLevel, false);
         fightInstance.startFight();
         return fightInstance.getFightReport();
     }
     public FightReport performTeamFight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel){
-        Fight fightInstance = new Fight(characters, enemies, mainHeroLevel);
+        Fight fightInstance = new Fight(characters, enemies, 300, mainHeroLevel, true);
         fightInstance.startFight();
         return fightInstance.getFightReport();
     }

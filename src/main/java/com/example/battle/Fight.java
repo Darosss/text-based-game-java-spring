@@ -7,7 +7,6 @@ import com.example.characters.BaseHero;
 import com.example.characters.Character;
 import com.example.battle.data.DefendReturnData;
 import com.example.characters.ExperienceUtils;
-import com.example.characters.MainCharacter;
 import com.example.enemies.Enemy;
 import com.example.enemies.EnemyUtils;
 import com.example.items.Item;
@@ -18,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class Fight {
     private static final Logger logger = LoggerFactory.getLogger(Fight.class);
@@ -31,9 +31,10 @@ public class Fight {
     private final Map<ObjectId, BattleDetails<Character>> userHeroesDetails;
     private final Map<ObjectId, BattleDetails<Enemy>> enemyHeroesDetails;
 
+    private final boolean mustKillEnemyToWin;
     private final List<ObjectId> turnParticipants = new ArrayList<>();
 
-    Fight(List<Character> characters,List<Enemy> enemies, int maxTurns, int mainHeroLevel) {
+    Fight(List<Character> characters,List<Enemy> enemies, int maxTurns, int mainHeroLevel, boolean mustKillEnemyToWin) {
 
         this.calculateMinimumInitiativeOfLevelsMean(
                 IntStream.concat(
@@ -45,11 +46,16 @@ public class Fight {
         this.enemyHeroesDetails = this.prepareEnemiesHeroesDetails(enemies);
         this.maxTurns = maxTurns;
         this.mainHeroLevel = mainHeroLevel;
-
+        this.mustKillEnemyToWin = mustKillEnemyToWin;
+        this.fightReport.addInitialParticipantsStatistics(
+            Stream.concat(
+                    characters.stream().map(Character::getId),
+                    enemies.stream().map(BaseHero::getId)
+            ).toList());
     }
 
-    Fight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel){
-        this(characters, enemies, 50, mainHeroLevel);
+    Fight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel, boolean mustKillEnemyToWin){
+        this(characters, enemies, 50, mainHeroLevel, mustKillEnemyToWin);
     }
 
     private void calculateMinimumInitiativeOfLevelsMean(int[] levels) {
@@ -120,7 +126,23 @@ public class Fight {
     private boolean hasFightAvailableLeftTurns(int currentTurn) {
         if(currentTurn< this.maxTurns) return true;
 
-        this.fightReport.setStatus(FightReport.FightStatus.DRAW);
+        FightReport.FightStatus fightStatusEnd = this.mustKillEnemyToWin ?
+                FightReport.FightStatus.ENEMY_WIN : this.getStatusFightDependsOnDamageDone();
+
+
+        if(fightStatusEnd.equals(FightReport.FightStatus.PLAYER_WIN)) {
+            this.enemyHeroesDetails.values().forEach((hero)->{
+                Enemy enemy = (Enemy) hero.getHero();
+                this.fightReport.increaseGainedExperience(
+                        ExperienceUtils.calculateExperienceFromEnemy(this.mainHeroLevel, enemy.getLevel(), enemy.getType(), true)
+                );
+                List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel(), true);
+                this.fightReport.addLootItems(loot);
+            });
+        }
+
+        this.handleEndOfFight();
+        this.fightReport.setStatus(fightStatusEnd);
         return false;
     }
 
@@ -208,7 +230,10 @@ public class Fight {
         BaseHero heroToAttack = isUserTurn ? getMostThreateningEnemyHero() : getMostThreateningUserHero();
         CombatReturnData turnData = this.attackAndDefend(heroDetails.getHero(),
                 heroToAttack);
+
         this.checkAndHandleDeaths(isUserTurn, heroDetails.getHero().getId(), heroToAttack.getId());
+        this.fightReport.increaseStatisticsBasedOnTurn(
+                heroDetails.getHero().getId(), heroToAttack.getId(), turnData);
         currentTurnReport.addTurnAction(turnData);
     }
 
@@ -224,10 +249,10 @@ public class Fight {
         Enemy enemy = (Enemy) this.enemyHeroesDetails.get(heroId).getHero();
         if(enemy.getHealth() <= 0){
             this.fightReport.increaseGainedExperience(
-                    ExperienceUtils.calculateExperienceFromEnemy(this.mainHeroLevel,enemy.getLevel(),enemy.getType())
+                    ExperienceUtils.calculateExperienceFromEnemy(this.mainHeroLevel,enemy.getLevel(),enemy.getType(), false)
             );
 
-            List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel());
+            List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel(), false);
             this.fightReport.addLootItems(loot);
 
             this.fightReport.addToEnemies(enemy);
@@ -235,6 +260,7 @@ public class Fight {
 
         }
     }
+
 
     public void checkAndHandleDeaths(boolean isUserTurn, ObjectId attackerId, ObjectId defenderId) {
         if (isUserTurn) {
@@ -261,6 +287,20 @@ public class Fight {
 
     }
 
+
+    private FightReport.FightStatus getStatusFightDependsOnDamageDone() {
+      Optional<ObjectId> participantId = this.fightReport.findParticipantIdByHighestDamageDone();
+
+
+      if(participantId.isPresent() && this.userHeroesDetails.containsKey(participantId.get())) {
+          return FightReport.FightStatus.PLAYER_WIN;
+      }
+
+
+
+
+      return FightReport.FightStatus.ENEMY_WIN;
+    }
     public FightReport getFightReport() {
         return this.fightReport;
     }
