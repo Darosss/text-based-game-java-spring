@@ -14,7 +14,11 @@ public class HeroStatisticsObject {
     private final Map<AdditionalStatisticsNamesEnum, AdditionalStatisticObject> additionalStatistics =
             StatisticsUtils.generateDefaultHeroAdditionalStatistics();
 
-    public HeroStatisticsObject(){}
+    public HeroStatisticsObject(){
+        statistics.forEach((baseStat, statVal)->{
+            this.updateAdditionalStatisticsBasedOnBasic(baseStat);
+        });
+    }
 
     public int getMaxHealthEffValue(){
         return this.additionalStatistics.get(AdditionalStatisticsNamesEnum.MAX_HEALTH).getEffectiveValue();
@@ -22,6 +26,10 @@ public class HeroStatisticsObject {
     }
     public void updateStatistic(BaseStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
         this.statistics.get(statName).updateStatistic(value, updateType);
+        this.updateAdditionalStatisticsBasedOnBasic(statName);
+    }
+    public void increaseStatistic(BaseStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
+        this.statistics.get(statName).increaseStatistic(value, updateType);
         this.updateAdditionalStatisticsBasedOnBasic(statName);
     }
     public void updateStatisticsOnEquip(BaseStatisticsNamesEnum statName, int value, float percentageValue) {
@@ -47,6 +55,10 @@ public class HeroStatisticsObject {
 
     public void updateAdditionalStatistic(AdditionalStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
         this.additionalStatistics.get(statName).updateStatistic(value, updateType);
+    }
+
+    public void increaseAdditionalStatistic(AdditionalStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
+        this.additionalStatistics.get(statName).increaseStatistic(value, updateType);
     }
 
     public Map<BaseStatisticsNamesEnum, BaseStatisticObject> getStatistics() {
@@ -184,6 +196,7 @@ public class HeroStatisticsObject {
 
     }
     private void updateAdditionalStatisticsBasedOnBasic(BaseStatisticsNamesEnum statName){
+        System.out.println("updateAdditionalStatisticsBasedOnBasic CALL");
         switch (statName){
             case STRENGTH:{
                 //min, max dmg, armor (or toughness), critical damage / dead damage (something like cbk)
