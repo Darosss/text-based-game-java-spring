@@ -10,7 +10,7 @@ public class AdditionalStatisticObject extends CharacterStatisticObject<Addition
         super(name, value);
     }
     public AdditionalStatisticObject(AdditionalStatisticsNamesEnum name) {
-        this(name, 0);
+        super(name,0 );
     }
 
 

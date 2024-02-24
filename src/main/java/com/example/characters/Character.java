@@ -43,7 +43,9 @@ public class Character  extends BaseHero {
         this.user = user;
     }
     public Character(String name, User user, CharacterEquipment equipment, int level) {
-        this(name, user, equipment);
+        super(name);
+        this.equipment = equipment;
+        this.user = user;
         this.level = level;
     }
 

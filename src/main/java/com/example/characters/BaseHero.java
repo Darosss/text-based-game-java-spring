@@ -19,26 +19,29 @@ public class BaseHero {
     public BaseHero(String name) {
         this.name = name;
         this.level = 1;
-        //TODO: for now every hero has basic max 300 hp
-        this.stats.updateAdditionalStatistic(AdditionalStatisticsNamesEnum.MAX_HEALTH, 300, StatisticsUtils.StatisticUpdateType.VALUE);
         this.updateHealthBasedOnMaxHealth();
     }
     public BaseHero(String name, int level) {
-        this(name);
+        this.name = name;
         this.level = level;
     }
     public BaseHero(String name, int level,
                     Map<BaseStatisticsNamesEnum, Integer> baseStatistics) {
-        this(name, level);
+        this.name = name;
+        this.level = level;
         this.setStatisticsByNameIntegerMap(baseStatistics, StatisticsUtils.StatisticUpdateType.VALUE);
+        this.updateHealthBasedOnMaxHealth();
 
     }
     public BaseHero(String name, int level,
                     Map<BaseStatisticsNamesEnum, Integer> baseStatistics,
                     Map<AdditionalStatisticsNamesEnum, Integer> additionalStatistics
     ) {
-        this(name, level, baseStatistics);
+        this.name = name;
+        this.level = level;
+        this.setStatisticsByNameIntegerMap(baseStatistics, StatisticsUtils.StatisticUpdateType.VALUE);
         this.setAdditionalStatisticsByNameIntegerMap(additionalStatistics, StatisticsUtils.StatisticUpdateType.VALUE);
+        this.updateHealthBasedOnMaxHealth();
     }
 
     public Integer getLevel() {
@@ -73,10 +76,10 @@ public class BaseHero {
     }
 
     protected void setAdditionalStatisticsByNameIntegerMap(Map<AdditionalStatisticsNamesEnum, Integer> additionalStatistics, StatisticsUtils.StatisticUpdateType updateType){
-        additionalStatistics.forEach((k, v)-> this.stats.updateAdditionalStatistic(k, v, updateType));
+        additionalStatistics.forEach((k, v)-> this.stats.increaseAdditionalStatistic(k, v, updateType));
     }
     protected void setStatisticsByNameIntegerMap(Map<BaseStatisticsNamesEnum, Integer> statistics, StatisticsUtils.StatisticUpdateType updateType){
-        statistics.forEach((k, v)-> this.stats.updateStatistic(k, v, updateType));
+        statistics.forEach((k, v)-> this.stats.increaseStatistic(k, v, updateType));
     }
 
     public int getAdditionalStatEffective(AdditionalStatisticsNamesEnum name) {

@@ -13,8 +13,8 @@ public class CharacterStatisticObject<NameType> extends StatisticObject<NameType
     }
 
     public CharacterStatisticObject(NameType name, int value){
-        this(name);
-        this.value = value;
+        super(name, value);
+        this.updateEffectiveValue();
     }
 
     protected int getCalculatedEffectiveValue(int valueToCalculate) {
