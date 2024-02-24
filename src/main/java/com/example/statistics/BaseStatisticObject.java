@@ -11,9 +11,16 @@ public class BaseStatisticObject extends  CharacterStatisticObject<BaseStatistic
 
     public BaseStatisticObject(BaseStatisticsNamesEnum name) {
         super(name, 1);
+        this.updateMaxProportion();
+        //TODO: In super class we call it too improve later
+        this.updateEffectiveValue();
     }
     public BaseStatisticObject(BaseStatisticsNamesEnum name, int value) {
         super(name, value);
+        this.updateMaxProportion();
+        //TODO: In super class we call it too improve later
+        this.updateEffectiveValue();
+
     }
 
     @Override
