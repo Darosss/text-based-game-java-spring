@@ -47,7 +47,7 @@ public class AuthController {
             LoginResponse loginRes = new LoginResponse(user.getUser().getEmail(), createTokenReturn.token(), createTokenReturn.expirationTime());
 
             logger.debug("Token: {}", createTokenReturn.token());
-            return new CustomResponse<>(HttpStatus.OK, loginRes);
+            return new CustomResponse<>(HttpStatus.OK, "Successfully logged in", loginRes);
 
         }catch (BadCredentialsException e){
             throw new BadCredentialsException("Invalid username or password");
@@ -65,6 +65,6 @@ public class AuthController {
         User createdUser =  this.userService.create(new User(createUserDto));
         inventory.setUser(createdUser);
         this.inventoryService.update(inventory);
-        return new CustomResponse<>(HttpStatus.CREATED, createdUser);
+        return new CustomResponse<>(HttpStatus.CREATED, "Successfully registered", createdUser);
     }
 }
