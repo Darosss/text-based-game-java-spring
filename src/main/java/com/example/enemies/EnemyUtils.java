@@ -23,7 +23,7 @@ public class EnemyUtils {
     public record ItemProbabilityLoot(int percent, int minItems, int maxItems){};
     public static LevelRange getEnemyLevelRanges(EnemySkirmishDifficulty difficulty, int characterLevel){
         return switch (difficulty){
-            case NOOB -> new LevelRange(1, characterLevel/2);
+            case NOOB -> new LevelRange(1, Math.max(1, characterLevel/2));
             case WEAKER -> new LevelRange(Math.max(1, characterLevel-10), Math.max(1, characterLevel-2) );
             case EQUAL -> new LevelRange(characterLevel, characterLevel);
             case FAIR -> new LevelRange(Math.max(1, characterLevel-1),Math.max(1, characterLevel+1) );
