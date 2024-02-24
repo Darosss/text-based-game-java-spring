@@ -67,14 +67,18 @@ public class ChallengesService {
         FightReport fightReport = this.completeStartedDungeonFight(userId, dungeonLevel);
 
         LocalDateTime currentTime = LocalDateTime.now();
-        //TODO: change to plusMinutes - changed for plusSeconds for debug
-        dungeons.setCanFightDate(currentTime.plusSeconds(waitTime));
-        if(dungeonLevel == dungeons.getCurrentLevel()) {
-            dungeons.addCompletedDungeon(new Dungeons.DungeonData(dungeons.getCurrentLevel(), currentTime));
-            dungeons.increaseCurrentLevel();
-        }
 
-        return new HandleDungeonReturn("Dungeon fight completed",
+        String  responseMessage = "Your dungeon attempt failed";
+
+        if(fightReport.getStatus().equals(FightReport.FightStatus.PLAYER_WIN)) {
+            //TODO: change to plusMinutes - changed for plusSeconds for debug
+            dungeons.setCanFightDate(currentTime.plusSeconds(waitTime));
+            if (dungeonLevel == dungeons.getCurrentLevel()) {
+                dungeons.addCompletedDungeon(new Dungeons.DungeonData(dungeons.getCurrentLevel(), currentTime));
+                dungeons.increaseCurrentLevel();
+            }
+        }
+        return new HandleDungeonReturn(responseMessage,
                 Optional.of(new CommonReturnData(skirmish, fightReport))
                 );
     }
