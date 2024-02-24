@@ -17,9 +17,10 @@ public class StatisticsUtils {
     }
     public static Map<AdditionalStatisticsNamesEnum, AdditionalStatisticObject> generateDefaultHeroAdditionalStatistics(){
         return new HashMap<>(Arrays.stream(AdditionalStatisticsNamesEnum.values())
-                .collect(Collectors.toMap(stat ->
-                                stat,
-                        AdditionalStatisticObject::new))
+                .collect(Collectors.toMap(
+                        stat -> stat,
+                        stat -> new AdditionalStatisticObject(stat, stat.getInitialValue())
+                ))
         );
     }
 
