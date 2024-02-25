@@ -32,6 +32,10 @@ public class HeroStatisticsObject {
         this.statistics.get(statName).increaseStatistic(value, updateType);
         this.updateAdditionalStatisticsBasedOnBasic(statName);
     }
+    public void decreaseStatistic(BaseStatisticsNamesEnum statName, int value, StatisticsUtils.StatisticUpdateType updateType) {
+        this.statistics.get(statName).decreaseStatistic(value, updateType);
+        this.updateAdditionalStatisticsBasedOnBasic(statName);
+    }
     public void updateStatisticsOnEquip(BaseStatisticsNamesEnum statName, int value, float percentageValue) {
         this.statistics.get(statName).increaseStatistic(value, StatisticsUtils.StatisticUpdateType.BONUS);
         this.statistics.get(statName).increaseStatistic(((int)percentageValue), StatisticsUtils.StatisticUpdateType.PERCENTAGE_BONUS);
