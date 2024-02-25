@@ -9,6 +9,7 @@ import com.example.characters.equipment.Equipment.UnEquipItemResult;
 import com.example.common.ResourceNotFoundException;
 import com.example.items.*;
 import com.example.response.CustomResponse;
+import com.example.settings.Settings;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
@@ -88,6 +89,38 @@ public class CharactersController implements SecuredRestController {
         this.userService.update(loggedUser);
 
         return new CustomResponse<>(HttpStatus.CREATED, "Successfully created main character", createdChar);
+    }
+
+    @PostMapping("/create-mercenary")
+    public CustomResponse<MercenaryCharacter> createMercenaryCharacter() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
+
+        Optional<MainCharacter> mainCharacter = this.service.findMainCharacterByUserId(loggedUser.getId().toString());
+
+        if(mainCharacter.isEmpty()) throw new Exception("Something went wrong. Not found main character");
+
+        boolean canCreateMercenary = false;
+        String errorMessage = "You have exceed a limit";
+        int charactersCount = loggedUser.getCharacters().size();
+        for (Settings.MercenaryCharactersLimits charsLimit : Settings.MercenaryCharactersLimits.values()) {
+            if(charactersCount >= charsLimit.getCharactersLimit()) continue;
+            if(mainCharacter.get().getLevel() >= charsLimit.getRequiredLevel()) {
+                canCreateMercenary = true;
+                break;
+            }else {
+                errorMessage ="You have too low level to create mercenary, need at least: "+charsLimit.getRequiredLevel();
+                break;
+            }
+        }
+
+        if(!canCreateMercenary) throw new BadRequestException(errorMessage);
+
+        MercenaryCharacter createdChar = service.createMercenaryCharacter(loggedUser, "Mercenary "+(charactersCount+1));
+        loggedUser.addCharacter(createdChar);
+        this.userService.update(loggedUser);
+        return new CustomResponse<>(HttpStatus.CREATED, "Successfully created mercenary character", createdChar);
+
+
     }
 
     // For debug ignore ;p
