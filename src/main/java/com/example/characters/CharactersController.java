@@ -12,6 +12,7 @@ import com.example.response.CustomResponse;
 import com.example.settings.Settings;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
+import com.example.statistics.StatisticsUtils;
 import com.example.users.User;
 import com.example.users.UserService;
 import com.example.users.inventory.Inventory;
@@ -281,7 +282,7 @@ public class CharactersController implements SecuredRestController {
             throw new BadRequestException("You can train only your character");
 
         MainCharacter characterInst = foundCharacter.get();
-        characterInst.getStats().getStatistics().get(statisticName).increaseValue(addValue);
+        characterInst.getStats().increaseStatistic(statisticName, addValue, StatisticsUtils.StatisticUpdateType.VALUE);
         this.service.update(characterInst);
         return new CustomResponse<>(HttpStatus.OK, "Successfully trained statistic", true);
     }
@@ -298,7 +299,7 @@ public class CharactersController implements SecuredRestController {
            throw new BadRequestException("You can only subtract stats from your character");
 
         MainCharacter characterInst = foundCharacter.get();
-        characterInst.getStats().getStatistics().get(statisticName).decreaseValue(subtractValue);
+        characterInst.getStats().decreaseStatistic(statisticName, subtractValue, StatisticsUtils.StatisticUpdateType.VALUE);
         this.service.update(characterInst);
         return new CustomResponse<>(HttpStatus.OK, "Successfully subtracted statistic",true);
 
