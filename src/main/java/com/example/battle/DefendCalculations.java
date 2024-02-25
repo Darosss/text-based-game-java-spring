@@ -13,6 +13,9 @@ import java.util.Optional;
 public class DefendCalculations {
     private static final Logger logger = LoggerFactory.getLogger(DefendCalculations.class);
 
+    private static final int MAX_DODGE_CHANCE = 50;
+    private static final int MAX_PARRY_CHANCE = 50;
+    private static final int MAX_BLOCK_CHANCE = 50;
 
     private static int getCalculatedArmorAbsorption(BaseHero hero, int rawAttackValue) {
         int armor = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.ARMOR);
@@ -23,15 +26,15 @@ public class DefendCalculations {
 
     private static boolean isBlocked(BaseHero hero){
         int blockChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.BLOCK);
-        return RandomUtils.checkPercentageChance(blockChance);
+        return RandomUtils.checkPercentageChance(Math.min(blockChance, MAX_BLOCK_CHANCE));
     }
     private static boolean isDodged(BaseHero hero){
         int dodgeChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.DODGE);
-        return RandomUtils.checkPercentageChance(dodgeChance);
+        return RandomUtils.checkPercentageChance(Math.min(dodgeChance, MAX_DODGE_CHANCE));
     }
     private static boolean isPaired(BaseHero hero){
         int parryChance = hero.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.PARRYING);
-        return RandomUtils.checkPercentageChance(parryChance);
+        return RandomUtils.checkPercentageChance(Math.min(parryChance, MAX_PARRY_CHANCE));
     }
 
     private static DefendReturnData.DefendType getDefendType(BaseHero hero) {
