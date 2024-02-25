@@ -15,9 +15,17 @@ public class AdditionalStatisticObject extends CharacterStatisticObject<Addition
 
 
     protected int getCalculatedEffectiveValue() {
-        return super.getCalculatedEffectiveValue(
-                this.getValue() + this.getBonus() + this.baseStatBonus
+        return Math.max(0,
+                super.getCalculatedEffectiveValue(
+                        this.getValue() + this.getBonus() + this.baseStatBonus
+                )
         );
+    }
+
+    @Override
+    public void setValue(int newValue) {
+        int val = Math.max(0, newValue);
+        super.setValue(val);
     }
 
     @Override
