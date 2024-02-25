@@ -1,6 +1,7 @@
 package com.example.characters;
 
 import com.example.characters.equipment.CharacterEquipment;
+import com.example.items.Item;
 import com.example.items.ItemMercenary;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
@@ -48,5 +49,12 @@ public class MercenaryCharacter extends Character{
                 this.stats.updateAdditionalStatistic(k, 1, StatisticsUtils.StatisticUpdateType.VALUE));
         this.stats.getStatistics().forEach((k,v)->
                 this.stats.updateStatistic(k, 1, StatisticsUtils.StatisticUpdateType.VALUE));
+    }
+
+    @Override
+    public void calculateStatisticByItem(Item item, boolean isEquip) {
+        super.calculateStatisticByItem(item, isEquip);
+        //Note: mercenary always have 100% hp. It's not decreasing after fight.
+        this.updateHealthBasedOnMaxHealth();
     }
 }
