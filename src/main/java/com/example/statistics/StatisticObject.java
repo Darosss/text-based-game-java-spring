@@ -24,10 +24,10 @@ public abstract class StatisticObject<NameType> {
         this.value = value;
     }
     public void increaseValue(int value) {
-        this.value += value;
+        this.setValue(this.value += value);
     }
     public void decreaseValue(int value) {
-        this.value -= value;
+        this.setValue(this.value -= value);
     }
 
 
