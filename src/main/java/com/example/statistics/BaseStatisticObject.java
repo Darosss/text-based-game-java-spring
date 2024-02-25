@@ -61,7 +61,9 @@ public class BaseStatisticObject extends  CharacterStatisticObject<BaseStatistic
         int calculatedEffective = super.getCalculatedEffectiveValue(
             this.getValue() + this.getBonus()
         );
-        return Math.min(calculatedEffective, max);
+        if(calculatedEffective > this.max) return this.max;
+
+        return Math.max(1, calculatedEffective);
     }
 
     @Override
