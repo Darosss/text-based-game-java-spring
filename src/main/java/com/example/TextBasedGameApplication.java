@@ -34,7 +34,8 @@ public class TextBasedGameApplication {
 		return new WebMvcConfigurer() {
 			@Override
 			public void addCorsMappings(@NotNull CorsRegistry registry) {
-				registry.addMapping("/**").allowedOrigins(Dotenv.load().get("CORS_ORIGINS"));
+				registry.addMapping("/**").allowedOrigins(Dotenv.load().get("CORS_ORIGINS"))
+						.allowedMethods("POST", "PUT", "GET", "DELETE", "PATCH");
 			}
 		};
 	}
