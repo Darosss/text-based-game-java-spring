@@ -28,7 +28,21 @@ public class EnemyUtils {
             case EQUAL -> new LevelRange(characterLevel, characterLevel);
             case FAIR -> new LevelRange(Math.max(1, characterLevel-1),Math.max(1, characterLevel+1) );
             case STRONGER -> new LevelRange(characterLevel+5, characterLevel+10);
-            case IMPOSSIBLE -> new LevelRange(characterLevel+10, characterLevel*2);
+            case IMPOSSIBLE -> {
+                int minLevel = 1; int maxLevel =2;
+                if(characterLevel <= 18) {
+                    minLevel = (int) (characterLevel + (characterLevel * 0.5));
+                    maxLevel = (int) (characterLevel + (characterLevel * 0.9));
+                }
+                else if(characterLevel <= 50) {
+                    minLevel = (int) (characterLevel + (characterLevel * 0.25));
+                    maxLevel = (int) (characterLevel + (characterLevel * 0.5));
+                }else {
+                    minLevel = (int) (characterLevel + (characterLevel * 0.15));
+                    maxLevel = (int) (characterLevel + (characterLevel * 0.3));
+                }
+                yield new LevelRange(minLevel, maxLevel);
+            }
         };
     }
 
