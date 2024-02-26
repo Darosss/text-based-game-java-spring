@@ -209,7 +209,7 @@ public class Fight {
                         //true == end of fight
                         this.fightReport.addTurnReport(turnReport);
                         this.handleEndOfFight();
-                        break;
+                        return;
                     }
                 };
                 turnParticipants.clear();
