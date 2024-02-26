@@ -11,7 +11,7 @@ public class ExperienceUtils {
     public static double EXPERIENCE_LEVEL_FACTOR_BASE = 0.9;
     public static double EXPERIENCE_LEVEL_FACTOR_EXPONENT = 1.1;
 
-    public static final int ENEMY_DEFEAT_BASE_EXPERIENCE = 25;
+    public static final int ENEMY_DEFEAT_BASE_EXPERIENCE = 50;
     public static final double ENEMY_DEFEAT_LEVEL_FACTOR_BASE = 1.2;
     public static final double ENEMY_DEFEAT_LEVEL_FACTOR_EXPONENT = 0.3;
 
@@ -19,24 +19,22 @@ public class ExperienceUtils {
 
     public static long calculateExperienceFromEnemy(int playerLevel, int enemyLevel, EnemyType enemyType, boolean isAlive) {
         int baseExperience = ENEMY_DEFEAT_BASE_EXPERIENCE;
-        double levelDifference = enemyLevel - playerLevel;
-        double enemyDifferenceFactor = levelDifference >= 0 ? Math.max(1, levelDifference + (0.2 * levelDifference) ) :
-                Math.min(-1, (enemyLevel - levelDifference)  * baseExperience );
-
-        double scalingFactor =
-                baseExperience * (Math.pow(
-                        enemyLevel+(ENEMY_DEFEAT_LEVEL_FACTOR_BASE*enemyLevel),
-                        ENEMY_DEFEAT_LEVEL_FACTOR_EXPONENT))
-                        +  (baseExperience * enemyDifferenceFactor);
+        int levelDifference = enemyLevel - playerLevel;
+        double enemyDifferenceFactor = levelDifference >= 0 ? Math.max(1, levelDifference + (0.2 * levelDifference) ) :( 1.0 + ( (double) levelDifference / 5.0) );
 
         double enemyTypeBonus = getEnemyTypeBonus(enemyType);
-        long experience = (long) Math.max(1, (baseExperience * scalingFactor * enemyTypeBonus));
 
-        logger.debug("Scaling factor: {}, experience: {}, enemyLevel: {}, playerLevel: {}, enemyDifferenceFactor: {}, baseExperience * enemyDifferenceFactor: {}",
-                scalingFactor, experience, enemyLevel, playerLevel, enemyDifferenceFactor, baseExperience * enemyDifferenceFactor);
+
+        double bonusExpForDifferenceLevel = (baseExperience * enemyDifferenceFactor) + (enemyTypeBonus * baseExperience / 2);
+        double scalingFactor = Math.max(1,Math.pow(enemyLevel+(ENEMY_DEFEAT_LEVEL_FACTOR_BASE*enemyLevel),ENEMY_DEFEAT_LEVEL_FACTOR_EXPONENT));
+
+        long experience = (long) Math.max(1, ((baseExperience * scalingFactor * enemyTypeBonus) + bonusExpForDifferenceLevel));
+
+        logger.debug("Scaling factor: {}, experience: {}, enemyLevel: {}, playerLevel: {}, enemyDifferenceFactor: {}, bonusExpForDifferenceLevel: {} levelDifference: {}",
+                scalingFactor, experience, enemyLevel, playerLevel, enemyDifferenceFactor, bonusExpForDifferenceLevel, levelDifference);
         return !isAlive ?
                 experience :
-                (int) Math.max(1, (experience - (experience * (ENEMY_IS_ALIVE_DEFEAT_EXPERIENCE_ADJUST))));
+                (int) Math.max(1, (experience + (experience * (ENEMY_IS_ALIVE_DEFEAT_EXPERIENCE_ADJUST))));
     }
 
     public static long calculateExpToNextLevel(int currentLevel) {
