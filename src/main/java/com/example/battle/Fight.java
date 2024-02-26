@@ -274,12 +274,12 @@ public class Fight {
 
     private CombatReturnData attackAndDefend (BaseHero attacker, BaseHero defender){
         AttackReturnData attackData = AttackCalculations.generateAttackValue(attacker, true);
-        DefendReturnData defendData = DefendCalculations.defend(defender, attacker, attackData);
+        DefendReturnData defendData = DefendCalculations.defend(defender, attacker, attackData, true);
 
         CombatReturnData.AttackDefendData doubledAttackData = attackData.withDoubledAttack() ?
                 new CombatReturnData.AttackDefendData(
                         AttackCalculations.generateAttackValue(attacker, false),
-                        DefendCalculations.defend(defender, attacker, attackData)
+                        DefendCalculations.defend(defender, attacker, attackData, false)
                 ) : null;
 
         return new CombatReturnData(new CombatReturnData.AttackDefendData(attackData, defendData),

@@ -43,6 +43,12 @@ public class DefendCalculations {
         else if(isBlocked(hero)) return DefendReturnData.DefendType.BLOCKED;
         else return DefendReturnData.DefendType.NULL;
     }
+    private static DefendReturnData.DefendType getDefendTypeWithoutParried(BaseHero hero) {
+        DefendReturnData.DefendType defType = getDefendType(hero);
+        if(defType.equals(DefendReturnData.DefendType.PAIRED)) return DefendReturnData.DefendType.NULL;
+
+        return defType;
+    }
 
     private static CombatReturnData executeParryAttack(BaseHero hero, BaseHero pairedHero) {
         //TODO: remove those logger debug later
@@ -50,13 +56,13 @@ public class DefendCalculations {
         logger.debug("[DEFEND] {} PAIRED attack made by {}, left with: {} hp", hero.getName(), pairedHero.getName(), hero.getHealth());
         AttackReturnData attackData = AttackCalculations.generateAttackValue(hero, false);
 
-        DefendReturnData pairedHeroDefendData = defend(pairedHero, hero, attackData);
+        DefendReturnData pairedHeroDefendData = defend(pairedHero, hero, attackData, false);
 
         return new CombatReturnData(new CombatReturnData.AttackDefendData(attackData, pairedHeroDefendData), null);
     }
 
-    public static DefendReturnData defend(BaseHero defender, BaseHero attacker, AttackReturnData attackData){
-        DefendReturnData.DefendType defendType = getDefendType(defender);
+    public static DefendReturnData defend(BaseHero defender, BaseHero attacker, AttackReturnData attackData, boolean isParryPossible){
+        DefendReturnData.DefendType defendType = isParryPossible ? getDefendType(defender) : getDefendTypeWithoutParried(defender);
 
         Optional<CombatReturnData> parriedData = Optional.empty();
        int effectiveDamage = switch (defendType){
@@ -66,12 +72,11 @@ public class DefendCalculations {
                  yield 0;
             }
            case BLOCKED,DODGED -> 0;
-            case NULL-> {
-                int effDamage = getCalculatedArmorAbsorption(defender, attackData.baseValues().value());
-                defender.decreaseHealth(effDamage);
-                yield effDamage;
-
-            }
+           case NULL-> {
+               int effDamage = getCalculatedArmorAbsorption(defender, attackData.baseValues().value());
+               defender.decreaseHealth(effDamage);
+               yield effDamage;
+          }
         };
 
         //TODO: remove those logger debug later

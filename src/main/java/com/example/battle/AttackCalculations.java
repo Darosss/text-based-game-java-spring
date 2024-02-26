@@ -85,7 +85,6 @@ public class AttackCalculations {
     public static AttackReturnData generateAttackValue(BaseHero hero, boolean doubleAttackPossible/*TODO: add some optionals from fight?*/){
         AttackBase attackBase = getAttackBaseValues(hero);
         boolean doubledAttack = doubleAttackPossible && isDoubledAttack(hero);
-        logger.debug("Double attack triggered");
         AttackDebuffs attackDebuffs = getAttackDebuffs();
         return new AttackReturnData(hero.getName(), attackBase, doubledAttack, attackDebuffs);
     }
