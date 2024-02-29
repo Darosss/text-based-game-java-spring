@@ -4,6 +4,9 @@ package com.example.settings;
 //TODO: move those into repository Configs/Settings.
 // For now it's programmatically
 public class Settings {
+    public final static int CHALLENGE_WAIT_COOLDOWN_MINUTES = 2;
+    public final static int DUNGEON_WAIT_COOLDOWN_MINUTES = 2;
+
     public enum MercenaryCharactersLimits {
         FIRST(10, 2),
         SECOND(30, 3),

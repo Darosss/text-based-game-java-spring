@@ -6,6 +6,7 @@ import com.example.auth.SecuredRestController;
 import com.example.battle.reports.FightReport;
 import com.example.items.ItemsInventoryService;
 import com.example.response.CustomResponse;
+import com.example.settings.Settings;
 import com.example.users.User;
 import com.example.users.UserService;
 import org.apache.coyote.BadRequestException;
@@ -21,8 +22,6 @@ import java.util.Optional;
 @RestController("skirmishes")
 public class SkirmishesController implements SecuredRestController {
     //TODO: move somewhere - maybe into user or sth
-    private final int CHALLENGE_WAIT_TIME_MINUTES = 2;
-    private final int DUNGEON_WAIT_TIME_MINUTES = 2;
     private final AuthenticationFacade authenticationFacade;
     private final UserService userService;
     private final SkirmishesService service;
@@ -75,7 +74,7 @@ public class SkirmishesController implements SecuredRestController {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
         //TODO: make it from configs plusMinutes - remember(Changed for debug)
-        LocalDateTime challengeFinishTimestamp = LocalDateTime.now().plusSeconds(this.CHALLENGE_WAIT_TIME_MINUTES);
+        LocalDateTime challengeFinishTimestamp = LocalDateTime.now().plusSeconds(Settings.CHALLENGE_WAIT_COOLDOWN_MINUTES);
 
         Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
         Skirmish.ChosenChallenge skirmishData = new Skirmish.ChosenChallenge(challengeId, challengeFinishTimestamp);
@@ -120,7 +119,7 @@ public class SkirmishesController implements SecuredRestController {
         ChallengesService.HandleDungeonReturn returnData =
         this.challengesService.handleDungeonFight(
                 foundSkirmish, loggedUser.getId().toString(),
-                dungeonLevel, this.DUNGEON_WAIT_TIME_MINUTES
+                dungeonLevel, Settings.DUNGEON_WAIT_COOLDOWN_MINUTES
         );
         if(returnData.data().isEmpty()) throw new BadRequestException(returnData.message());
 
