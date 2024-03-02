@@ -4,7 +4,6 @@ import com.example.auth.JwtTokenPayload;
 import com.example.characters.Character;
 import com.example.users.inventory.Inventory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import dev.morphia.annotations.Entity;
@@ -35,7 +34,6 @@ public class User {
     @Reference
     private Inventory inventory;
 
-    private int maxCharactersPerUser = 4;
 
 //    @JsonIgnoreProperties("user")
     @JsonIgnore
@@ -62,10 +60,10 @@ public class User {
        this.inventory = data.getInventory();
     }
 
-    public ObjectId getId() { return id; }
+    public ObjectId getId() { return this.id; }
 
     public String getPassword() {
-        return password;
+        return this.password;
     }
 
     public void setPassword(String password) {
@@ -73,21 +71,21 @@ public class User {
     }
 
     public String getUsername() {
-        return username;
+        return this.username;
     }
 
     public LocalDateTime getCreatedAt() {
-        return createdAt;
+        return this.createdAt;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public long getGold() { return gold; }
+    public long getGold() { return this.gold; }
 
     public LocalDateTime getUpdatedAt() {
-        return updatedAt;
+        return this.updatedAt;
     }
 
     public void setUpdatedAt(LocalDateTime updatedAt) {
@@ -106,7 +104,7 @@ public class User {
     }
 
     public LocalDateTime getLastLogin() {
-        return lastLogin;
+        return this.lastLogin;
     }
 
     public void setLastLogin(LocalDateTime lastLogin) {
@@ -114,7 +112,7 @@ public class User {
     }
 
     public String getEmail() {
-        return email;
+        return this.email;
     }
 
     public void setEmail(String email) {
@@ -122,7 +120,7 @@ public class User {
     }
 
     public HashSet<Character> getCharacters() {
-        return characters;
+        return this.characters;
     }
 
     public void setCharacters(HashSet<Character> characters) {
@@ -131,7 +129,6 @@ public class User {
 
     public void addCharacter(Character character){
         if(this.characters == null) this.characters = new HashSet<>();
-        if(characters.size() >= maxCharactersPerUser) return;
 
         this.characters.add(character);
     }
@@ -140,44 +137,34 @@ public class User {
     }
 
     public Inventory getInventory() {
-        return inventory;
+        return this.inventory;
     }
     public boolean isActive() {
-        return isActive;
+        return this.isActive;
     }
 
     public void setActive(boolean active) {
-        isActive = active;
+        this.isActive = active;
     }
 
     public List<String> getRoles() {
-        return roles;
+        return this.roles;
     }
 
     public void setRoles(List<String> roles) {
         this.roles = roles;
     }
 
-    public int getMaxCharactersPerUser() {
-        return maxCharactersPerUser;
-    }
-
-    public void setMaxCharactersPerUser(int maxCharactersPerUser) {
-        this.maxCharactersPerUser = maxCharactersPerUser;
-    }
-
-
-
     public JwtTokenPayload getDetailsForToken(Date expirationTime){
-        return new JwtTokenPayload(id.toString(), email, username, expirationTime);
+        return new JwtTokenPayload(this.id.toString(), this.email, this.username, expirationTime);
     }
     @Override
     public String toString() {
         return "User{" +
-                "id='" + id + '\'' +
-                ", username='" + username + '\'' +
-                ", email='" + email + '\'' +
-                ", lastLogin=" + lastLogin +
+                "id='" + this.id + '\'' +
+                ", username='" + this.username + '\'' +
+                ", email='" + this.email + '\'' +
+                ", lastLogin=" + this.lastLogin +
                 '}';
     }
 }
