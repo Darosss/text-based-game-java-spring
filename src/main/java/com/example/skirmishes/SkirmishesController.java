@@ -4,6 +4,7 @@ import com.example.auth.AuthenticationFacade;
 import com.example.auth.LoggedUserUtils;
 import com.example.auth.SecuredRestController;
 import com.example.battle.reports.FightReport;
+import com.example.items.Item;
 import com.example.items.ItemsInventoryService;
 import com.example.response.CustomResponse;
 import com.example.settings.Settings;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @RestController("skirmishes")
@@ -63,7 +65,9 @@ public class SkirmishesController implements SecuredRestController {
         data.skirmish().generateChallenges(2);
         this.service.update(data.skirmish());
         //TODO: iterateCount - should be get from user collection(for example some users can have more than 2)
-        data.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(loggedUser, item));
+
+        this.onSuccessFight(loggedUser, data.report().getLoot(), data.report().getGainedGold());
+
         return new CustomResponse<>(HttpStatus.OK, returnData.message(), returnData.data().get().report());
 
     }
@@ -125,7 +129,9 @@ public class SkirmishesController implements SecuredRestController {
 
         ChallengesService.CommonReturnData data = returnData.data().get();
         this.service.update(data.skirmish());
-        data.report().getLoot().forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(loggedUser, item));
+
+        this.onSuccessFight(loggedUser, data.report().getLoot(), data.report().getGainedGold());
+
         return new CustomResponse<>(HttpStatus.OK, returnData.message(), returnData.data().get().report());
     }
 
@@ -144,5 +150,11 @@ public class SkirmishesController implements SecuredRestController {
         return new CustomResponse<>(HttpStatus.OK, this.service.create(loggedUser, 2));
     }
 
+    private void onSuccessFight(User user, List<Item> lootedItems, long gainedGold) {
+        lootedItems.forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(user, item));
+
+        user.increaseGold(gainedGold);
+        this.userService.update(user);
+    }
 
 }

@@ -14,6 +14,7 @@ public class FightReport {
     }
     private FightStatus status = FightStatus.FIGHT;
     private long gainedExperience = 0L;
+    private long gainedGold = 0L;
     private final List<Item> loot = new ArrayList<>();
     private final List<FightTurnReport> turnsReports = new ArrayList<>();
 
@@ -37,10 +38,14 @@ public class FightReport {
     public long getGainedExperience() {
         return gainedExperience;
     }
-
-    public void setGainedExperience(long gainedExperience) {
-        this.gainedExperience = gainedExperience;
+    public long getGainedGold() {
+        return this.gainedGold;
     }
+
+    public void increaseGainedGold(long value) {
+        this.gainedGold += value;
+    }
+    public void setGainedExperience(long gainedExperience) { this.gainedExperience = gainedExperience; }
 
     public void increaseGainedExperience(long gainedExperience) {
         this.gainedExperience += gainedExperience;
@@ -73,6 +78,8 @@ public class FightReport {
     public List<Item> getLoot() {
         return loot;
     }
+
+
 
     public void addLootItem(Item item){
         this.loot.add(item);

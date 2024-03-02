@@ -11,6 +11,7 @@ import com.example.enemies.Enemy;
 import com.example.enemies.EnemyUtils;
 import com.example.items.Item;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
+import com.example.utils.CurrenciesUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,6 +137,9 @@ public class Fight {
                 this.fightReport.increaseGainedExperience(
                         ExperienceUtils.calculateExperienceFromEnemy(this.mainHeroLevel, enemy.getLevel(), enemy.getType(), true)
                 );
+                this.fightReport.increaseGainedGold(
+                        CurrenciesUtils.calculateGoldFromEnemy(enemy.getLevel(), enemy.getType(), true)
+                );
                 List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel(), true);
                 this.fightReport.addLootItems(loot);
             });
@@ -249,7 +253,10 @@ public class Fight {
         Enemy enemy = (Enemy) this.enemyHeroesDetails.get(heroId).getHero();
         if(enemy.getHealth() <= 0){
             this.fightReport.increaseGainedExperience(
-                    ExperienceUtils.calculateExperienceFromEnemy(this.mainHeroLevel,enemy.getLevel(),enemy.getType(), false)
+                    ExperienceUtils.calculateExperienceFromEnemy(this.mainHeroLevel, enemy.getLevel(), enemy.getType(), false)
+            );
+            this.fightReport.increaseGainedGold(
+                    CurrenciesUtils.calculateGoldFromEnemy(enemy.getLevel(), enemy.getType(), false)
             );
 
             List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel(), false);

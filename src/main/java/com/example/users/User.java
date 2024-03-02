@@ -41,6 +41,8 @@ public class User {
     @JsonIgnore
     @Reference(ignoreMissing = true, lazy = true)
     private HashSet<Character> characters;
+
+    private long gold = 0L;
     @CreatedDate
     private LocalDateTime createdAt;
     @LastModifiedDate
@@ -82,6 +84,8 @@ public class User {
         this.createdAt = createdAt;
     }
 
+    public long getGold() { return gold; }
+
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
@@ -92,6 +96,13 @@ public class User {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void increaseGold(long value) {
+        this.gold += value;
+    }
+    public void decreaseGold(long value) {
+        this.gold -= value;
     }
 
     public LocalDateTime getLastLogin() {
