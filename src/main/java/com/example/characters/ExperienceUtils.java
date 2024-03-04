@@ -22,7 +22,7 @@ public class ExperienceUtils {
         int levelDifference = enemyLevel - playerLevel;
         double enemyDifferenceFactor = levelDifference >= 0 ? Math.max(1, levelDifference + (0.2 * levelDifference) ) :( 1.0 + ( (double) levelDifference / 5.0) );
 
-        double enemyTypeBonus = getEnemyTypeBonus(enemyType);
+        double enemyTypeBonus = enemyType.getBonusExperience();
 
 
         double bonusExpForDifferenceLevel = (baseExperience * enemyDifferenceFactor) + (enemyTypeBonus * baseExperience / 2);
@@ -48,14 +48,5 @@ public class ExperienceUtils {
 
         return neededExp;
     }
-    private static double getEnemyTypeBonus(EnemyType enemyType) {
-        return switch (enemyType) {
-            case COMMON -> 0.5;
-            case UNCOMMON -> 1.0;
-            case RARE -> 1.2;
-            case EPIC -> 1.7;
-            case BOSS -> 2.5;
-            case ANCESTOR -> 5.0;
-        };
-    }
+
 }
