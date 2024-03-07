@@ -88,10 +88,13 @@ public class CharacterService {
         return datastore.find(Character.class).first();
     }
 
-    public Optional<MainCharacter> findMainCharacterByUserId(String userId){
+    public Optional<MainCharacter> findMainCharacterByUserId(ObjectId userId){
         return Optional.ofNullable(datastore.find(MainCharacter.class).filter(
-                Filters.eq("user", new ObjectId(userId))
+                Filters.eq("user", userId)
         ).first());
+    }
+    public Optional<MainCharacter> findMainCharacterByUserId(String userId){
+        return findMainCharacterByUserId(new ObjectId(userId));
     }
 
     public void removeAllCharactersAndEquipments(){
