@@ -7,6 +7,10 @@ public class Settings {
     public final static int CHALLENGE_WAIT_COOLDOWN_MINUTES = 2;
     public final static int DUNGEON_WAIT_COOLDOWN_MINUTES = 2;
 
+    public final static int MERCHANT_COMMODITY_REFRESH_HOURS = 24;
+    public static final int MERCHANT_VALUE_BUY_COST_COMMODITY_MULTIPLIER = 5;
+
+
     public enum MercenaryCharactersLimits {
         FIRST(10, 2),
         SECOND(30, 3),
