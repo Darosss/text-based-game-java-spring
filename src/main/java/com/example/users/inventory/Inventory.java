@@ -66,16 +66,20 @@ public class Inventory {
     }
 
 
-    public Optional<Item> removeItemById(ObjectId id) {
-        String idToFind = id.toString();
-        if (this.items.containsKey(idToFind)) {
-            Item item = this.items.remove(idToFind);
+    public Optional<Item> removeItemById(String id) {
+        if (this.items.containsKey(id)) {
+            Item item = this.items.remove(id);
             currentWeight -= item.getWeight();
             return Optional.of(item);
         }
         return Optional.empty();
     }
 
+
+    public Optional<Item> removeItemById(ObjectId id) {
+        String idToFind = id.toString();
+        return this.removeItemById(idToFind);
+    }
     public ObjectId getId() {
         return id;
     }
@@ -108,6 +112,9 @@ public class Inventory {
         this.currentWeight = currentWeight;
     }
 
+    public Optional<Item> getItemById(String itemId) {
+        return Optional.ofNullable(this.items.get(itemId));
+    }
     @Override
     public String toString() {
         return "Inventory{" +

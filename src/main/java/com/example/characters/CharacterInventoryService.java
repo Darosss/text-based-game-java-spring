@@ -7,8 +7,8 @@ import com.example.characters.equipment.Equipment.EquipItemResult;
 
 import com.example.items.*;
 import com.example.users.inventory.Inventory;
+import com.example.utils.TransactionsUtils;
 import dev.morphia.Datastore;
-import dev.morphia.query.filters.Filters;
 import dev.morphia.transactions.MorphiaSession;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -31,8 +31,8 @@ public class CharacterInventoryService {
     public UnEquipItemResult unEquipItem (ObjectId userId, ObjectId characterId, CharacterEquipmentFieldsEnum slot) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
-            Inventory userInventory = this.fetchUserInventory(session, userId);
-            Character character = this.fetchCharacter(session, characterId, userId, Character.class);
+            Inventory userInventory = TransactionsUtils.fetchUserInventory(session, userId);
+            Character character = TransactionsUtils.fetchCharacter(session, characterId, userId, Character.class);
 
             if (userInventory == null || character == null)  return new UnEquipItemResult(false,
                     "Cannot find user inventory and/or character. Contact administration", Optional.empty()
@@ -77,8 +77,8 @@ public class CharacterInventoryService {
     public EquipItemResult  equipItem (ObjectId userId, ObjectId characterId, Item item, CharacterEquipmentFieldsEnum slot) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
-            Inventory userInventory = this.fetchUserInventory(session, userId);
-            Character character = this.fetchCharacter(session, characterId, userId, Character.class);
+            Inventory userInventory = TransactionsUtils.fetchUserInventory(session, userId);
+            Character character = TransactionsUtils.fetchCharacter(session, characterId, userId, Character.class);
 
 
             if (userInventory == null || character == null)   return new EquipItemResult(false,
@@ -153,8 +153,8 @@ public class CharacterInventoryService {
     public EquipItemResult useMercenaryItemOnMercenaryCharacter(ObjectId userId, ObjectId characterId, ItemMercenary item) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
-            Inventory userInventory = this.fetchUserInventory(session, userId);
-            MercenaryCharacter character = this.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
+            Inventory userInventory = TransactionsUtils.fetchUserInventory(session, userId);
+            MercenaryCharacter character = TransactionsUtils.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
 
             if (userInventory == null || character == null)   return new EquipItemResult(false,
                     "Cannot find user inventory and/or character. Contact administration"
@@ -186,8 +186,8 @@ public class CharacterInventoryService {
     public UnEquipItemResult unEquipMercenaryItemFromMercenaryCharacter(ObjectId userId, ObjectId characterId) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
-            Inventory userInventory = this.fetchUserInventory(session, userId);
-            MercenaryCharacter character = this.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
+            Inventory userInventory = TransactionsUtils.fetchUserInventory(session, userId);
+            MercenaryCharacter character = TransactionsUtils.fetchCharacter(session, characterId, userId, MercenaryCharacter.class);
             if (userInventory == null && character == null)
                 return new UnEquipItemResult(false,
                         "Cannot find user inventory and/or character. Contact administration",
@@ -223,17 +223,5 @@ public class CharacterInventoryService {
         session.save(character);
         session.save(userInventory);
         session.save(character.getEquipment());
-    }
-    private Inventory fetchUserInventory(MorphiaSession session, ObjectId userId) {
-        return session.find(Inventory.class)
-                .filter(Filters.eq("user", userId))
-                .first();
-    }
-    private<T extends Character> T fetchCharacter(MorphiaSession session, ObjectId characterId, ObjectId userId, Class<T> characterClass) {
-        return session.find(characterClass)
-                .filter(Filters.eq("user", userId) ,
-                        Filters.eq("id", characterId)
-                )
-                .first();
     }
 }
