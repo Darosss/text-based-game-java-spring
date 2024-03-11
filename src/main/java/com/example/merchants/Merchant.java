@@ -26,7 +26,7 @@ public class Merchant {
     private User user;
 
     @JsonIgnoreProperties("user")
-    @Reference
+    @Reference(idOnly = true)
     private final Map<String, Item> items = new HashMap<>();
 
     private final Map<String, Integer> itemsCost = new HashMap<>();

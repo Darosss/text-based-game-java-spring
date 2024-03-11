@@ -31,13 +31,13 @@ public class User {
     private List<String> roles = new ArrayList<>();
 //    @JsonIgnoreProperties("user")
     @JsonIgnore
-    @Reference
+    @Reference(idOnly = true)
     private Inventory inventory;
 
 
 //    @JsonIgnoreProperties("user")
     @JsonIgnore
-    @Reference(ignoreMissing = true, lazy = true)
+    @Reference(idOnly = true, ignoreMissing = true, lazy = true)
     private HashSet<Character> characters;
 
     private long gold = 0L;

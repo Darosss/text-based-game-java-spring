@@ -25,7 +25,7 @@ public class Inventory {
     private User user;
 
     @JsonIgnoreProperties("user")
-    @Reference
+    @Reference(idOnly = true)
     private Map<String, Item> items;
     private int maxItems=100;
     private float maxWeight=100;

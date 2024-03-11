@@ -26,7 +26,7 @@ import java.util.Optional;
     @Reference(idOnly = true, lazy = true)
     private Character character;
 
-    @Reference(lazy = true)
+    @Reference(idOnly = true, lazy = true)
     private Map<CharacterEquipmentFieldsEnum, Item> slots = new HashMap<>();
     public CharacterEquipment() {}
 

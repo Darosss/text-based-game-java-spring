@@ -25,7 +25,7 @@ public class Character  extends BaseHero {
     private User user;
 
     @JsonIgnoreProperties("character")
-    @Reference
+    @Reference(idOnly = true)
     private CharacterEquipment equipment;
 
     private LocalDateTime createdAt;
