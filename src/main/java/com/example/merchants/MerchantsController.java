@@ -42,9 +42,7 @@ public class MerchantsController implements SecuredRestController {
 
         if(mainCharacter.isEmpty()) throw new BadRequestException("You need to create main character, before visit merchant");
 
-        List<Item> items = MerchantsUtils.generateMerchantsItems(mainCharacter.get().getLevel());
-
-        Merchant merchant = this.service.getOrCreateMerchant(loggedUser, items);
+        Merchant merchant = this.service.getOrCreateMerchant(loggedUser, mainCharacter.get().getLevel());
 
         return new CustomResponse<>(HttpStatus.OK, merchant);
     }

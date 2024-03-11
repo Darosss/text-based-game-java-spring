@@ -37,13 +37,9 @@ public class MerchantsService {
     public Merchant create(User user, List<Item> items) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
-            List<Item> itemsForMerchant = new ArrayList<>();
-            for (Item item : items) {
-                Item createdItem = session.save(item);
-                itemsForMerchant.add(createdItem);
-            }
 
-            Merchant createdMerchant = session.save(new Merchant(user, itemsForMerchant));
+            Merchant createdMerchant = session.save(
+                    new Merchant(user, TransactionsUtils.handleCreatingNewItems(session, items)));
             session.commitTransaction();
 
             return createdMerchant;
@@ -51,7 +47,6 @@ public class MerchantsService {
             throw new Exception(e.getMessage());
         }
     };
-
     public MerchantActionReturn buyItemFromMerchant(String userId, String itemId) throws Exception {
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
@@ -124,14 +119,39 @@ public class MerchantsService {
         return datastore.save(merchant);
     }
 
-    public Merchant getOrCreateMerchant(User user, List<Item> items){
+    public Merchant getOrCreateMerchant(User user, int mainCharacterLevel) throws Exception {
         Optional<Merchant> foundMerchant = this.findMerchantByUserId(user.getId());
-        return foundMerchant.orElseGet(() -> {
-            try {
-                return this.create(user, items);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
+
+        if(foundMerchant.isEmpty()) {
+            List<Item> items = MerchantsUtils.generateMerchantsItems(mainCharacterLevel);
+            return this.create(user, items);
+        }
+
+        Merchant merchant = foundMerchant.get();
+        if(merchant.isCommodityExpired()) {
+            List<Item> newItems = MerchantsUtils.generateMerchantsItems(mainCharacterLevel);
+
+            this.handleRefreshCommodity(merchant, newItems);
+        }
+
+        return merchant;
+    }
+
+    private void handleRefreshCommodity (Merchant merchant, List<Item> newItems) throws Exception {
+        try (MorphiaSession session = datastore.startSession()) {
+            session.startTransaction();
+
+
+            for(String itemId: merchant.getItems().keySet()){
+                session.find(Item.class)
+                        .filter(Filters.eq("id", new ObjectId(itemId)))
+                        .delete();
             }
-        });
+            merchant.setNewCommodity(TransactionsUtils.handleCreatingNewItems(session, newItems));
+            session.save(merchant);
+            session.commitTransaction();
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
     }
 }
