@@ -37,12 +37,7 @@ public class Merchant {
     public record MerchantTransaction(Optional<Item> item, int cost){}
     public Merchant(User user, List<Item> itemsList) {
         this.user = user;
-        for(Item item: itemsList) {
-            String itemIdString = item.getId().toString();
-            this.items.put(itemIdString ,item);
-            this.itemsCost.put(itemIdString, item.getValue() * Settings.MERCHANT_VALUE_BUY_COST_COMMODITY_MULTIPLIER);
-        }
-        this.commodityRefreshAt = LocalDateTime.now().plusHours(Settings.MERCHANT_COMMODITY_REFRESH_HOURS);
+        this.setNewCommodity(itemsList);
     }
     public ObjectId getId() {
         return id;
@@ -81,4 +76,19 @@ public class Merchant {
     public Map<String, Integer> getItemsCost() {
         return itemsCost;
     }
+
+    public boolean isCommodityExpired(){
+        return this.commodityRefreshAt.isBefore(LocalDateTime.now());
+    }
+
+   public void setNewCommodity(List<Item> newItems) {
+       this.items.clear();
+       for(Item item: newItems) {
+           String itemIdString = item.getId().toString();
+           this.items.put(itemIdString ,item);
+           this.itemsCost.put(itemIdString, item.getValue() * Settings.MERCHANT_VALUE_BUY_COST_COMMODITY_MULTIPLIER);
+       }
+       this.commodityRefreshAt = LocalDateTime.now().plusHours(Settings.MERCHANT_COMMODITY_REFRESH_HOURS);
+   }
+
 }
