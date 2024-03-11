@@ -1,12 +1,16 @@
 package com.example.utils;
 
 import com.example.characters.Character;
+import com.example.items.Item;
 import com.example.merchants.Merchant;
 import com.example.users.User;
 import com.example.users.inventory.Inventory;
 import dev.morphia.query.filters.Filters;
 import dev.morphia.transactions.MorphiaSession;
 import org.bson.types.ObjectId;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class TransactionsUtils {
     private TransactionsUtils() {}
@@ -42,5 +46,14 @@ public class TransactionsUtils {
     }
     public static User fetchUser(MorphiaSession session, String userId) {
         return fetchUser(session, new ObjectId(userId));
+    }
+
+    public static List<Item> handleCreatingNewItems(MorphiaSession session, List<Item> items){
+        List<Item> itemsDb = new ArrayList<>();
+        for (Item item : items) {
+            Item createdItem = session.save(item);
+            itemsDb.add(createdItem);
+        }
+        return itemsDb;
     }
 }
