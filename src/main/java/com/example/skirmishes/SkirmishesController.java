@@ -57,7 +57,7 @@ public class SkirmishesController implements SecuredRestController {
         Skirmish foundSkirmish = this.service.getOrCreateSkirmish(loggedUser, 2);
 
         ChallengesService.HandleCurrentChallengeReturn returnData =
-                this.challengesService.getAndHandleCurrentChallenge(foundSkirmish, loggedUser.getId().toString());
+                this.challengesService.getAndHandleCurrentChallenge(foundSkirmish, loggedUser);
 
         if(returnData.data().isEmpty()) throw new BadRequestException(returnData.message());
 
@@ -122,7 +122,7 @@ public class SkirmishesController implements SecuredRestController {
 
         ChallengesService.HandleDungeonReturn returnData =
         this.challengesService.handleDungeonFight(
-                foundSkirmish, loggedUser.getId().toString(),
+                foundSkirmish, loggedUser,
                 dungeonLevel, Settings.DUNGEON_WAIT_COOLDOWN_MINUTES
         );
         if(returnData.data().isEmpty()) throw new BadRequestException(returnData.message());

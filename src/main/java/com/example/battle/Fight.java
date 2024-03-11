@@ -11,6 +11,7 @@ import com.example.enemies.Enemy;
 import com.example.enemies.EnemyUtils;
 import com.example.items.Item;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
+import com.example.users.User;
 import com.example.utils.CurrenciesUtils;
 import org.bson.types.ObjectId;
 import org.slf4j.Logger;
@@ -33,9 +34,11 @@ public class Fight {
     private final Map<ObjectId, BattleDetails<Enemy>> enemyHeroesDetails;
 
     private final boolean mustKillEnemyToWin;
+
+    private final User user;
     private final List<ObjectId> turnParticipants = new ArrayList<>();
 
-    Fight(List<Character> characters,List<Enemy> enemies, int maxTurns, int mainHeroLevel, boolean mustKillEnemyToWin) {
+    Fight(User user, List<Character> characters, List<Enemy> enemies, int maxTurns, int mainHeroLevel, boolean mustKillEnemyToWin) {
 
         this.calculateMinimumInitiativeOfLevelsMean(
                 IntStream.concat(
@@ -43,6 +46,7 @@ public class Fight {
                         enemies.stream().mapToInt(Enemy::getLevel)
                 ).toArray()
         );
+        this.user = user;
         this.userHeroesDetails = this.prepareUserHeroesDetails(characters);
         this.enemyHeroesDetails = this.prepareEnemiesHeroesDetails(enemies);
         this.maxTurns = maxTurns;
@@ -55,8 +59,8 @@ public class Fight {
             ).toList());
     }
 
-    Fight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel, boolean mustKillEnemyToWin){
-        this(characters, enemies, 50, mainHeroLevel, mustKillEnemyToWin);
+    Fight(User user, List<Character> characters, List<Enemy> enemies, int mainHeroLevel, boolean mustKillEnemyToWin){
+        this(user, characters, enemies, 50, mainHeroLevel, mustKillEnemyToWin);
     }
 
     private void calculateMinimumInitiativeOfLevelsMean(int[] levels) {
@@ -140,7 +144,7 @@ public class Fight {
                 this.fightReport.increaseGainedGold(
                         CurrenciesUtils.calculateGoldFromEnemy(enemy.getLevel(), enemy.getType(), true)
                 );
-                List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel(), true);
+                List<Item> loot = EnemyUtils.checkLootFromEnemy(this.user, enemy.getType(), enemy.getLevel(), true);
                 this.fightReport.addLootItems(loot);
             });
         }
@@ -259,7 +263,7 @@ public class Fight {
                     CurrenciesUtils.calculateGoldFromEnemy(enemy.getLevel(), enemy.getType(), false)
             );
 
-            List<Item> loot = EnemyUtils.checkLootFromEnemy(enemy.getType(), enemy.getLevel(), false);
+            List<Item> loot = EnemyUtils.checkLootFromEnemy(this.user, enemy.getType(), enemy.getLevel(), false);
             this.fightReport.addLootItems(loot);
 
             this.fightReport.addToEnemies(enemy);

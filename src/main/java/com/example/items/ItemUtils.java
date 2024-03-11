@@ -1,6 +1,7 @@
 package com.example.items;
 
 import com.example.items.statistics.*;
+import com.example.users.User;
 import com.example.utils.RandomUtils;
 import org.springframework.data.util.Pair;
 
@@ -76,12 +77,13 @@ public class ItemUtils {
     }
 
     public static Item generateItemWithoutBaseStats(
-            String itemName, ItemTypeEnum type, ItemsSubtypes subtype, int level, ItemRarityEnum rarity, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
+            User user, String itemName, ItemTypeEnum type, ItemsSubtypes subtype, int level, ItemRarityEnum rarity, ItemPrefixesEnum prefix, ItemSuffixesEnum suffix
     ) {
-        return generateItem(itemName, type, subtype, level, rarity, prefix,suffix, new HashMap<>(), new HashMap<>());
+        return generateItem(user, itemName, type, subtype, level, rarity, prefix,suffix, new HashMap<>(), new HashMap<>());
     }
 
     private static Item generateItem(
+            User user,
             String itemName, ItemTypeEnum type, ItemsSubtypes subtype, int level,  ItemRarityEnum rarity,
             ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
             Map<String, ItemStatisticsObject> baseStatistics,
@@ -93,53 +95,53 @@ public class ItemUtils {
         int itemValue = getItemValueBasedOnRarityLevel(level, rarity);
         switch (type){
             case CONSUMABLE -> {
-                return new ItemConsumable(itemName, "Description of "+itemName,
+                return new ItemConsumable(itemName, user, "Description of "+itemName,
                         level, itemValue,
                         rarity, itemWeight, subtype);
             }
             case MERCENARY -> {
-                return new ItemMercenary(itemName, "Description of "+itemName,
+                return new ItemMercenary(itemName, user, "Description of "+itemName,
                         level, getItemValueBasedOnRarityLevel(level, rarity), rarity, itemWeight, subtype,
                         //TODO: add stats for mercenaries
                         baseStatistics, baseAdditionalStatistics);
             }
         }
-        return new ItemWearable(itemName, "Description of "+itemName,
+        return new ItemWearable(itemName, user, "Description of "+itemName,
                 level, getItemValueBasedOnRarityLevel(level, rarity), type,
                 subtype, rarity, itemWeight,prefix, suffix, new HashMap<>(), new HashMap<>());
 
     }
 
-    public static Item generateRandomItemWithoutBaseStats(String name, int itemLevel, ItemTypeEnum itemType){
+    public static Item generateRandomItemWithoutBaseStats(User user, String name, int itemLevel, ItemTypeEnum itemType){
         ItemsSubtypes subtype = RandomUtils.getRandomItemFromArray(itemType.getSubtypes());
-        return  generateItemWithoutBaseStats(name, itemType, subtype, itemLevel,
+        return  generateItemWithoutBaseStats(user, name, itemType, subtype, itemLevel,
                 getRandomRarityItem(), getRandomItemPrefix(), getRandomItemSuffix()
         );
     };
 
     //NOTE: That's for debug right now;
-    public static Item generateRandomItem(String name, int itemLevel, ItemTypeEnum itemType,
+    public static Item generateRandomItem(User user, String name, int itemLevel, ItemTypeEnum itemType,
                                           Map<String, ItemStatisticsObject> baseStatistics,
                                           Map<String, ItemStatisticsObject> baseAdditionalStatistics
     ){
         ItemsSubtypes subtype = RandomUtils.getRandomItemFromArray(itemType.getSubtypes());
-        return generateItem(name, itemType, subtype, itemLevel,
+        return generateItem(user, name, itemType, subtype, itemLevel,
                 getRandomRarityItem(),getRandomItemPrefix(),
                 getRandomItemSuffix(), baseStatistics, baseAdditionalStatistics
         );
     };
 
 
-    public static Item generateRandomItem(){
+    public static Item generateRandomItem(User user){
         ItemTypeEnum randomItemType = getRandomItemType();
         String randomItemName = getItemName(randomItemType);
-        return generateRandomItemWithoutBaseStats(randomItemName, RandomUtils.getRandomValueWithinRange(1,100), randomItemType);
+        return generateRandomItemWithoutBaseStats(user, randomItemName, RandomUtils.getRandomValueWithinRange(1,100), randomItemType);
     }
-    public static List<Item> generateRandomItems(int count) {
+    public static List<Item> generateRandomItems(User user, int count) {
         List<Item> generatedItems = new ArrayList<>();
 
         for (int i = 0; i<= count; i ++){
-            generatedItems.add(generateRandomItem());
+            generatedItems.add(generateRandomItem(user));
         }
     return generatedItems;
     }

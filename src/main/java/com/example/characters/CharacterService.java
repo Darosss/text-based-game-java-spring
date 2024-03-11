@@ -35,9 +35,13 @@ public class CharacterService {
     public List<Character> findAll(){
         return this.datastore.find(Character.class).stream().toList();
     }
-    public List<MercenaryCharacter> findUserMercenaries(String userId) {
-        return datastore.find(MercenaryCharacter.class).filter(Filters.eq("user", new ObjectId(userId))).stream().toList();
+    public List<MercenaryCharacter> findUserMercenaries(ObjectId userId) {
+        return datastore.find(MercenaryCharacter.class).filter(Filters.eq("user", userId)).stream().toList();
     }
+    public List<MercenaryCharacter> findUserMercenaries(String userId) {
+        return this.findUserMercenaries(new ObjectId(userId));
+    }
+
     public MainCharacter createMainCharacter(User user, String name) {
         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 

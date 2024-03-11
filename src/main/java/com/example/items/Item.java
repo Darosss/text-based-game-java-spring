@@ -44,7 +44,7 @@ public class Item {
      Constructor for adding item without basing only on prefix + suffix
      */
     public Item() {}
-    public Item(String name, String description, Integer level,
+    public Item(String name, User user, String description, Integer level,
                 Integer value, ItemTypeEnum type, ItemsSubtypes subtype,
                 ItemRarityEnum rarity, float weight
 
@@ -58,6 +58,7 @@ public class Item {
         this.upgradePoints = 0;
         this.rarity = rarity;
         this.weight = weight;
+        this.user = user;
     }
 
     public ObjectId getId() {

@@ -9,8 +9,9 @@ import com.example.characters.MercenaryCharacter;
 import com.example.enemies.Enemy;
 import com.example.enemies.EnemyType;
 import com.example.enemies.EnemyUtils;
+import com.example.users.User;
 import com.example.utils.RandomUtils;
-import org.apache.coyote.BadRequestException;
+import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +35,7 @@ public class ChallengesService {
         this.characterService = characterService;
     }
 
-    public HandleCurrentChallengeReturn getAndHandleCurrentChallenge(Skirmish skirmish, String userId) throws Exception {
+    public HandleCurrentChallengeReturn getAndHandleCurrentChallenge(Skirmish skirmish, User user) throws Exception {
         Skirmish.ChosenChallenge chosenChallenge = skirmish.getChosenChallenge();
 
         //Note: I'm not sure that throwing an error here is good idea. - think later
@@ -44,13 +45,13 @@ public class ChallengesService {
         if(!skirmish.isChallengeTimeCompleted())
             return new HandleCurrentChallengeReturn("Challenge not yet completed", Optional.empty());
 
-        FightReport fightReport = this.completeFinishedChallenge(userId, skirmish);
+        FightReport fightReport = this.completeFinishedChallenge(user, skirmish);
         return new HandleCurrentChallengeReturn(
                 "Challenge completed!",
                 Optional.of(new CommonReturnData(skirmish, fightReport)));
     }
 
-    public HandleDungeonReturn handleDungeonFight(Skirmish skirmish, String userId, int dungeonLevel, int waitTime) throws Exception {
+    public HandleDungeonReturn handleDungeonFight(Skirmish skirmish, User user, int dungeonLevel, int waitTime) throws Exception {
         Dungeons dungeons = skirmish.getDungeons();
         if(!skirmish.getDungeons().canStartFight())
             return new HandleDungeonReturn(
@@ -64,7 +65,7 @@ public class ChallengesService {
                     Optional.empty()
             );
 
-        FightReport fightReport = this.completeStartedDungeonFight(userId, dungeonLevel);
+        FightReport fightReport = this.completeStartedDungeonFight(user, dungeonLevel);
 
         LocalDateTime currentTime = LocalDateTime.now();
 
@@ -84,42 +85,40 @@ public class ChallengesService {
     }
 
 
-
-    private MainCharacter getUserMainCharacter(String userId) throws Exception {
+    private MainCharacter getUserMainCharacter(ObjectId userId) throws Exception {
         Optional<MainCharacter> foundCharacter = this.characterService.findMainCharacterByUserId(userId);
         if(foundCharacter.isEmpty()) throw new Exception("Something went wrong - no found character");
 
         return foundCharacter.get();
     }
-    private List<MercenaryCharacter> getUserMercenariesCharacters(String userId)  {
-
-        return this.characterService.findUserMercenaries(userId);
+    private MainCharacter getUserMainCharacter(String userId) throws Exception {
+       return getUserMainCharacter(new ObjectId(userId));
     }
 
-    private FightReport completeFinishedChallenge(String userId, Skirmish skirmish) throws Exception {
+    private FightReport completeFinishedChallenge(User user, Skirmish skirmish) throws Exception {
         Optional<SkirmishData> challenge = skirmish.getChosenChallengeData();
 
         if(challenge.isEmpty()) return null;
 
-        MainCharacter mainCharacter = this.getUserMainCharacter(userId);
+        MainCharacter mainCharacter = this.getUserMainCharacter(user.getId());
 
         Enemy createdEnemy = this.prepareChallengeEnemy(challenge.get().getDifficulty(), mainCharacter.getLevel());
 
-        FightReport fightReport = this.battleManagerService.performFight(mainCharacter, createdEnemy, mainCharacter.getLevel());
+        FightReport fightReport = this.battleManagerService.performFight(user, mainCharacter, createdEnemy, mainCharacter.getLevel());
         this.handleOnFinishFight(fightReport, mainCharacter);
 
         return fightReport;
     }
 
-    private FightReport completeStartedDungeonFight(String userId, int dungeonLevel) throws Exception {
-        MainCharacter mainCharacter = this.getUserMainCharacter(userId);
-        List<MercenaryCharacter> mercenaries = this.getUserMercenariesCharacters(userId);
+    private FightReport completeStartedDungeonFight(User user, int dungeonLevel) throws Exception {
+        MainCharacter mainCharacter = this.getUserMainCharacter(user.getId());
+        List<MercenaryCharacter> mercenaries = this.characterService.findUserMercenaries(user.getId());
         List<Enemy> createdEnemies = this.prepareDungeonsEnemies(dungeonLevel);
 
         List<Character> characters = new ArrayList<>(mercenaries);
         characters.add(mainCharacter);
 
-        FightReport fightReport = this.battleManagerService.performTeamFight(characters, createdEnemies, mainCharacter.getLevel());
+        FightReport fightReport = this.battleManagerService.performTeamFight(user, characters, createdEnemies, mainCharacter.getLevel());
 
         this.handleOnFinishFight(fightReport, mainCharacter);
         return fightReport;

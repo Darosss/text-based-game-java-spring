@@ -3,14 +3,15 @@ package com.example.battle;
 import com.example.battle.reports.FightReport;
 import com.example.characters.Character;
 import com.example.enemies.Enemy;
+import com.example.users.User;
 import org.springframework.stereotype.Service;
 import java.util.*;
 
 @Service
 public class BattleManagerService {
     //TODO: add reports into database
-    public FightReport performNormalFight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel) {
-        Fight fightInstance = new Fight(characters, enemies, mainHeroLevel, false);
+    public FightReport performNormalFight(User user, List<Character> characters, List<Enemy> enemies, int mainHeroLevel) {
+        Fight fightInstance = new Fight(user, characters, enemies, mainHeroLevel, false);
 
 
         //TODO: here we will need to checks whether fight is win - give xp, gold etc
@@ -22,13 +23,13 @@ public class BattleManagerService {
     }
 
 
-    public FightReport performFight(Character character, Enemy enemy, int mainHeroLevel){
-        Fight fightInstance = new Fight(List.of(character), List.of(enemy), 50, mainHeroLevel, false);
+    public FightReport performFight(User user, Character character, Enemy enemy, int mainHeroLevel){
+        Fight fightInstance = new Fight(user, List.of(character), List.of(enemy), 50, mainHeroLevel, false);
         fightInstance.startFight();
         return fightInstance.getFightReport();
     }
-    public FightReport performTeamFight(List<Character> characters, List<Enemy> enemies, int mainHeroLevel){
-        Fight fightInstance = new Fight(characters, enemies, 300, mainHeroLevel, true);
+    public FightReport performTeamFight(User user, List<Character> characters, List<Enemy> enemies, int mainHeroLevel){
+        Fight fightInstance = new Fight(user, characters, enemies, 300, mainHeroLevel, true);
         fightInstance.startFight();
         return fightInstance.getFightReport();
     }

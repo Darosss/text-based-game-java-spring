@@ -6,6 +6,7 @@ import com.example.items.ItemUtils;
 import com.example.skirmishes.EnemySkirmishDifficulty;
 import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
+import com.example.users.User;
 import com.example.utils.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,7 +150,7 @@ public class EnemyUtils {
         };
     }
 
-    public static List<Item> checkLootFromEnemy(EnemyType type, int enemyLevel, boolean isAlive){
+    public static List<Item> checkLootFromEnemy(User forUser, EnemyType type, int enemyLevel, boolean isAlive){
         List<Item> items = new ArrayList<>();
         ItemProbabilityLoot itemProbData = getItemProbabilityLootByEnemyType(type, isAlive);
         logger.debug("Item prob data, percent: {}, minItems: {}, maxItems: {}", itemProbData.percent(), itemProbData.minItems(), itemProbData.maxItems());
@@ -160,7 +161,7 @@ public class EnemyUtils {
                 ItemTypeEnum itemType = ItemUtils.getRandomItemType();
                 //TODO: make random name generator for items
                 items.add(ItemUtils.generateRandomItemWithoutBaseStats(
-                        itemType + " from enemy: "+type+" | level: "+enemyLevel, itemLevel, itemType)
+                        forUser, itemType + " from enemy: "+type+" | level: "+enemyLevel, itemLevel, itemType)
                 );
             }
 

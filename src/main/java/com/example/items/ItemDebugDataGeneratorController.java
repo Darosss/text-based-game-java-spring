@@ -40,7 +40,7 @@ public class ItemDebugDataGeneratorController implements SecuredRestController {
     public CustomResponse<List<Item>> generateItemWithRandomData(@PathVariable int countOfItems) throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
         Inventory inventory = this.inventoryService.getUserInventory(loggedUser.getId());
-        List<Item> items = this.service.create(ItemUtils.generateRandomItems(countOfItems));
+        List<Item> items = this.service.create(ItemUtils.generateRandomItems(loggedUser, countOfItems));
         for (Item item : items) {
             inventory.addItem(item);
         }
@@ -57,7 +57,7 @@ public class ItemDebugDataGeneratorController implements SecuredRestController {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
         Inventory inventory = this.inventoryService.getUserInventory(loggedUser.getId());
         Item item = service.create(ItemUtils.generateRandomItemWithoutBaseStats(
-                "Item custom level", level, type));
+                loggedUser, "Item custom level", level, type));
         inventory.addItem(item);
         this.inventoryService.update(inventory);
 

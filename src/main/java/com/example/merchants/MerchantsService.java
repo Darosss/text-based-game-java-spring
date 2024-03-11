@@ -123,13 +123,13 @@ public class MerchantsService {
         Optional<Merchant> foundMerchant = this.findMerchantByUserId(user.getId());
 
         if(foundMerchant.isEmpty()) {
-            List<Item> items = MerchantsUtils.generateMerchantsItems(mainCharacterLevel);
+            List<Item> items = MerchantsUtils.generateMerchantsItems(user, mainCharacterLevel);
             return this.create(user, items);
         }
 
         Merchant merchant = foundMerchant.get();
         if(merchant.isCommodityExpired()) {
-            List<Item> newItems = MerchantsUtils.generateMerchantsItems(mainCharacterLevel);
+            List<Item> newItems = MerchantsUtils.generateMerchantsItems(user, mainCharacterLevel);
 
             this.handleRefreshCommodity(merchant, newItems);
         }

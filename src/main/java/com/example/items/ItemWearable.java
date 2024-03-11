@@ -4,6 +4,7 @@ import com.example.items.statistics.ItemPrefixesEnum;
 import com.example.items.statistics.ItemStatistics;
 import com.example.items.statistics.ItemStatisticsObject;
 import com.example.items.statistics.ItemSuffixesEnum;
+import com.example.users.User;
 
 import java.util.Map;
 
@@ -13,15 +14,15 @@ public class ItemWearable extends Item{
 
     public ItemWearable() {};
 
-    public ItemWearable(String name, String description, Integer level,
-                Integer value, ItemTypeEnum type, ItemsSubtypes subtype,
-                ItemRarityEnum rarity, float weight,
-                ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
-                Map<String, ItemStatisticsObject> baseStatistics,
-                Map<String, ItemStatisticsObject> baseAdditionalStatistics
+    public ItemWearable(String name, User user, String description, Integer level,
+                        Integer value, ItemTypeEnum type, ItemsSubtypes subtype,
+                        ItemRarityEnum rarity, float weight,
+                        ItemPrefixesEnum prefix, ItemSuffixesEnum suffix,
+                        Map<String, ItemStatisticsObject> baseStatistics,
+                        Map<String, ItemStatisticsObject> baseAdditionalStatistics
 
     ){
-        super(name, description, level, value, type, subtype, rarity, weight);
+        super(name, user, description, level, value, type, subtype, rarity, weight);
         this.prefix = prefix;
         this.suffix = suffix;
         this.statistics = new ItemStatistics(baseStatistics, baseAdditionalStatistics, prefix, suffix, level, rarity, subtype);
