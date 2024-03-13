@@ -45,7 +45,7 @@ public class CharacterService {
     public MainCharacter createMainCharacter(User user, String name) {
         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
-        MainCharacter savedCharacter = datastore.save(new MainCharacter(name, user, equipment));
+        MainCharacter savedCharacter = datastore.save(new MainCharacter(name, user, equipment, true));
         equipment.setCharacter(savedCharacter);
         this.equipmentService.update(equipment);
 
@@ -54,7 +54,7 @@ public class CharacterService {
     public MercenaryCharacter createMercenaryCharacter(User user, String name) {
         CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
 
-        MercenaryCharacter savedCharacter = datastore.save(new MercenaryCharacter(name, user, equipment));
+        MercenaryCharacter savedCharacter = datastore.save(new MercenaryCharacter(name, user, equipment, true));
         equipment.setCharacter(savedCharacter);
         this.equipmentService.update(equipment);
 

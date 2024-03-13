@@ -17,16 +17,17 @@ public class MercenaryCharacter extends Character{
     public MercenaryCharacter() {
     }
 
-    public MercenaryCharacter(String name, User user, CharacterEquipment equipment) {
+    //TODO: find and improve boolean asNew -> this was done to prevent morphia to use this constructor and use 0-arguments instead
+    public MercenaryCharacter(String name, User user, CharacterEquipment equipment, boolean asNew) {
         super(name, user, equipment);
     }
 
     public void setMercenary(@Nullable ItemMercenary mercenaryValue) {
         if(mercenaryValue == null) {
-            this.level = 1;
+            this.setLevel(1);
             this.setStatisticsOnUnEquipMercenary();
         }else {
-            this.level = mercenaryValue.getLevel();
+            this.setLevel(mercenaryValue.getLevel());
             this.setStatisticsOnEquipMercenary(mercenaryValue);
         }
         this.mercenary = mercenaryValue;
@@ -38,17 +39,17 @@ public class MercenaryCharacter extends Character{
 
     private void setStatisticsOnEquipMercenary(ItemMercenary equippedMercenary) {
         equippedMercenary.getStatistics().getBaseStatistics().forEach((k,v)->{
-            this.stats.updateStatistic(BaseStatisticsNamesEnum.valueOf(k), v.getValue(), StatisticsUtils.StatisticUpdateType.VALUE);
+            this.getStats().updateStatistic(BaseStatisticsNamesEnum.valueOf(k), v.getValue(), StatisticsUtils.StatisticUpdateType.VALUE);
         });
         equippedMercenary.getStatistics().getAdditionalStatistics().forEach((k,v)->{
-            this.stats.updateAdditionalStatistic(AdditionalStatisticsNamesEnum.valueOf(k), v.getValue(), StatisticsUtils.StatisticUpdateType.VALUE);
+            this.getStats().updateAdditionalStatistic(AdditionalStatisticsNamesEnum.valueOf(k), v.getValue(), StatisticsUtils.StatisticUpdateType.VALUE);
         });
     }
     private void setStatisticsOnUnEquipMercenary() {
-        this.stats.getAdditionalStatistics().forEach((k,v)->
-                this.stats.updateAdditionalStatistic(k, 1, StatisticsUtils.StatisticUpdateType.VALUE));
-        this.stats.getStatistics().forEach((k,v)->
-                this.stats.updateStatistic(k, 1, StatisticsUtils.StatisticUpdateType.VALUE));
+        this.getStats().getAdditionalStatistics().forEach((k,v)->
+                this.getStats().updateAdditionalStatistic(k, 1, StatisticsUtils.StatisticUpdateType.VALUE));
+        this.getStats().getStatistics().forEach((k,v)->
+                this.getStats().updateStatistic(k, 1, StatisticsUtils.StatisticUpdateType.VALUE));
     }
 
     @Override

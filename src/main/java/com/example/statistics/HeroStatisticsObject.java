@@ -14,10 +14,15 @@ public class HeroStatisticsObject {
     private final Map<AdditionalStatisticsNamesEnum, AdditionalStatisticObject> additionalStatistics =
             StatisticsUtils.generateDefaultHeroAdditionalStatistics();
 
-    public HeroStatisticsObject(){
-        statistics.forEach((baseStat, statVal)->{
+    //For morphia
+    public HeroStatisticsObject(){};
+
+    public HeroStatisticsObject(boolean updateAdditional){
+        if(updateAdditional){
+        this.statistics.forEach((baseStat, statVal)->{
             this.updateAdditionalStatisticsBasedOnBasic(baseStat);
         });
+        }
     }
 
     public int getMaxHealthEffValue(){

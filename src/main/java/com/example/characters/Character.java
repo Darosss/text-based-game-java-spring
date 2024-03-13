@@ -32,7 +32,6 @@ public class Character  extends BaseHero {
     private LocalDateTime updatedAt;
 
     public Character() {
-        super();
     }
 
     public Character(String name, User user, CharacterEquipment equipment) {
@@ -46,7 +45,7 @@ public class Character  extends BaseHero {
         super(name);
         this.equipment = equipment;
         this.user = user;
-        this.level = level;
+        this.setLevel(level);
     }
 
     //TODO: one of constructor should have = class type which will constitute what and how many default stats there are
@@ -76,17 +75,17 @@ public class Character  extends BaseHero {
            item.getStatistics().getAdditionalStatistics().forEach((k, v)->{
             AdditionalStatisticsNamesEnum castedKey  = AdditionalStatisticsNamesEnum.valueOf(k);
             if(isEquip){
-                this.stats.updateAdditionalStatisticsOnEquip(castedKey, v.getValue(), v.getPercentageValue());
+                this.getStats().updateAdditionalStatisticsOnEquip(castedKey, v.getValue(), v.getPercentageValue());
             } else {
-                this.stats.updateAdditionalStatisticsOnUnEquip(castedKey, v.getValue(), v.getPercentageValue());
+                this.getStats().updateAdditionalStatisticsOnUnEquip(castedKey, v.getValue(), v.getPercentageValue());
             }
         });
         item.getStatistics().getBaseStatistics().forEach((k, v)->{
             BaseStatisticsNamesEnum castedKey  = BaseStatisticsNamesEnum.valueOf(k);
             if (isEquip) {
-                this.stats.updateStatisticsOnEquip(castedKey, v.getValue(), v.getPercentageValue());
+                this.getStats().updateStatisticsOnEquip(castedKey, v.getValue(), v.getPercentageValue());
             } else {
-                this.stats.updateStatisticsOnUnEquip(castedKey, v.getValue(), v.getPercentageValue());
+                this.getStats().updateStatisticsOnUnEquip(castedKey, v.getValue(), v.getPercentageValue());
             }
         });
     }

@@ -7,11 +7,11 @@ import java.util.Map;
 
 public class BaseHero {
     private ObjectId baseHeroId;
-    protected String name;
-    protected Integer level = 1;
-    protected Integer health = 1;
+    private String name;
+    private Integer level = 1;
+    private Integer health = 1;
 
-    protected final HeroStatisticsObject stats = new HeroStatisticsObject();
+    private HeroStatisticsObject stats;
     protected void updateHealthBasedOnMaxHealth(){
         this.health = this.stats.getMaxHealthEffValue();
     }
@@ -19,16 +19,19 @@ public class BaseHero {
     public BaseHero(String name) {
         this.name = name;
         this.level = 1;
+        this.stats = new HeroStatisticsObject(true);
         this.updateHealthBasedOnMaxHealth();
     }
     public BaseHero(String name, int level) {
         this.name = name;
         this.level = level;
+        this.stats = new HeroStatisticsObject(true);
     }
     public BaseHero(String name, int level,
                     Map<BaseStatisticsNamesEnum, Integer> baseStatistics) {
         this.name = name;
         this.level = level;
+        this.stats = new HeroStatisticsObject(true);
         this.setStatisticsByNameIntegerMap(baseStatistics, StatisticsUtils.StatisticUpdateType.VALUE);
         this.updateHealthBasedOnMaxHealth();
 
@@ -39,6 +42,7 @@ public class BaseHero {
     ) {
         this.name = name;
         this.level = level;
+        this.stats = new HeroStatisticsObject(true);
         this.setStatisticsByNameIntegerMap(baseStatistics, StatisticsUtils.StatisticUpdateType.VALUE);
         this.setAdditionalStatisticsByNameIntegerMap(additionalStatistics, StatisticsUtils.StatisticUpdateType.VALUE);
         this.updateHealthBasedOnMaxHealth();
