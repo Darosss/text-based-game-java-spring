@@ -32,8 +32,8 @@ public class CharacterService {
         return datastore.save(character);
     }
 
-    public List<Character> findAll(){
-        return this.datastore.find(Character.class).stream().toList();
+    public <T extends Character> List<T> findAll(Class<T> characterClass){
+        return this.datastore.find(characterClass).stream().toList();
     }
     public List<MercenaryCharacter> findUserMercenaries(ObjectId userId) {
         return datastore.find(MercenaryCharacter.class).filter(Filters.eq("user", userId)).stream().toList();

@@ -74,7 +74,7 @@ public class CharactersController implements SecuredRestController {
 
     @GetMapping("debug/all")
     public CustomResponse<List<Character>> findAll()  {
-        return new CustomResponse<>(HttpStatus.OK, this.service.findAll());
+        return new CustomResponse<>(HttpStatus.OK, this.service.findAll(Character.class));
     }
 
     @PostMapping("/create")
