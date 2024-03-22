@@ -1,6 +1,5 @@
 package com.example.skirmishes;
 
-import com.example.characters.Character;
 import com.example.users.User;
 import dev.morphia.Datastore;
 import dev.morphia.DeleteOptions;
@@ -9,6 +8,7 @@ import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,6 +24,11 @@ public class SkirmishesService {
     public Optional<Skirmish> findOneByUserId(ObjectId userId) {
         return Optional.ofNullable(datastore.find(Skirmish.class).filter(Filters.eq("user", userId)).first());
     }
+
+    public List<Skirmish> findAll(){
+        return this.datastore.find(Skirmish.class).stream().toList();
+    }
+
     public Optional<Skirmish> findOneByUserId(String userId) {
         return this.findOneByUserId(new ObjectId(userId));
     }
