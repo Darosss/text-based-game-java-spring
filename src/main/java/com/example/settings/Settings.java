@@ -4,6 +4,7 @@ package com.example.settings;
 //TODO: move those into repository Configs/Settings.
 // For now it's programmatically
 public class Settings {
+    public final static long LEADERBOARD_REFRESH_COOLDOWN_MS = 1_000 * 60 * 60 * 24;
     public final static int CHALLENGE_WAIT_COOLDOWN_MINUTES = 2;
     public final static int DUNGEON_WAIT_COOLDOWN_MINUTES = 2;
 
