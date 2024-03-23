@@ -72,7 +72,7 @@ public class LeaderboardsService {
         int place = 1;
         for (MainCharacter character : mainCharacters) {
             leaderboardData.add(new Leaderboard.LeaderboardData(place++,
-                    character.getUser().getId(), character.getUser().getUsername(), character.getLevel()));
+                    character.getUser().getId().toString(), character.getUser().getUsername(), character.getLevel()));
         }
 
         return leaderboardData;
@@ -89,13 +89,13 @@ public class LeaderboardsService {
         int place = 1;
         for (Skirmish skirmish : skirmishes) {
             leaderboardData.add(new Leaderboard.LeaderboardData(place++,
-                    skirmish.getUser().getId(), skirmish.getUser().getUsername(), skirmish.getDungeons().getCurrentLevel()));
+                    skirmish.getUser().getId().toString(), skirmish.getUser().getUsername(), skirmish.getDungeons().getCurrentLevel()));
         }
 
         return leaderboardData;
     }
 
-    private Optional<Leaderboard> findOneLeaderboardByCategory(Leaderboard.LeaderboardCategory category) {
+    public Optional<Leaderboard> findOneLeaderboardByCategory(Leaderboard.LeaderboardCategory category) {
         return Optional.ofNullable(datastore.find(Leaderboard.class).filter(Filters.eq("category", category)).first());
     }
 

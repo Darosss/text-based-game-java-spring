@@ -28,7 +28,7 @@ public class Leaderboard {
         this.data = data;
     }
 
-    public record LeaderboardData(int place, ObjectId userId, String username, double value){}
+    public record LeaderboardData(int place, String userId, String username, double value){}
 
 
     public ObjectId getId() {
