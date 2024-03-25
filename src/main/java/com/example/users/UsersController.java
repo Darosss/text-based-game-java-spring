@@ -37,13 +37,6 @@ public class UsersController implements SecuredRestController {
         return new CustomResponse<>(HttpStatus.OK,
                 LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.service));
     }
-    @GetMapping("/your-characters-ids")
-    public CustomResponse<List<String>> getCharactersIds() throws Exception {
-        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.service);
-
-        List<String> charactersIds =loggedUser.getCharacters().stream().map((character->character.getId().toString())).toList();
-        return new CustomResponse<>(HttpStatus.OK, charactersIds);
-    }
     @GetMapping("users/{id}")
     public CustomResponse<User> getUserById(@PathVariable String id){
         Optional<User> userDB = this.service.findOneById(id);

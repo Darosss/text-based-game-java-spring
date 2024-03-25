@@ -64,6 +64,15 @@ public class CharactersController implements SecuredRestController {
         return character.map((mainChar)->new CustomResponse<>(HttpStatus.OK, mainChar))
                 .orElseThrow(()->new BadRequestException("You do not have main character yet"));
     }
+
+    @GetMapping("/your-characters-ids")
+    public CustomResponse<List<String>> getCharactersIds() throws Exception {
+        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
+
+        List<String> charactersIds =loggedUser.getCharacters().stream().map((character->character.getId().toString())).toList();
+        return new CustomResponse<>(HttpStatus.OK, charactersIds);
+    }
+
     @GetMapping("/{characterId}")
     public CustomResponse<Character> findYourCharacterById(@PathVariable String characterId) throws BadRequestException {
         Optional<Character> character = this.service.findById(characterId);
