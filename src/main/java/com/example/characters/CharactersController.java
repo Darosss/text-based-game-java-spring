@@ -65,12 +65,22 @@ public class CharactersController implements SecuredRestController {
                 .orElseThrow(()->new BadRequestException("You do not have main character yet"));
     }
 
+    //TODO; getCharactersIds and getUserCharactersIds should use CharactersService rather with sth like
+    // getCharactersIdsByUserId;
     @GetMapping("/your-characters-ids")
     public CustomResponse<List<String>> getCharactersIds() throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
         List<String> charactersIds =loggedUser.getCharacters().stream().map((character->character.getId().toString())).toList();
         return new CustomResponse<>(HttpStatus.OK, charactersIds);
+    }
+
+    @GetMapping("/user/{userId}/characters-ids")
+    public CustomResponse<List<String>> getUserCharactersIds(@PathVariable String userId) throws Exception {
+        Optional<User> user = this.userService.findOneById(userId);
+
+        return user.map((userInst)->new CustomResponse<>(HttpStatus.OK, userInst.getCharacters().stream().map((character->character.getId().toString())).toList()))
+                .orElseThrow(()->new BadRequestException("User not found"));
     }
 
     @GetMapping("/{characterId}")
