@@ -10,14 +10,12 @@ import com.example.common.ResourceNotFoundException;
 import com.example.items.*;
 import com.example.response.CustomResponse;
 import com.example.settings.Settings;
-import com.example.statistics.AdditionalStatisticsNamesEnum;
 import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.statistics.StatisticsUtils;
 import com.example.users.User;
 import com.example.users.UserService;
 import com.example.users.inventory.Inventory;
 import com.example.users.inventory.InventoryService;
-import com.example.utils.RandomUtils;
 import org.apache.coyote.BadRequestException;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,9 +62,6 @@ public class CharactersController implements SecuredRestController {
         return character.map((mainChar)->new CustomResponse<>(HttpStatus.OK, mainChar))
                 .orElseThrow(()->new BadRequestException("You do not have main character yet"));
     }
-
-    //TODO; getCharactersIds and getUserCharactersIds should use CharactersService rather with sth like
-    // getCharactersIdsByUserId;
     @GetMapping("/your-characters-ids")
     public CustomResponse<List<String>> getCharactersIds() throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
@@ -97,22 +92,22 @@ public class CharactersController implements SecuredRestController {
     }
 
     @PostMapping("/create")
-    public CustomResponse<MainCharacter> createMainCharacter() throws Exception {
+    public CustomResponse<Optional<MainCharacter>> createMainCharacter() throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
         if(this.service.findMainCharacterByUserId(loggedUser.getId().toString()).isPresent()){
             throw new BadRequestException("User already have main character");
         }
 
-        MainCharacter createdChar = service.createMainCharacter(loggedUser, loggedUser.getUsername());
-        loggedUser.addCharacter(createdChar);
-        this.userService.update(loggedUser);
+        CharacterService.CreateCharacterReturn<MainCharacter> createdCharacterReturn = service.createCharacter(MainCharacter.class, loggedUser, loggedUser.getUsername());
 
-        return new CustomResponse<>(HttpStatus.CREATED, "Successfully created main character", createdChar);
+        if(!createdCharacterReturn.success()) throw new BadRequestException(createdCharacterReturn.message());
+
+        return new CustomResponse<>(HttpStatus.CREATED, createdCharacterReturn.message(), createdCharacterReturn.character());
     }
 
     @PostMapping("/create-mercenary")
-    public CustomResponse<MercenaryCharacter> createMercenaryCharacter() throws Exception {
+    public CustomResponse<Optional<MercenaryCharacter>> createMercenaryCharacter() throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
         Optional<MainCharacter> mainCharacter = this.service.findMainCharacterByUserId(loggedUser.getId().toString());
@@ -135,73 +130,14 @@ public class CharactersController implements SecuredRestController {
 
         if(!canCreateMercenary) throw new BadRequestException(errorMessage);
 
-        MercenaryCharacter createdChar = service.createMercenaryCharacter(loggedUser, "Mercenary "+(charactersCount+1));
-        loggedUser.addCharacter(createdChar);
-        this.userService.update(loggedUser);
-        return new CustomResponse<>(HttpStatus.CREATED, "Successfully created mercenary character", createdChar);
+        CharacterService.CreateCharacterReturn<MercenaryCharacter> createdCharacterReturn = this.service.createCharacter(MercenaryCharacter.class, loggedUser, "Mercenary "+(charactersCount+1));
+
+        if( !createdCharacterReturn.success()) throw new BadRequestException(createdCharacterReturn.message());
+        return new CustomResponse<>(HttpStatus.CREATED, createdCharacterReturn.message(), createdCharacterReturn.character());
 
 
     }
 
-    // For debug ignore ;p
-    @PostMapping("/debug/create-empty-char/{userId}/{name}/{asMainCharacter}")
-    public CustomResponse<Character> create(@PathVariable String userId,
-                            @PathVariable String name,
-                            @PathVariable boolean asMainCharacter
-    ){
-        Optional<User> foundUser = this.userService.findOneById(userId);
-
-        if(foundUser.isEmpty()) throw new ResourceNotFoundException("User", userId);
-
-
-        if(asMainCharacter) {
-            return new CustomResponse<>(HttpStatus.CREATED, "Successfully created main character character", this.service.createMainCharacter(foundUser.get(), name));
-        }else {
-            return new CustomResponse<>(HttpStatus.CREATED, "Successfully created mercenary character", this.service.createMercenaryCharacter(foundUser.get(), name));
-        }
-    }
-
-    @PostMapping("/debug/create-mercenary-character-with-random-stats/{name}")
-        public CustomResponse<MercenaryCharacter> createDebugMercenary(
-                @PathVariable String name
-    ) throws Exception {
-            User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
-            MercenaryCharacter createdChar = service.createMercenaryCharacter(
-                    loggedUser, name
-            );
-            loggedUser.addCharacter(createdChar);
-            this.userService.update(loggedUser);
-            return new CustomResponse<>(HttpStatus.CREATED, "Successfully created mercenary character", createdChar);
-        }
-
-    @PostMapping("/debug/create-main-character-with-random-stats/{name}")
-    public CustomResponse<MainCharacter> createDebug(
-            @PathVariable String name
-    ) throws Exception {
-        User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
-        MainCharacter createdChar = service.createDebugCharacter(
-                loggedUser,
-                RandomUtils.getRandomValueWithinRange(1, 55),
-                Map.of(
-                        BaseStatisticsNamesEnum.STRENGTH, RandomUtils.getRandomValueWithinRange(1, 55),
-                        BaseStatisticsNamesEnum.DEXTERITY, RandomUtils.getRandomValueWithinRange(1, 55),
-                        BaseStatisticsNamesEnum.CHARISMA, RandomUtils.getRandomValueWithinRange(1, 55),
-                        BaseStatisticsNamesEnum.CONSTITUTION, RandomUtils.getRandomValueWithinRange(1, 55),
-                        BaseStatisticsNamesEnum.INTELLIGENCE, RandomUtils.getRandomValueWithinRange(1, 55),
-                        BaseStatisticsNamesEnum.LUCK, RandomUtils.getRandomValueWithinRange(1, 55)
-                ),
-                Map.of(
-                        AdditionalStatisticsNamesEnum.INITIATIVE, 10,
-                        AdditionalStatisticsNamesEnum.MIN_DAMAGE, 1,
-                        AdditionalStatisticsNamesEnum.MAX_DAMAGE, 2,
-                        AdditionalStatisticsNamesEnum.MAX_HEALTH, 350
-                        )
-                );
-
-            loggedUser.addCharacter(createdChar);
-            this.userService.update(loggedUser);
-            return new CustomResponse<>(HttpStatus.CREATED, "Successfully created main character with random stats", createdChar);
-    }
     @PostMapping("/use-consumable/{itemId}")
     public CustomResponse<Boolean> useConsumable(
             @PathVariable String itemId

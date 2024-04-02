@@ -1,36 +1,34 @@
 package com.example.characters;
 
 import com.example.characters.equipment.CharacterEquipment;
-import com.example.characters.equipment.EquipmentService;
-import com.example.statistics.AdditionalStatisticsNamesEnum;
-import com.example.statistics.BaseStatisticsNamesEnum;
 import com.example.users.User;
+import com.example.utils.TransactionsUtils;
 import dev.morphia.Datastore;
 import dev.morphia.DeleteOptions;
 import dev.morphia.query.filters.Filters;
+import dev.morphia.transactions.MorphiaSession;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 @Service
 public class CharacterService {
     private final Datastore datastore;
-    private final EquipmentService equipmentService;
 
     @Autowired
-    public CharacterService(Datastore datastore, EquipmentService equipmentService) {
+    public CharacterService(Datastore datastore) {
         this.datastore = datastore;
-        this.equipmentService = equipmentService;
     }
+
+    public record  CreateCharacterReturn<T extends Character>(boolean success, String message, Optional<T> character){}
 
     //TODO: make update better later, for now w/e
     public Character update(Character character) {
         return datastore.save(character);
     }
+
 
     public <T extends Character> List<T> findAll(Class<T> characterClass){
         return this.datastore.find(characterClass).stream().toList();
@@ -42,44 +40,39 @@ public class CharacterService {
         return this.findUserMercenaries(new ObjectId(userId));
     }
 
-    public MainCharacter createMainCharacter(User user, String name) {
-        CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
+    public <T extends Character> CreateCharacterReturn<T> createCharacter(Class<T> characterClass, User user, String name) throws Exception {
+        try(MorphiaSession session = datastore.startSession()) {
+            session.startTransaction();
+            CharacterEquipment equipment = TransactionsUtils.createNewEquipment(session);
+            Optional<T> createdChar = Optional.empty();
 
-        MainCharacter savedCharacter = datastore.save(new MainCharacter(name, user, equipment, true));
-        equipment.setCharacter(savedCharacter);
-        this.equipmentService.update(equipment);
+            if (MainCharacter.class.isAssignableFrom(characterClass)) {
+               createdChar = (Optional<T>) Optional.of(session.save(new MainCharacter(name, user, equipment, true)));
+            } else if (MercenaryCharacter.class.isAssignableFrom(characterClass)) {
+               createdChar = (Optional<T>) Optional.of(session.save(new MercenaryCharacter(name, user, equipment, true)));
+            }
 
-        return savedCharacter;
+            if(createdChar.isEmpty()) {
+                session.abortTransaction();
+                return new CreateCharacterReturn<T>(false, "Something went wrong when trying to create character", createdChar);
+            }
+
+            user.addCharacter(createdChar.get());
+            //this is for update user <- change later?
+            session.save(user);
+
+            equipment.setCharacter(createdChar.get());
+
+            // same as above omment  but for equipment
+            session.save(equipment);
+
+            session.commitTransaction();
+            return new CreateCharacterReturn<T>(true, "Successfully created character", createdChar);
+
+        }catch(Exception e){
+            throw new Exception(e.getMessage());
+        }
     }
-    public MercenaryCharacter createMercenaryCharacter(User user, String name) {
-        CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
-
-        MercenaryCharacter savedCharacter = datastore.save(new MercenaryCharacter(name, user, equipment, true));
-        equipment.setCharacter(savedCharacter);
-        this.equipmentService.update(equipment);
-
-        return savedCharacter;
-    }
-
-    public MainCharacter createDebugCharacter(
-            User user, int level, Map<BaseStatisticsNamesEnum, Integer> baseStatistic,
-            Map<AdditionalStatisticsNamesEnum, Integer> additionalStats
-            ) {
-
-        CharacterEquipment equipment = this.equipmentService.createForNewCharacter();
-
-        MainCharacter character = new MainCharacter("User character debug", user, equipment,
-                level, baseStatistic, additionalStats
-                );
-
-        MainCharacter savedCharacter = datastore.save(character);
-
-        equipment.setCharacter(savedCharacter);
-        this.equipmentService.update(equipment);
-
-        return savedCharacter;
-    }
-
     public Optional<Character> findById(String id) {
         return Optional.ofNullable(datastore.find(Character.class)
                 .filter(

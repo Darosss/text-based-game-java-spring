@@ -18,10 +18,6 @@ public class EquipmentService {
         this.datastore = datastore;
     }
 
-    public CharacterEquipment createForNewCharacter(){
-        return datastore.save(new CharacterEquipment());
-    }
-
     //TODO: make update better later, for now w/e
     public CharacterEquipment update(CharacterEquipment equipment) {
         return datastore.save(equipment);

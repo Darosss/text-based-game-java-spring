@@ -1,6 +1,7 @@
 package com.example.utils;
 
 import com.example.characters.Character;
+import com.example.characters.equipment.CharacterEquipment;
 import com.example.items.Item;
 import com.example.merchants.Merchant;
 import com.example.users.User;
@@ -55,5 +56,9 @@ public class TransactionsUtils {
             itemsDb.add(createdItem);
         }
         return itemsDb;
+    }
+
+    public static CharacterEquipment createNewEquipment(MorphiaSession session){
+        return session.save(new CharacterEquipment());
     }
 }
