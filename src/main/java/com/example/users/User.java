@@ -2,6 +2,7 @@ package com.example.users;
 
 import com.example.auth.JwtTokenPayload;
 import com.example.characters.Character;
+import com.example.characters.MainCharacter;
 import com.example.users.inventory.Inventory;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -13,10 +14,7 @@ import org.bson.types.ObjectId;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 
 @Entity("users")
 public class User {
@@ -121,6 +119,13 @@ public class User {
 
     public HashSet<Character> getCharacters() {
         return this.characters;
+    }
+
+    public Optional<MainCharacter> getMainCharacter() {
+        return this.characters.stream()
+                .filter(v -> v instanceof MainCharacter)
+                .map(v -> (MainCharacter) v)
+                .findFirst();
     }
 
     public void setCharacters(HashSet<Character> characters) {
