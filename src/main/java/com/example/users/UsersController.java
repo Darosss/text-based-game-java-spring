@@ -33,9 +33,9 @@ public class UsersController implements SecuredRestController {
         return new CustomResponse<>(HttpStatus.OK, authenticationFacade.getJwtTokenPayload());
     }
     @GetMapping("/profile")
-    public CustomResponse<User> getProfile() throws Exception {
+    public CustomResponse<LoggedUserUtils.ProfileUserDetails> getProfile() throws Exception {
         return new CustomResponse<>(HttpStatus.OK,
-                LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.service));
+                LoggedUserUtils.getProfileUserDetails(this.authenticationFacade, this.service));
     }
     @GetMapping("users/{id}")
     public CustomResponse<User> getUserById(@PathVariable String id){
