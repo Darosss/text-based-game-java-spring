@@ -4,10 +4,12 @@ import com.textbasedgame.auth.AuthenticationFacade;
 import com.textbasedgame.auth.LoggedUserUtils;
 import com.textbasedgame.auth.SecuredRestController;
 import com.textbasedgame.battle.reports.FightReport;
+import com.textbasedgame.characters.MainCharacter;
 import com.textbasedgame.items.Item;
 import com.textbasedgame.items.ItemsInventoryService;
 import com.textbasedgame.response.CustomResponse;
 import com.textbasedgame.settings.Settings;
+import com.textbasedgame.statistics.AdditionalStatisticsNamesEnum;
 import com.textbasedgame.users.User;
 import com.textbasedgame.users.UserService;
 import org.apache.coyote.BadRequestException;
@@ -77,6 +79,11 @@ public class SkirmishesController implements SecuredRestController {
     ) throws Exception {
         User loggedUser = LoggedUserUtils.getLoggedUserDetails(this.authenticationFacade, this.userService);
 
+        MainCharacter mainChar =  loggedUser.getMainCharacter().get();
+        double minHP = mainChar.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.MAX_HEALTH) * 0.1;
+        if(mainChar.getHealth() <= minHP)
+            throw new BadRequestException(String.format("To start a skirmish you need at least %f HP", minHP));
+
         //TODO: make it from configs plusMinutes - remember(Changed for debug)
         LocalDateTime challengeFinishTimestamp = LocalDateTime.now().plusSeconds(Settings.CHALLENGE_WAIT_COOLDOWN_MINUTES);
 
@@ -85,6 +92,8 @@ public class SkirmishesController implements SecuredRestController {
 
         if(foundSkirmish.getChosenChallenge() != null)
             throw new BadRequestException("Wait for a current challenge to finish");
+
+
 
         foundSkirmish.setChosenChallenge(skirmishData);
         this.service.update(foundSkirmish);
