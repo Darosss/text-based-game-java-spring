@@ -2,8 +2,10 @@ package com.textbasedgame.characters;
 
 import com.textbasedgame.characters.equipment.CharacterEquipment;
 import com.textbasedgame.characters.equipment.CharacterEquipmentFieldsEnum;
+import com.textbasedgame.characters.equipment.Equipment;
 import com.textbasedgame.characters.equipment.Equipment.UnEquipItemResult;
 import com.textbasedgame.characters.equipment.Equipment.EquipItemResult;
+import com.textbasedgame.characters.equipment.Equipment.UseConsumableItemResult;
 
 import com.textbasedgame.items.*;
 import com.textbasedgame.users.inventory.Inventory;
@@ -114,20 +116,20 @@ public class CharacterInventoryService {
         return equippedData;
     }
 
-    public boolean useConsumableItem(Inventory inventory, Character character, ItemConsumable item) throws Exception {
-        if(!item.getType().equals(ItemTypeEnum.CONSUMABLE)) return false;
+    public UseConsumableItemResult useConsumableItem(Inventory inventory, Character character, ItemConsumable item) throws Exception {
+        if(!item.getType().equals(ItemTypeEnum.CONSUMABLE)) return new UseConsumableItemResult(false, "Item is not consumable item", Optional.empty());
         try(MorphiaSession session = datastore.startSession()) {
             session.startTransaction();
 
 
-            if(this.handleUseConsumableTransaction(session, item, character, inventory)){
+            UseConsumableItemResult result = this.handleUseConsumableTransaction(session, item, character, inventory);
+            if(result.success()){
                 session.commitTransaction();
-                return true;
 
             }else {
                 session.abortTransaction();
-                return false;
             }
+            return result;
 
         }catch(Exception e){
             logger.error("Error occurred in useConsumableItem", e);
@@ -135,7 +137,7 @@ public class CharacterInventoryService {
         }
     }
 
-    private boolean handleUseConsumableTransaction(MorphiaSession session, ItemConsumable item, Character character, Inventory inventory){
+    private UseConsumableItemResult handleUseConsumableTransaction(MorphiaSession session, ItemConsumable item, Character character, Inventory inventory){
         int hpGain = item.getHpGain();
         if(hpGain > 0) character.increaseHealth(item.getHpGain());
         else character.decreaseHealth(item.getHpGain());
@@ -144,9 +146,9 @@ public class CharacterInventoryService {
             session.save(character);
             session.save(character.getEquipment());
             session.save(inventory);
-            return true;
+            return new UseConsumableItemResult(true, "Successfully used item", Optional.of(character.getHealth()));
         }catch(Exception e){
-            return false;
+            return new UseConsumableItemResult(false, "Couldn't use item", Optional.empty());
         }
     }
 
