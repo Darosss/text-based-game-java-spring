@@ -4,6 +4,7 @@ import com.textbasedgame.auth.AuthenticationFacade;
 import com.textbasedgame.auth.LoggedUserUtils;
 import com.textbasedgame.auth.SecuredRestController;
 import com.textbasedgame.characters.equipment.CharacterEquipmentFieldsEnum;
+import com.textbasedgame.characters.equipment.Equipment.UseConsumableItemResult;
 import com.textbasedgame.characters.equipment.Equipment.EquipItemResult;
 import com.textbasedgame.characters.equipment.Equipment.UnEquipItemResult;
 import com.textbasedgame.common.ResourceNotFoundException;
@@ -139,7 +140,7 @@ public class CharactersController implements SecuredRestController {
     }
 
     @PostMapping("/use-consumable/{itemId}")
-    public CustomResponse<Boolean> useConsumable(
+    public CustomResponse<UseConsumableItemResult> useConsumable(
             @PathVariable String itemId
     ) throws Exception {
         String loggedUserId = this.authenticationFacade.getJwtTokenPayload().id();
@@ -152,11 +153,8 @@ public class CharactersController implements SecuredRestController {
         if(itemToUse.isEmpty()) throw new ResourceNotFoundException("Item", itemId);
         if(mainCharacter.isEmpty()) throw new ResourceNotFoundException("Main character does not exist");
 
-        boolean usedItem = this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(),  itemToUse.get());
-        if(usedItem) return new CustomResponse<>(HttpStatus.OK, "Successfully used item", true);
-
-        //TODO: add here better messages through service. Like in equip un equip methods
-        throw new BadRequestException("Cannot use consumable item");
+        UseConsumableItemResult usedItem = this.characterInventoryService.useConsumableItem(inventory, mainCharacter.get(),  itemToUse.get());
+        return new CustomResponse<>(HttpStatus.OK, "Successfully used item", usedItem);
     };
     @PostMapping("/equip/{characterId}/{itemId}/{slot}")
     public CustomResponse<Boolean> equipCharacterItem(
