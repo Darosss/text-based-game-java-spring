@@ -105,7 +105,7 @@ public class ChallengesService {
         Enemy createdEnemy = this.prepareChallengeEnemy(challenge.get().getDifficulty(), mainCharacter.getLevel());
 
         FightReport fightReport = this.battleManagerService.performFight(user, mainCharacter, createdEnemy, mainCharacter.getLevel());
-        this.handleOnFinishFight(fightReport, mainCharacter);
+        this.handleOnFinishFight(fightReport, mainCharacter, true);
 
         return fightReport;
     }
@@ -120,14 +120,19 @@ public class ChallengesService {
 
         FightReport fightReport = this.battleManagerService.performTeamFight(user, characters, createdEnemies, mainCharacter.getLevel());
 
-        this.handleOnFinishFight(fightReport, mainCharacter);
+        this.handleOnFinishFight(fightReport, mainCharacter, false);
         return fightReport;
     }
 
-    private void handleOnFinishFight(FightReport report, MainCharacter mainCharacter){
+    private void handleOnFinishFight(FightReport report, MainCharacter mainCharacter, boolean updateMainHeroHP){
         mainCharacter.gainExperience(report.getGainedExperience());
 
-        this.characterService.update(mainCharacter);
+
+         mainCharacter.gainExperience(report.getGainedExperience());
+        this.characterService.handlePostFightUpdate(mainCharacter.getId().toString(),
+                mainCharacter.getExperience(), mainCharacter.getLevel(),
+                updateMainHeroHP ? Optional.of(mainCharacter.getHealth()): Optional.empty());
+
     }
 
 

@@ -6,6 +6,8 @@ import com.textbasedgame.utils.TransactionsUtils;
 import dev.morphia.Datastore;
 import dev.morphia.DeleteOptions;
 import dev.morphia.query.filters.Filters;
+import dev.morphia.query.updates.UpdateOperator;
+import dev.morphia.query.updates.UpdateOperators;
 import dev.morphia.transactions.MorphiaSession;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,25 @@ public class CharacterService {
         return datastore.save(character);
     }
 
+    public boolean handlePostFightUpdate(String id, long newExp, int level, Optional<Integer> newHP) {
+
+        UpdateOperator[] updates = newHP
+                .<UpdateOperator[]>map(hp -> new UpdateOperator[] {
+                        UpdateOperators.set("experience", newExp),
+                        UpdateOperators.set("level", level),
+                        UpdateOperators.set("health", hp)
+                })
+                .orElseGet(() -> new UpdateOperator[] {
+                        UpdateOperators.set("experience", newExp)
+                });
+
+        datastore.find(MainCharacter.class)
+                .filter(Filters.eq("id", new ObjectId(id)))
+                .update(List.of(updates))
+                .execute();
+
+        return true;
+    }
 
     public <T extends Character> List<T> findAll(Class<T> characterClass){
         return this.datastore.find(characterClass).stream().toList();
