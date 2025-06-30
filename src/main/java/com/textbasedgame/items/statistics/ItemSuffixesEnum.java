@@ -18,17 +18,13 @@ public enum ItemSuffixesEnum  {
     private final String displayName;
     private final Map<String, ItemStatisticsObject> statistics ;
     private final Map<String, ItemStatisticsObject> additionalStatistics;
+    private final Map<String, PrefixSufixItemStatisticsJsonRecord> SUFFIX_DATA = loadSuffixMap();
 
 
-    //TODO: do not repeat - move this into utils or something
-    private Map<String, PrefixSufixItemStatisticsJsonRecord> initializePrefixMap() {
-        InputStream inputStream = ItemSuffixesEnum.class.getClassLoader().getResourceAsStream("itemsdata/itemSuffixes.json");
-        ObjectMapper objectMapper = new ObjectMapper();
-        try {
-
-            Map<String, PrefixSufixItemStatisticsJsonRecord> value = objectMapper.readValue(inputStream, new TypeReference<
-                    Map<String, PrefixSufixItemStatisticsJsonRecord>>() {});
-            return value;
+    private Map<String, PrefixSufixItemStatisticsJsonRecord> loadSuffixMap() {
+        try (InputStream inputStream = ItemPrefixesEnum.class.getClassLoader().getResourceAsStream("itemsdata/itemSuffixes.json")) {
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(inputStream, new TypeReference<>() {});
         } catch (IOException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -36,7 +32,7 @@ public enum ItemSuffixesEnum  {
 
     ItemSuffixesEnum(String displayName) {
         this.displayName = displayName;
-        PrefixSufixItemStatisticsJsonRecord currentPrefixData = initializePrefixMap().get(displayName);
+        PrefixSufixItemStatisticsJsonRecord currentPrefixData = this.SUFFIX_DATA.get(displayName);
 
         this.statistics = currentPrefixData.baseStatistics();
         this.additionalStatistics = currentPrefixData.additionalStatistics();
