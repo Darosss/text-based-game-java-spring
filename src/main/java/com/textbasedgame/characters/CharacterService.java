@@ -40,7 +40,8 @@ public class CharacterService {
                         UpdateOperators.set("health", hp)
                 })
                 .orElseGet(() -> new UpdateOperator[] {
-                        UpdateOperators.set("experience", newExp)
+                        UpdateOperators.set("experience", newExp),
+                        UpdateOperators.set("level", level),
                 });
 
         datastore.find(MainCharacter.class)
