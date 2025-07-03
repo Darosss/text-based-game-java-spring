@@ -126,9 +126,6 @@ public class ChallengesService {
 
     private void handleOnFinishFight(FightReport report, MainCharacter mainCharacter, boolean updateMainHeroHP){
         mainCharacter.gainExperience(report.getGainedExperience());
-
-
-         mainCharacter.gainExperience(report.getGainedExperience());
         this.characterService.handlePostFightUpdate(mainCharacter.getId().toString(),
                 mainCharacter.getExperience(), mainCharacter.getLevel(),
                 updateMainHeroHP ? Optional.of(mainCharacter.getHealth()): Optional.empty());
