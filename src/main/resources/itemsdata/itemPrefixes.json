@@ -1,5 +1,6 @@
 {
   "Enchanted Essence": {
+    "names": ["name1", "name2"],
     "baseStatistics": {
       "STRENGTH": {
         "name": "Strength",

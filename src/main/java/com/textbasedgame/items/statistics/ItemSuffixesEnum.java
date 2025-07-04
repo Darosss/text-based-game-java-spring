@@ -3,6 +3,7 @@ package com.textbasedgame.items.statistics;
 import com.textbasedgame.statistics.BaseStatisticObject;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.textbasedgame.utils.RandomUtils;
 import io.swagger.v3.core.util.Json;
 
 import java.io.IOException;
@@ -18,6 +19,7 @@ public enum ItemSuffixesEnum  {
     private final String displayName;
     private final Map<String, ItemStatisticsObject> statistics ;
     private final Map<String, ItemStatisticsObject> additionalStatistics;
+    private final List<String> names;
     private final Map<String, PrefixSufixItemStatisticsJsonRecord> SUFFIX_DATA = loadSuffixMap();
 
 
@@ -32,10 +34,11 @@ public enum ItemSuffixesEnum  {
 
     ItemSuffixesEnum(String displayName) {
         this.displayName = displayName;
-        PrefixSufixItemStatisticsJsonRecord currentPrefixData = this.SUFFIX_DATA.get(displayName);
+        PrefixSufixItemStatisticsJsonRecord currentSuffixData = this.SUFFIX_DATA.get(displayName);
 
-        this.statistics = currentPrefixData.baseStatistics();
-        this.additionalStatistics = currentPrefixData.additionalStatistics();
+        this.statistics = currentSuffixData.baseStatistics();
+        this.additionalStatistics = currentSuffixData.additionalStatistics();
+        this.names = currentSuffixData.names();
     }
     public String getDisplayName() {
         return displayName;
@@ -46,5 +49,12 @@ public enum ItemSuffixesEnum  {
 
     public Map<String, ItemStatisticsObject> getAdditionalStatistics() {
         return additionalStatistics;
+    }
+
+    public List<String> getNames() {
+        return names;
+    }
+    public String getRandomName() {
+        return RandomUtils.getRandomItemFromArray(this.names.toArray()).toString();
     }
 }

@@ -1,5 +1,6 @@
 {
   "of Crimson Eclipse": {
+    "names": ["name1", "name2"],
       "baseStatistics": {
         "DEXTERITY": {
           "name": "Dexterity",
