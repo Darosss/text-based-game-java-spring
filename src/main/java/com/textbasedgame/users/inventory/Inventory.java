@@ -64,6 +64,14 @@ public class Inventory {
         currentWeight += item.getWeight();
         return true;
     }
+    public boolean addItems(Item[] newItems) {
+        if(this.items == null) this.items = new HashMap<>();
+        for(Item item: newItems) {
+            this.addItem(item);
+        }
+        return true;
+
+    }
 
 
     public Optional<Item> removeItemById(String id) {
