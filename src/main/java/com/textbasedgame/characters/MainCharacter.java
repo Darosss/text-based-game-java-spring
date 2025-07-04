@@ -11,7 +11,7 @@ import java.util.Map;
 
 public class MainCharacter extends Character {
     private static final Logger logger = LoggerFactory.getLogger(MainCharacter.class);
-
+    public record LevelUpLogicReturn(int gainedLevels) {}
     private Long experience;
 
     public MainCharacter() {
@@ -27,28 +27,33 @@ public class MainCharacter extends Character {
                          Map<AdditionalStatisticsNamesEnum, Integer> additionalStatistics){
         super(name, user, equipment, level, baseStatistics, additionalStatistics);
     }
-    public void gainExperience(long experiencePoints) {
+    public LevelUpLogicReturn gainExperience(long experiencePoints) {
         if (experiencePoints > 0) {
             this.experience += experiencePoints;
-            this.checkLevelUp();
+            return this.checkLevelUp();
         }
+        return new LevelUpLogicReturn(0);
     }
     public long getExpToLevelUp () {
         return ExperienceUtils.calculateExpToNextLevel(this.getLevel());
     }
 
-    private void checkLevelUp() {
+    private LevelUpLogicReturn checkLevelUp() {
         long expToLevelUp = this.getExpToLevelUp();
+        int gainedLevels = 0;
         while (this.experience >= expToLevelUp) {
             this.experience -= expToLevelUp;
-            this.levelUp();
+            boolean levelUp = this.levelUp();
             expToLevelUp = ExperienceUtils.calculateExpToNextLevel(this.getLevel());
+            if(levelUp) gainedLevels++;
         }
+        return new LevelUpLogicReturn(gainedLevels);
     }
-    private void levelUp() {
+    private boolean levelUp() {
         this.setLevel(this.getLevel() + 1);
         this.updateHealthBasedOnMaxHealth();
         logger.debug("Level up! New level: {}", this.getLevel());
+        return true;
     }
 
     public Long getExperience() {
