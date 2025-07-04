@@ -15,6 +15,7 @@ import com.textbasedgame.users.UserService;
 import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @RestController("skirmishes")
 public class SkirmishesController implements SecuredRestController {
@@ -67,6 +69,7 @@ public class SkirmishesController implements SecuredRestController {
         data.skirmish().generateChallenges(2);
         this.service.update(data.skirmish());
         //TODO: iterateCount - should be get from user collection(for example some users can have more than 2)
+
 
         this.onSuccessFight(loggedUser, data.report().getLoot(), data.report().getGainedGold());
 
@@ -138,9 +141,7 @@ public class SkirmishesController implements SecuredRestController {
 
         ChallengesService.CommonReturnData data = returnData.data().get();
         this.service.update(data.skirmish());
-
         this.onSuccessFight(loggedUser, data.report().getLoot(), data.report().getGainedGold());
-
         return new CustomResponse<>(HttpStatus.OK, returnData.message(), returnData.data().get().report());
     }
 
@@ -159,11 +160,14 @@ public class SkirmishesController implements SecuredRestController {
         return new CustomResponse<>(HttpStatus.OK, this.service.create(loggedUser, 2));
     }
 
-    private void onSuccessFight(User user, List<Item> lootedItems, long gainedGold) {
-        lootedItems.forEach((item)-> this.itemsInventoryService.handleOnNewUserItem(user, item));
+    //Note: this handles the handleOnNewUserItems -> async function without awaiting by default.
+    @Async
+    public CompletableFuture<Void> onSuccessFight(User user, List<Item> lootedItems, long gainedGold) {
+        this.itemsInventoryService.handleOnNewUserItems(user, lootedItems);
 
         user.increaseGold(gainedGold);
         this.userService.update(user);
+        return CompletableFuture.completedFuture(null);
     }
 
 }
