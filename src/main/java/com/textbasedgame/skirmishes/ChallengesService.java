@@ -9,6 +9,7 @@ import com.textbasedgame.characters.MercenaryCharacter;
 import com.textbasedgame.enemies.Enemy;
 import com.textbasedgame.enemies.EnemyType;
 import com.textbasedgame.enemies.EnemyUtils;
+import com.textbasedgame.statistics.AdditionalStatisticsNamesEnum;
 import com.textbasedgame.users.User;
 import com.textbasedgame.utils.RandomUtils;
 import org.bson.types.ObjectId;
@@ -125,11 +126,11 @@ public class ChallengesService {
     }
 
     private void handleOnFinishFight(FightReport report, MainCharacter mainCharacter, boolean updateMainHeroHP){
-        mainCharacter.gainExperience(report.getGainedExperience());
-        this.characterService.handlePostFightUpdate(mainCharacter.getId().toString(),
-                mainCharacter.getExperience(), mainCharacter.getLevel(),
-                updateMainHeroHP ? Optional.of(mainCharacter.getHealth()): Optional.empty());
+        MainCharacter.LevelUpLogicReturn leveledUp = mainCharacter.gainExperience(report.getGainedExperience());
 
+        Optional<Integer> hp = updateMainHeroHP ? Optional.of(mainCharacter.getHealth()): leveledUp.gainedLevels() > 0 ? Optional.of(mainCharacter.getAdditionalStatEffective(AdditionalStatisticsNamesEnum.MAX_HEALTH)) : Optional.empty();
+        this.characterService.handlePostFightUpdate(mainCharacter.getId().toString(),
+                mainCharacter.getExperience(), mainCharacter.getLevel(), hp);
     }
 
 
